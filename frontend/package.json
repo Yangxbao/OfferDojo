@@ -1,0 +1,34 @@
+{
+  "name": "jobsim-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "JobSim AI 前端：面向大学生的 AI 岗位实战模拟平台",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "type-check": "vue-tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@element-plus/icons-vue": "^2.3.0",
+    "axios": "^1.7.0",
+    "dayjs": "^1.11.0",
+    "echarts": "^5.6.0",
+    "element-plus": "^2.9.0",
+    "pinia": "^3.0.0",
+    "vue": "^3.5.0",
+    "vue-router": "^4.5.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@vitejs/plugin-vue": "^6.0.0",
+    "@vue/test-utils": "^2.4.0",
+    "jsdom": "^26.0.0",
+    "typescript": "~5.8.0",
+    "vite": "^7.0.0",
+    "vitest": "^3.2.0",
+    "vue-tsc": "^3.0.0"
+  }
+}

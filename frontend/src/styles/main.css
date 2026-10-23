@@ -1,0 +1,304 @@
+/**
+ * 设计规范：统一颜色 / 圆角 / 阴影 / 间距。
+ * 整体走克制的 SaaS 风格：浅灰底 + 白卡片 + 单一主色，避免花哨装饰。
+ */
+:root {
+  --jobsim-bg: #f5f7fa;
+  --jobsim-surface: #ffffff;
+  --jobsim-primary: #2563eb;
+  --jobsim-primary-light: #eff4ff;
+  --jobsim-text: #1f2937;
+  --jobsim-text-secondary: #64748b;
+  --jobsim-border: #e5e7eb;
+  --jobsim-radius: 10px;
+  --jobsim-shadow: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+  --jobsim-sidebar: #0f172a;
+  --jobsim-sidebar-text: #94a3b8;
+  --jobsim-sidebar-active: #ffffff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+body {
+  font-family: 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif;
+  background: var(--jobsim-bg);
+  color: var(--jobsim-text);
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--jobsim-primary);
+  text-decoration: none;
+}
+
+/* ---------- 通用卡片 ---------- */
+.card {
+  background: var(--jobsim-surface);
+  border-radius: var(--jobsim-radius);
+  border: 1px solid var(--jobsim-border);
+  box-shadow: var(--jobsim-shadow);
+  padding: 20px;
+}
+
+.card-title {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0 0 14px;
+  color: var(--jobsim-text);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.card-sub {
+  color: var(--jobsim-text-secondary);
+  font-size: 13px;
+}
+
+/* ---------- 页面容器 ---------- */
+.page {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.page-header {
+  margin-bottom: 18px;
+}
+
+.page-header h2 {
+  margin: 0 0 4px;
+  font-size: 20px;
+}
+
+.page-header p {
+  margin: 0;
+  color: var(--jobsim-text-secondary);
+  font-size: 13px;
+}
+
+/* ---------- 布局 ---------- */
+.layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.layout-sidebar {
+  width: 220px;
+  background: var(--jobsim-sidebar);
+  color: var(--jobsim-sidebar-text);
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  z-index: 20;
+}
+
+.layout-main {
+  flex: 1;
+  margin-left: 220px;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.layout-topbar {
+  height: 56px;
+  background: var(--jobsim-surface);
+  border-bottom: 1px solid var(--jobsim-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.layout-content {
+  flex: 1;
+  padding: 24px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 18px 20px 14px;
+}
+
+.brand-logo {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #2563eb, #4f46e5);
+  color: #fff;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+}
+
+.brand-name {
+  color: #fff;
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: 0.5px;
+}
+
+.brand-name small {
+  display: block;
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--jobsim-sidebar-text);
+}
+
+.sidebar-menu {
+  border-right: none !important;
+  background: transparent !important;
+  flex: 1;
+}
+
+.sidebar-footer {
+  padding: 14px 20px;
+  font-size: 12px;
+  color: var(--jobsim-sidebar-text);
+  border-top: 1px solid rgba(148, 163, 184, 0.15);
+}
+
+/* ---------- 仪表盘网格 ---------- */
+.grid {
+  display: grid;
+  gap: 16px;
+}
+
+.grid-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.grid-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.grid-4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.stat-value {
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.stat-label {
+  color: var(--jobsim-text-secondary);
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+/* ---------- 评估报告 ---------- */
+.report-section {
+  margin-top: 18px;
+}
+
+.report-section h4 {
+  margin: 0 0 10px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.report-list {
+  margin: 0;
+  padding-left: 18px;
+  line-height: 1.9;
+  color: var(--jobsim-text);
+}
+
+.report-list li {
+  margin-bottom: 4px;
+}
+
+/* ---------- 登录页 ---------- */
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(1200px 500px at 20% -10%, #e0eaff 0%, transparent 60%),
+    var(--jobsim-bg);
+  padding: 24px;
+}
+
+.auth-card {
+  width: 400px;
+  max-width: 100%;
+}
+
+.auth-brand {
+  text-align: center;
+  margin-bottom: 22px;
+}
+
+.auth-brand .brand-logo {
+  margin: 0 auto 12px;
+  width: 44px;
+  height: 44px;
+  font-size: 20px;
+  border-radius: 12px;
+}
+
+.auth-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0 0 6px;
+}
+
+.auth-sub {
+  color: var(--jobsim-text-secondary);
+  font-size: 13px;
+  margin: 0;
+}
+
+/* ---------- 响应式 ---------- */
+@media (max-width: 900px) {
+  .grid-3,
+  .grid-4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .layout-sidebar {
+    display: none;
+  }
+
+  .layout-main {
+    margin-left: 0;
+  }
+
+  .grid-2,
+  .grid-3,
+  .grid-4 {
+    grid-template-columns: 1fr;
+  }
+
+  .layout-content {
+    padding: 16px;
+  }
+}
