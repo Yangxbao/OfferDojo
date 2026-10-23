@@ -1,0 +1,773 @@
+{
+  "tasks": [
+    {
+      "code": "API-001",
+      "title": "为「课程签到」功能设计 REST API",
+      "category": "api-design",
+      "difficulty": "EASY",
+      "tags": "REST,接口设计,Spring Boot",
+      "summary": "阅读课程签到业务需求，设计一套完整的 REST API，包括资源划分、接口定义与状态设计。",
+      "estimatedMinutes": 25,
+      "background": "你所在的校园工具团队正在开发一个「在线课堂助手」。产品经理提出：老师发起签到后，学生在 5 分钟内完成签到；迟到的学生可以由老师手动补签；学生能看到自己每门课的签到记录。你作为后端实习生，需要先把 API 设计出来，评审通过后才能进入编码。",
+      "requirements": [
+        "老师可以针对某节课发起一次签到，生成签到截止时间（发起时间 + 5 分钟）",
+        "学生可以在截止时间前签到，签到成功返回签到时间",
+        "截止后签到请求返回明确失败原因，不能静默失败",
+        "老师可以对迟到学生手动补签，并记录操作人",
+        "学生可以查询自己在某门课的全部签到记录（含状态：正常/迟到/缺勤/已补签）"
+      ],
+      "constraints": [
+        "只做后端 API 设计，不写具体实现代码",
+        "遵循 REST 风格：URL 用名词表示资源，用 HTTP 方法表达动作",
+        "假设已存在 course（课程）、user（用户）两张表，不需要设计表结构",
+        "需要考虑角色权限：老师与学生能调用的接口不同"
+      ],
+      "deliverables": [
+        "资源划分说明：本功能涉及哪些资源、资源之间的关系",
+        "接口清单：每个接口的方法 + 路径 + 请求参数 + 响应结构 + 错误码",
+        "签到状态机说明：状态如何流转，哪个动作触发流转"
+      ],
+      "acceptance": [
+        "接口路径符合 REST 习惯，没有出现 /getAllSignIns 这类动词路径",
+        "每个接口都写明了鉴权要求（谁可以调用）",
+        "至少覆盖成功响应和一个典型错误响应的结构",
+        "状态机说明了「正常/迟到/缺勤/已补签」之间的触发条件"
+      ],
+      "rubric": [
+        { "dimension": "需求理解", "weight": 30, "guidance": "准确拆解产品需求：签到时限、补签、记录查询三个能力都要体现在接口里，且角色边界清晰。" },
+        { "dimension": "方案设计", "weight": 40, "guidance": "资源划分合理，REST 风格地道；接口定义完整到参数与响应结构层面，而不是只列 URL。" },
+        { "dimension": "工程规范", "weight": 30, "guidance": "统一响应结构、明确的错误码约定、状态用有限集合表达而不是自由文本。" }
+      ],
+      "mockHints": {
+        "keywords": {
+          "需求理解": ["签到", "截止", "补签", "签到记录", "老师", "学生", "权限"],
+          "方案设计": ["POST", "GET", "资源", "/api", "sign-in", "签到记录", "状态机", "请求体", "响应"],
+          "工程规范": ["统一响应", "错误码", "400", "401", "403", "409", "枚举", "NORMAL", "LATE"]
+        },
+        "strengths": [
+          { "text": "用 POST /api/courses/{courseId}/sign-ins 这类「资源+动作」结构表达发起与签到，符合 REST 习惯", "keywords": ["POST", "/api", "sign-in"] },
+          { "text": "把签到状态定义为有限枚举（正常/迟到/缺勤/已补签），避免了自由文本带来的脏数据", "keywords": ["枚举", "状态"] },
+          { "text": "明确了老师/学生两类角色分别能调用哪些接口", "keywords": ["老师", "学生", "权限"] }
+        ],
+        "problems": [
+          { "dimension": "需求理解", "text": "遗漏了「手动补签」对应的接口，或没有说明补签由谁发起、记录什么信息" },
+          { "dimension": "方案设计", "text": "接口只写了 URL，没有给出请求参数与响应体示例，评审时无法确认字段" },
+          { "dimension": "工程规范", "text": "错误响应只写了「报错」，没有约定错误码与错误信息结构" }
+        ],
+        "edgeCases": [
+          "同一学生对同一节课重复签到，应返回什么？建议 409 或幂等返回已有签到",
+          "签到发起后课程被取消，签到接口应如何表现",
+          "截止时间边界：恰好第 5 分钟提交算成功还是迟到，需要与服务端时间统一判断"
+        ],
+        "followUps": [
+          "签到截止判断为什么应该用服务端时间而不是客户端时间？",
+          "如果学生端并发点了两次签到按钮，你的接口如何保证不产生两条记录？",
+          "签到记录表以后要支持按周导出，你的接口设计需要怎样预留？"
+        ],
+        "nextTaskCodes": ["DB-001", "API-002"]
+      }
+    },
+    {
+      "code": "DB-001",
+      "title": "设计「学习积分系统」的数据库表结构",
+      "category": "db-design",
+      "difficulty": "EASY",
+      "tags": "MySQL,数据库设计,索引",
+      "summary": "根据积分业务规则设计表结构、字段类型、索引与唯一约束，并说明理由。",
+      "estimatedMinutes": 30,
+      "background": "校园学习平台要上线积分体系：学生完成每日打卡 +5 分，完成一次模拟练习 +20 分，连续打卡 7 天额外 +50 分；积分可以在商城兑换奖品，兑换会扣减积分。运营要求能回答两个问题：某个学生的积分余额是多少、某个学生最近 30 天每一笔积分变动是什么。你是负责这个需求的后端实习生。",
+      "requirements": [
+        "设计表结构：至少包含用户积分表与积分流水表，说明每张表承载的职责",
+        "积分流水必须能追溯每一笔变动的来源（打卡/练习/连续奖励/兑换）",
+        "查询「某用户当前积分余额」要高效（这是首页高频查询）",
+        "查询「某用户最近 30 天流水」要高效，并说明用什么索引支撑",
+        "字段类型、是否可空、默认值要有说明"
+      ],
+      "constraints": [
+        "使用 MySQL 8，存储引擎 InnoDB",
+        "不使用触发器和存储过程，业务逻辑由应用层维护",
+        "不要求设计商城商品表，兑换只需在流水中体现"
+      ],
+      "deliverables": [
+        "建表 SQL（含主键、索引、唯一约束）",
+        "每张表的一句话职责说明",
+        "针对两个查询场景的索引设计依据"
+      ],
+      "acceptance": [
+        "余额与流水分表或明确说明只用流水表的理由",
+        "流水表包含类型、变动值、变动后余额（或说明为什么不需要）、来源单据标识",
+        "高频查询场景都有对应索引，且不是无脑给所有列加索引",
+        "说明了防止「同一来源重复加积分」的办法（如唯一约束）"
+      ],
+      "rubric": [
+        { "dimension": "方案设计", "weight": 40, "guidance": "表职责划分清楚，余额与流水的关系明确，能支撑追溯与对账。" },
+        { "dimension": "正确性", "weight": 35, "guidance": "字段类型合理（金额类不用 float、状态用枚举）、来源去重有唯一约束保障。" },
+        { "dimension": "工程规范", "weight": 25, "guidance": "命名规范统一，索引有明确目的，注释解释了为什么。" }
+      ],
+      "mockHints": {
+        "keywords": {
+          "方案设计": ["积分流水", "余额", "user_id", "来源", "类型", "对账", "追溯"],
+          "正确性": ["DECIMAL", "INT", "唯一索引", "UNIQUE", "幂等", "重复", "变动后余额", "big"],
+          "工程规范": ["索引", "idx", "user_id", "created_at", "命名", "注释", "NOT NULL", "DEFAULT"]
+        },
+        "strengths": [
+          { "text": "用「余额表 + 流水表」的经典结构，余额支撑高频查询、流水支撑追溯", "keywords": ["余额", "流水"] },
+          { "text": "给流水的「来源单据」设计唯一约束（如 uk_user_biz），从数据库层面防止重复加积分", "keywords": ["唯一", "UNIQUE", "幂等"] },
+          { "text": "流水表记录了「变动后余额」，方便对账排查", "keywords": ["变动后余额", "对账"] }
+        ],
+        "problems": [
+          { "dimension": "方案设计", "text": "只有流水表没有余额字段或汇总方案，查询「当前余额」需要全表聚合，高频场景性能不可接受" },
+          { "dimension": "正确性", "text": "没有防止重复加积分的机制，打卡接口重试一次积分就翻倍" },
+          { "dimension": "工程规范", "text": "索引设计没有针对「按用户查最近 30 天流水」这个明确场景" }
+        ],
+        "edgeCases": [
+          "并发兑换导致余额扣成负数：需要 UPDATE ... WHERE balance >= cost 的条件更新或乐观锁",
+          "连续打卡 7 天的奖励只发一次：需要唯一约束或奖励发放记录表",
+          "流水删改会破坏追溯性：应在应用层禁止物理删除，用修正流水冲正"
+        ],
+        "followUps": [
+          "余额更新和流水写入在同一个事务里吗？为什么要这样做？",
+          "如果积分流水每天百万级，你的索引设计还能撑住吗？会怎么优化？",
+          "ALTER TABLE 加字段在线上执行有什么风险？你怎么评估？"
+        ],
+        "nextTaskCodes": ["API-002", "TS-002"]
+      }
+    },
+    {
+      "code": "API-002",
+      "title": "设计商品列表分页查询接口",
+      "category": "api-design",
+      "difficulty": "EASY",
+      "tags": "分页,REST,MyBatis-Plus",
+      "summary": "为一个校园二手交易平台设计商品列表分页接口，覆盖筛选、排序、分页参数与返回结构。",
+      "estimatedMinutes": 25,
+      "background": "校园二手交易平台「跳蚤街」的商品列表页需要后端接口。产品要求：支持按分类、价格区间筛选；支持按发布时间、价格排序；滚动加载下一页。平台已有 item（商品）表，字段包括 id、title、category、price、status、seller_id、created_at。你要设计这个查询接口。",
+      "requirements": [
+        "支持分类筛选（单选）、价格区间筛选（可只填一边）",
+        "支持按发布时间倒序（默认）或价格升/降序排序",
+        "分页参数规范：页码从 1 开始，每页大小有上限，返回是否还有下一页",
+        "列表项只返回列表页需要的字段，不把整表字段全部抛给前端",
+        "已下架商品不能出现在列表中"
+      ],
+      "constraints": [
+        "只做接口设计，不要求写实现代码",
+        "需要给出 SQL 或 MyBatis-Plus 查询伪代码，说明筛选与分页如何落地",
+        "考虑参数校验：非法页码、超大 pageSize 如何处理"
+      ],
+      "deliverables": [
+        "接口定义：方法、路径、查询参数表（参数名/类型/必填/说明）",
+        "响应结构示例（含分页元数据）",
+        "查询伪代码与用到的索引说明"
+      ],
+      "acceptance": [
+        "pageSize 有上限（如 50），防止一次拖走全表",
+        "筛选参数可组合且可缺省，空值不会拼进 SQL",
+        "说明了 status 过滤与 (category, price) 或类似索引的关系",
+        "分页返回 total 或 hasMore，且说明了大数据量下二选一的权衡"
+      ],
+      "rubric": [
+        { "dimension": "方案设计", "weight": 35, "guidance": "参数设计完整规范，分页/筛选/排序正交组合，GET 语义使用正确。" },
+        { "dimension": "正确性", "weight": 35, "guidance": "参数校验规则明确，SQL/伪代码能正确表达筛选与分页，索引建议合理。" },
+        { "dimension": "工程规范", "weight": 30, "guidance": "响应字段克制（只返回所需），分页上限与默认值有明确约定。" }
+      ],
+      "mockHints": {
+        "keywords": {
+          "方案设计": ["GET", "page", "pageSize", "category", "minPrice", "maxPrice", "sort", "参数"],
+          "正确性": ["LIMIT", "OFFSET", "索引", "idx", "status", "校验", "@Max", "@Min", "上限"],
+          "工程规范": ["total", "hasMore", "默认值", "VO", "字段", "响应", "列表"]
+        },
+        "strengths": [
+          { "text": "pageSize 明确设置上限并做参数校验，防止恶意大分页拖垮数据库", "keywords": ["上限", "pageSize", "校验"] },
+          { "text": "用单独的列表 VO 而不是直接返回实体，避免把 seller_id 等内部字段暴露出去", "keywords": ["VO", "字段", "响应"] },
+          { "text": "提到了复合索引如 (category, status, price) 与排序字段的配合", "keywords": ["索引", "idx", "排序"] }
+        ],
+        "problems": [
+          { "dimension": "方案设计", "text": "分页参数没有默认值和上限约定，前端传 0 或负数行为未定义" },
+          { "dimension": "正确性", "text": "筛选条件为空时直接拼接 SQL 会导致 WHERE 1=1 之外的问题，应说明动态条件处理" },
+          { "dimension": "工程规范", "text": "响应把整张表字段全部返回，没有说明列表页与详情页的字段差异" }
+        ],
+        "edgeCases": [
+          "页码超出总页数：返回空列表而不是报错，或重定向到最后一页，需要明确",
+          "price 传了 min 大于 max：应校验拒绝或自动交换，不能返回矛盾结果",
+          "深分页 LIMIT 100000,20 很慢：可提游标分页（基于 id 或 created_at）作为优化方向"
+        ],
+        "followUps": [
+          "LIMIT offset,size 在页码很大时为什么慢？有什么替代方案？",
+          "为什么筛选/分页/排序接口应该用 GET 而不是 POST？什么情况下例外？",
+          "如果商品标题要支持模糊搜索，LIKE '%x%' 能走索引吗？怎么优化？"
+        ],
+        "nextTaskCodes": ["TS-002", "API-001"]
+      }
+    },
+    {
+      "code": "TS-001",
+      "title": "排查「订单状态不一致」问题",
+      "category": "troubleshooting",
+      "difficulty": "MEDIUM",
+      "tags": "事务,一致性,排查思路",
+      "summary": "订单支付成功后状态偶发不一致：订单表是待支付但支付流水已成功。分析可能原因并给出排查与修复方案。",
+      "estimatedMinutes": 35,
+      "background": "校园打印站的下单系统出现线上问题：用户反馈「我已经付款成功了，但订单还显示待支付」。你查到两个事实：(1) 支付回调日志显示某订单 O123 回调处理成功；(2) 该订单在数据库里 status 仍是 UNPAID。回调处理代码的伪逻辑是：更新订单状态 → 调用积分服务给用户加积分 → 写支付流水。三个操作在同一个 @Transactional 方法里。",
+      "requirements": [
+        "列出至少三个可能导致「回调成功但订单状态没变」的原因，并按可能性排序",
+        "针对最可能的原因给出修复方案（代码层面）",
+        "给出验证方案：如何确认你的修复真的解决了问题",
+        "说明这个场景下事务边界怎么划分才合理"
+      ],
+      "constraints": [
+        "基于题目给出的信息推理，可以合理假设，但要写明假设了什么",
+        "不需要考虑分布式事务框架（如 Seata），聚焦单体应用能落地的方案"
+      ],
+      "deliverables": [
+        "原因清单（含推断依据）",
+        "修复方案（含关键代码或伪代码）",
+        "验证方案（如何复现、如何回归）"
+      ],
+      "acceptance": [
+        "能指出「远程调用（积分服务）放在事务内」是首要嫌疑，并解释为什么",
+        "修复方案考虑了回调幂等：重复回调不会产生副作用",
+        "验证方案可执行，而不是「测试通过」一句话带过"
+      ],
+      "rubric": [
+        { "dimension": "问题定位", "weight": 40, "guidance": "基于伪逻辑推理出可能原因集合，且按概率与成本排出验证顺序。" },
+        { "dimension": "正确性", "weight": 35, "guidance": "修复方案技术上站得住：缩小事务边界、保证幂等、处理远程调用失败。" },
+        { "dimension": "沟通表达", "weight": 25, "guidance": "结构清晰：现象 → 分析 → 方案 → 验证，像一份能发给导师的排查报告。" }
+      ],
+      "mockHints": {
+        "keywords": {
+          "问题定位": ["事务", "远程调用", "积分", "超时", "回滚", "日志", "回调", "异常"],
+          "正确性": ["幂等", "重试", "事务边界", "缩小", "本地消息", "状态机", "WHERE", "条件更新"],
+          "沟通表达": ["现象", "分析", "方案", "验证", "复现", "假设", "排序"]
+        },
+        "strengths": [
+          { "text": "把远程积分调用移出事务，事务只保护本地两步操作，避免长事务与不确定的外部依赖", "keywords": ["事务边界", "远程调用", "移出"] },
+          { "text": "用条件更新 UPDATE ... SET status='PAID' WHERE id=? AND status='UNPAID' 并检查影响行数，天然幂等", "keywords": ["WHERE", "条件更新", "幂等"] },
+          { "text": "给出了可执行的复现与验证步骤，而不是只给结论", "keywords": ["复现", "验证"] }
+        ],
+        "problems": [
+          { "dimension": "问题定位", "text": "只给一个原因就下结论，没有按可能性排序也没有假设说明" },
+          { "dimension": "正确性", "text": "修复方案没有处理重复回调，同一笔回调重放会重复加积分" },
+          { "dimension": "沟通表达", "text": "没有把「现象-分析-方案-验证」分层，读起来像一段想法流水账" }
+        ],
+        "edgeCases": [
+          "积分服务成功但后续本地写流水失败：回调整体重试时积分会被加两次，需要幂等键",
+          "回调并发到达：两个线程同时读 UNPAID 然后都去更新，条件更新是关键防线",
+          "日志显示成功但 DB 未变：可能是事务尚未提交就回复了成功，先确认提交时机"
+        ],
+        "followUps": [
+          "@Transactional 加在类上和加在方法上有什么区别？自调用为什么会失效？",
+          "如果积分服务必须同步成功才能继续，该怎么设计重试与补偿？",
+          "为什么说「先更新状态再调外部」比「先调外部再更新状态」更容易做幂等？"
+        ],
+        "nextTaskCodes": ["TS-004", "TS-006"]
+      }
+    },
+    {
+      "code": "TS-002",
+      "title": "分析一条 SQL 查询为什么变慢",
+      "category": "troubleshooting",
+      "difficulty": "MEDIUM",
+      "tags": "MySQL,EXPLAIN,索引",
+      "summary": "一条按用户查询订单的 SQL 在数据量增长后从 20ms 变成 2s。用 EXPLAIN 分析原因并给出优化方案。",
+      "estimatedMinutes": 30,
+      "background": "学习平台的「我的订单」页面接口最近变慢。SQL：SELECT * FROM orders WHERE user_id = ? AND status = 'PAID' ORDER BY created_at DESC LIMIT 10;。orders 表约 800 万行，此前很快。你拿到了 EXPLAIN 结果：type=ref，key=idx_user_id，rows=120000，Extra=Using where; Using filesort。",
+      "requirements": [
+        "解读 EXPLAIN 输出：每一项说明了什么，哪里暴露了问题",
+        "解释为什么走了 idx_user_id 索引还是慢（定位到 filesort 与回表）",
+        "给出至少一个索引优化方案并解释原理",
+        "说明 SELECT * 在这个场景下的代价，以及怎么改"
+      ],
+      "constraints": [
+        "基于给出的 EXPLAIN 结果分析，不要假设没有给出的信息",
+        "优化方案要能在业务不改动功能的前提下落地"
+      ],
+      "deliverables": [
+        "EXPLAIN 逐项解读",
+        "慢的原因分析（因果链）",
+        "优化方案（DDL + 预期 EXPLAIN 变化）"
+      ],
+      "acceptance": [
+        "明确指出 Using filesort 和大 rows 是慢的直接原因",
+        "给出 (user_id, status, created_at) 组合索引或等价方案，并解释最左前缀",
+        "提到回表与覆盖索引的概念，并给出 SELECT 字段收敛建议"
+      ],
+      "rubric": [
+        { "dimension": "问题定位", "weight": 45, "guidance": "能从 EXPLAIN 证据出发定位根因，因果链完整：索引选择性差 → 大量回表 → filesort。" },
+        { "dimension": "正确性", "weight": 30, "guidance": "索引方案符合最左前缀与排序方向原理，能预判优化后的执行计划变化。" },
+        { "dimension": "工程规范", "weight": 25, "guidance": "给出上线前的验证方法（EXPLAIN 对比、慢日志观测）与回滚方案。" }
+      ],
+      "mockHints": {
+        "keywords": {
+          "问题定位": ["EXPLAIN", "filesort", "rows", "回表", "扫描", "选择性", "Using where"],
+          "正确性": ["组合索引", "最左前缀", "user_id", "created_at", "覆盖索引", "DESC", "ASC"],
+          "工程规范": ["EXPLAIN", "慢查询日志", "验证", "回滚", "线上", "影子表", "对比"]
+        },
+        "strengths": [
+          { "text": "准确解读 rows=120000 + Using filesort：命中了 user_id 但要回表 12 万行再排序", "keywords": ["rows", "filesort", "回表"] },
+          { "text": "提出 (user_id, status, created_at) 组合索引，让等值条件在前、排序列在后，避免 filesort", "keywords": ["组合索引", "user_id", "created_at", "最左前缀"] },
+          { "text": "建议 SELECT 收敛字段或做覆盖索引，减少回表 IO", "keywords": ["覆盖索引", "SELECT", "回表"] }
+        ],
+        "problems": [
+          { "dimension": "问题定位", "text": "把慢归因于「数据量大」而没有解释为什么此前不慢，缺少因果链" },
+          { "dimension": "正确性", "text": "建议的索引把 created_at 放在 user_id 前面，违背查询形态，等值列应在前" },
+          { "dimension": "工程规范", "text": "没有给出上线前后 EXPLAIN 对比与慢日志观测的验证步骤" }
+        ],
+        "edgeCases": [
+          "status 只有少数几个值、选择性差：放在组合索引中间位要结合等值查询形态判断",
+          "新索引会拖慢写入并占空间：评估写放大后再上线",
+          "线上加索引用 ALGORITHM=INPLACE 避免锁表，大表要选低峰期"
+        ],
+        "followUps": [
+          "为什么 (created_at, user_id) 不能替代 (user_id, created_at)？",
+          "覆盖索引是什么？什么情况下收益最大？",
+          "如果 user_id 一行有 10 万订单，深分页 LIMIT 100000,10 还会慢吗？怎么改？"
+        ],
+        "nextTaskCodes": ["DB-001", "API-002"]
+      }
+    },
+    {
+      "code": "TS-003",
+      "title": "排查接口参数校验「不生效」的问题",
+      "category": "troubleshooting",
+      "difficulty": "EASY",
+      "tags": "Bean Validation,Spring Boot,排查",
+      "summary": "给 DTO 加了 @NotBlank 等注解但接口不校验。分析失效原因并给出正确用法。",
+      "estimatedMinutes": 20,
+      "background": "实习生小王在 UserUpdateDTO 的 nickname 字段上加了 @NotBlank，在 age 字段上加了 @Min(1) @Max(150)，但前端传空字符串和 age=999 时接口照样成功。Controller 方法签名是：public ApiResponse update(@RequestBody UserUpdateDTO dto) { ... }，类上没有特殊注解，pom 里已引入 spring-boot-starter-validation。",
+      "requirements": [
+        "指出校验失效的最可能原因，并解释 Spring 校验的触发机制",
+        "给出修复后的 Controller 方法签名",
+        "说明 @NotNull、@NotBlank、@NotEmpty 的区别",
+        "补充：校验失败后如何返回友好且统一的错误信息"
+      ],
+      "constraints": [
+        "基于 Spring Boot 3.x（Hibernate Validator）作答",
+        "不需要考虑手动写 if 判断的替代方案，聚焦声明式校验"
+      ],
+      "deliverables": [
+        "失效原因分析",
+        "修复后的代码片段",
+        "统一校验错误响应的方案（异常处理思路即可）"
+      ],
+      "acceptance": [
+        "准确指出缺少 @Valid / @Validated 导致校验未触发",
+        "能说清三个 Not 系列注解的语义差别与适用类型",
+        "错误响应方案提到 MethodArgumentNotValidException 与统一异常处理"
+      ],
+      "rubric": [
+        { "dimension": "问题定位", "weight": 40, "guidance": "从「注解存在但未生效」这一矛盾点出发，锁定触发机制缺失这一根因。" },
+        { "dimension": "正确性", "weight": 40, "guidance": "修复写法正确，注解语义解释准确。" },
+        { "dimension": "沟通表达", "weight": 20, "guidance": "回答有层次：原因 → 修复 → 延伸，便于他人复现你的结论。" }
+      ],
+      "mockHints": {
+        "keywords": {
+          "问题定位": ["@Valid", "@Validated", "触发", "失效", "原因", "注解"],
+          "正确性": ["@Valid", "@NotBlank", "@NotNull", "@NotEmpty", "MethodArgumentNotValidException", "BindingResult"],
+          "沟通表达": ["原因", "修复", "区别", "统一", "异常处理", "响应"]
+        },
+        "strengths": [
+          { "text": "指出 Bean Validation 注解只是元数据，必须由 @Valid/@Validated 触发校验器执行", "keywords": ["@Valid", "触发", "校验器"] },
+          { "text": "准确区分 @NotNull（非 null）、@NotEmpty（非 null 且非空集合/字符串）、@NotBlank（非空白字符串）", "keywords": ["@NotNull", "@NotEmpty", "@NotBlank"] },
+          { "text": "建议在 @RestControllerAdvice 中处理 MethodArgumentNotValidException 统一返回字段错误", "keywords": ["MethodArgumentNotValidException", "统一", "异常处理"] }
+        ],
+        "problems": [
+          { "dimension": "问题定位", "text": "怀疑「注解没导入」或「版本问题」，但没有解释 Spring 校验的触发机制" },
+          { "dimension": "正确性", "text": "混淆了 @NotNull 与 @NotBlank 的适用类型（如对数值用 @NotBlank）" },
+          { "dimension": "沟通表达", "text": "只写「加个 @Valid 就行」，没有说明为什么，也没有给出错误响应方案" }
+        ],
+        "edgeCases": [
+          "嵌套对象里的字段校验需要在嵌套字段上再加 @Valid 才会深入校验",
+          "GET 参数校验要在类上加 @Validated 并配合 @RequestParam 上的约束注解",
+          "校验失败默认抛异常返回 400，但要覆盖成项目统一响应结构需要自定义异常处理器"
+        ],
+        "followUps": [
+          "@Valid 与 @Validated 有什么区别？分组校验怎么用？",
+          "自定义校验注解（如手机号格式）怎么实现？",
+          "为什么说「前端校验 + 后端校验」都要有，只靠前端有什么风险？"
+        ],
+        "nextTaskCodes": ["API-001", "RF-001"]
+      }
+    },
+    {
+      "code": "TS-004",
+      "title": "分析一个「事务失效」案例",
+      "category": "troubleshooting",
+      "difficulty": "MEDIUM",
+      "tags": "事务,Spring,@Transactional",
+      "summary": "@Transactional 方法内部捕获了异常但外部调用方以为已回滚，数据出现半提交。分析原因并给出多种修复方式。",
+      "estimatedMinutes": 30,
+      "background": "课程商城的下单代码：OrderService.create() 上有 @Transactional，方法内部先 insert 订单，再调用本地方法 deductStock() 扣库存。为了不让库存不足时抛出错误堆栈，开发者写成了 try { deductStock(); } catch (Exception e) { log.warn(「库存不足」); }。结果库存不足时，订单依然被插入，库存却没扣——业务要求两者要么都成功要么都不发生。",
+      "requirements": [
+        "解释为什么 catch 之后事务没有回滚（说到异常传播与 AOP 代理机制）",
+        "至少给出两种修复方案并比较取舍",
+        "说明 @Transactional 默认对哪些异常回滚、对哪些不回滚",
+        "说明自调用（this.deductStock()）在这个案例里的影响"
+      ],
+      "constraints": [
+        "基于 Spring 声明式事务的标准行为作答",
+        "修复方案要保证「订单插入与库存扣减」的原子性"
+      ],
+      "deliverables": [
+        "失效原因分析（机制层面）",
+        "两种修复方案对比",
+        "回滚规则说明"
+      ],
+      "acceptance": [
+        "说清「异常被捕获后代理感知不到，事务被正常提交」这一机制",
+        "至少一种方案真正改对了代码结构（如异常上抛/手动编程式事务）",
+        "提到 checked 异常默认不回滚与 rollbackFor 的用法"
+      ],
+      "rubric": [
+        { "dimension": "问题定位", "weight": 45, "guidance": "准确定位到「异常被吞 + 代理机制」的组合根因，而不是泛泛说「事务失效」。" },
+        { "dimension": "正确性", "weight": 35, "guidance": "修复方案能恢复原子性，且理解默认回滚规则的边界。" },
+        { "dimension": "沟通表达", "weight": 20, "guidance": "用机制 → 现象 → 方案的顺序讲清楚，适合在代码评审中陈述。" }
+      ],
+      "mockHints": {
+        "keywords": {
+          "问题定位": ["异常", "捕获", "catch", "代理", "AOP", "回滚", "吞"],
+          "正确性": ["rollbackFor", "RuntimeException", "throw", "TransactionTemplate", "编程式事务", "原子性"],
+          "沟通表达": ["机制", "原因", "方案", "对比", "取舍"]
+        },
+        "strengths": [
+          { "text": "解释了 Spring 事务基于 AOP 代理：方法内 catch 掉异常后代理看不到异常，于是正常提交", "keywords": ["代理", "AOP", "异常", "提交"] },
+          { "text": "给出「让异常继续抛出」与「TransactionTemplate 编程式事务」两种方案并比较了可读性与控制粒度", "keywords": ["TransactionTemplate", "编程式", "抛出"] },
+          { "text": "指出默认只对 RuntimeException/Error 回滚，checked 异常需要 rollbackFor 指定", "keywords": ["RuntimeException", "rollbackFor", "checked"] }
+        ],
+        "problems": [
+          { "dimension": "问题定位", "text": "归因于「注解没生效」或「数据库问题」，没有分析异常被 catch 后代理的行为" },
+          { "dimension": "正确性", "text": "修复方案只是把 catch 里的 log 去掉，没有恢复「订单与库存」的原子性约束" },
+          { "dimension": "沟通表达", "text": "没有解释自调用场景（同类内部方法调用不走代理）也会造成类似失效" }
+        ],
+        "edgeCases": [
+          "catch 后吞掉异常但在 catch 里手动 setRollbackOnly 也能回滚——这是合法的补救方式",
+          "自调用：this.deductStock() 绕过代理，若 deductStock 上单独的 @Transactional 也不会生效",
+          "事务里发 MQ/调远程接口同样会拉长事务并引入不一致窗口，应移出事务"
+        ],
+        "followUps": [
+          "Spring 事务的传播行为 REQUIRES_NEW 用在什么场景？有什么坑？",
+          "事务方法里发一条 HTTP 请求，会带来什么问题？",
+          "@Transactional 加在 private 方法上会生效吗？为什么？"
+        ],
+        "nextTaskCodes": ["TS-001", "TS-006"]
+      }
+    },
+    {
+      "code": "TS-005",
+      "title": "阅读错误日志定位线上异常",
+      "category": "troubleshooting",
+      "difficulty": "MEDIUM",
+      "tags": "日志,排查,NPE",
+      "summary": "从一段真实风格的错误日志中找出异常根因、影响面与修复建议，并练习「日志阅读方法论」。",
+      "estimatedMinutes": 30,
+      "background": "凌晨告警：学习平台的部分用户头像上传接口 500。日志片段：\n2026-10-20 02:14:33.412 ERROR [http-nio-8080-exec-7] c.j.a.FileController : upload avatar failed\njava.lang.NullPointerException: null\n  at com.jobsim.avatar.FileService.save(FileService.java:88)\n  at com.jobsim.avatar.FileController.upload(FileController.java:42)\n  ... 3 common frames omitted\n2026-10-20 02:14:33.418 WARN  [http-nio-8080-exec-7] c.j.a.FileService : storage type is: null\n此外，启动日志里有一条被忽略的 INFO：storage.type 未配置，使用默认值 null。",
+      "requirements": [
+        "从日志中提取异常类型、发生位置、触发线程与时间",
+        "推断根因（结合 storage.type 未配置的线索）并说明推理依据",
+        "评估影响面：哪些用户/功能受影响，是否只在特定条件下出现",
+        "给出三层修复：紧急止血、代码修复（含防御式编程）、配置修复（含启动校验）"
+      ],
+      "constraints": [
+        "只依据日志信息推理，假设要写明",
+        "修复建议要具体到代码或配置层面，不写「加强监控」这类空话"
+      ],
+      "deliverables": [
+        "关键日志信息提取表",
+        "根因分析与推理依据",
+        "三层修复方案"
+      ],
+      "acceptance": [
+        "根因指向 storage.type 配置缺失导致存储实现选择器返回 null",
+        "代码修复包含对配置值的判空与快速失败，而不是到处 try-catch",
+        "配置修复包含启动时校验（fail fast），避免带病启动"
+      ],
+      "rubric": [
+        { "dimension": "问题定位", "weight": 40, "guidance": "把堆栈与上下文日志（storage type is: null）串起来，找到真正根因而非停留在 NPE 表面。" },
+        { "dimension": "沟通表达", "weight": 35, "guidance": "输出像一份值班排查记录：证据 → 根因 → 影响面 → 处置，层次分明。" },
+        { "dimension": "正确性", "weight": 25, "guidance": "三层修复各自可落地，止血与根治分开。" }
+      ],
+      "mockHints": {
+        "keywords": {
+          "问题定位": ["堆栈", "NPE", "NullPointerException", "storage", "配置", "null", "根因"],
+          "沟通表达": ["现象", "证据", "影响面", "止血", "修复", "时间", "线程"],
+          "正确性": ["判空", "fail fast", "启动校验", "默认值", "断言", "校验", "配置类"]
+        },
+        "strengths": [
+          { "text": "把堆栈第 88 行与 WARN 日志、启动 INFO 三条证据串联，定位到存储类型配置缺失", "keywords": ["堆栈", "storage", "配置", "null"] },
+          { "text": "止血与根治分开：先回滚或补配置恢复服务，再做代码与启动校验的长期修复", "keywords": ["止血", "回滚", "启动"] },
+          { "text": "提出启动时校验配置的 fail-fast 方案，避免同类问题再次带病上线", "keywords": ["fail fast", "启动校验", "配置"] }
+        ],
+        "problems": [
+          { "dimension": "问题定位", "text": "只说「空指针异常，判空即可」，没有解释为什么 storage.type 会是 null" },
+          { "dimension": "沟通表达", "text": "没有提取时间、线程、影响面，排查记录不可复核" },
+          { "dimension": "正确性", "text": "修复建议是到处加 try-catch，掩盖错误而不是消除根因" }
+        ],
+        "edgeCases": [
+          "为什么只影响部分用户：可能与灰度/环境配置差异有关，需要对比出问题实例与正常实例的配置",
+          "NPE 堆栈有时因 JIT 优化丢失：日志要保留 -XX:+PreserveFramePointer 等手段的常识，排查时可降级复现",
+          "同类问题预防：配置类 @ConfigurationProperties + @Validated 启动校验"
+        ],
+        "followUps": [
+          "生产日志级别为什么一般用 INFO 而不是 DEBUG？动态调级别怎么实现？",
+          "如何设计日志格式让 ELK 之类的采集工具更好用（traceId 的作用）？",
+          "如果异常只发生在凌晨低概率出现，你怎么在不复现的情况下继续缩小范围？"
+        ],
+        "nextTaskCodes": ["TS-001", "RF-001"]
+      }
+    },
+    {
+      "code": "TEST-001",
+      "title": "为「剪贴板服务」设计单元测试",
+      "category": "testing",
+      "difficulty": "MEDIUM",
+      "tags": "JUnit 5,单元测试,Mockito",
+      "summary": "为一个剪贴板服务的核心方法设计单元测试：覆盖正常路径、边界与异常，并合理使用 Mock。",
+      "estimatedMinutes": 35,
+      "background": "剪贴板服务的核心方法 ClipboardService.save(String content, Instant now) 的逻辑：\n1) content 为 null 或全空白 → 抛 BusinessException(「内容不能为空」)；\n2) content 超过 10000 字符 → 截断到 10000；\n3) 与上一条内容相同 → 不新增记录，返回上一条的 id（幂等）；\n4) 否则新增一条记录并返回新 id，id 由 ClipboardRepository.save(...) 返回。\nClipboardRepository 是一个待 Mock 的接口。",
+      "requirements": [
+        "列出测试用例清单：正常路径、每个分支、边界值（9999/10000/10001 字符）",
+        "写出至少 3 个关键用例的 JUnit 5 测试代码（可用 Mockito Mock Repository）",
+        "说明哪些依赖该 Mock、为什么，以及哪些不该 Mock",
+        "说明「幂等分支」的断言要点：断言 repository 没有被再次调用"
+      ],
+      "constraints": [
+        "使用 JUnit 5 + Mockito",
+        "测试方法名要能表达场景（或用 @DisplayName）",
+        "不需要集成测试，聚焦单元测试"
+      ],
+      "deliverables": [
+        "用例清单表格",
+        "关键用例测试代码",
+        "Mock 使用说明"
+      ],
+      "acceptance": [
+        "用例覆盖全部 4 个分支与 10000 字符边界",
+        "幂等分支用 verify(repository, never()) 或等价方式断言未调用",
+        "没有出现「测试里再造一遍实现逻辑」的伪断言"
+      ],
+      "rubric": [
+        { "dimension": "正确性", "weight": 40, "guidance": "分支与边界覆盖完整，断言针对行为结果而非实现细节。" },
+        { "dimension": "工程规范", "weight": 35, "guidance": "测试命名清晰、AAA 结构（准备-执行-断言）、一条测试只验证一件事。" },
+        { "dimension": "方案设计", "weight": 25, "guidance": "Mock 边界划分合理：外部依赖 Mock，值对象不 Mock。" }
+      ],
+      "mockHints": {
+        "keywords": {
+          "正确性": ["边界", "10000", "9999", "null", "空白", "断言", "assertEquals", "分支"],
+          "工程规范": ["@Test", "@DisplayName", "given", "when", "then", "AAA", "命名"],
+          "方案设计": ["Mock", "Mockito", "verify", "never", "Repository", "依赖", "桩"]
+        },
+        "strengths": [
+          { "text": "用例覆盖 null/空白、边界 10000 与 10001、幂等分支，形成完整分支矩阵", "keywords": ["边界", "10000", "幂等", "分支"] },
+          { "text": "幂等分支用 verify(repository, never()).save(any()) 验证「不新增」这一行为", "keywords": ["verify", "never", "幂等"] },
+          { "text": "测试命名或 @DisplayName 能让人不看代码就明白场景", "keywords": ["@DisplayName", "命名"] }
+        ],
+        "problems": [
+          { "dimension": "正确性", "text": "只测了正常路径，10000 字符截断边界与幂等分支缺失" },
+          { "dimension": "工程规范", "text": "一个测试方法里断言了多个不相关行为，失败时无法快速定位" },
+          { "dimension": "方案设计", "text": "把字符串、Instant 这类值对象也 Mock 了，测试又脆又难读" }
+        ],
+        "edgeCases": [
+          "恰好 10000 字符应保留、10001 应截断：两边界都要有用例",
+          "content 是「　」（全角空格）等特殊空白：isBlank 是否覆盖，需要确认实现",
+          "上一条记录为 null（首次使用）时幂等分支的判断前提"
+        ],
+        "followUps": [
+          "单元测试和集成测试的边界你怎么划分？各自的成本与收益？",
+          "Mockito 的 when(...).thenReturn(...) 与 doReturn(...) 有什么区别？",
+          "如果 save 方法内部还依赖了当前系统时间，测试该怎么写（时间注入/固定时钟）？"
+        ],
+        "nextTaskCodes": ["RF-001", "API-001"]
+      }
+    },
+    {
+      "code": "RF-001",
+      "title": "重构一个 200 行的订单提交方法",
+      "category": "refactoring",
+      "difficulty": "MEDIUM",
+      "tags": "重构,代码设计,方法拆分",
+      "summary": "阅读一段职责混杂的 OrderService.submitOrder()，提出结构清晰、可验证的重构方案。",
+      "estimatedMinutes": 35,
+      "background": "OrderService.submitOrder(OrderSubmitDTO dto) 现有约 200 行，里面做了这些事：参数检查与默认值填充、查询商品与库存、计算优惠与积分抵扣、插入订单主表与明细表、扣库存、发短信、写操作日志。测试同学抱怨这个方法没法写单元测试；导师要求你先出重构方案再动手。",
+      "requirements": [
+        "指出当前实现的主要问题（至少三类：职责、事务边界、可测试性）",
+        "给出重构后的方法拆分方案：每个方法的职责、入参出参",
+        "说明哪些步骤应该在同一个事务里、哪些应该移出（短信/日志）",
+        "说明重构后如何写单元测试（对哪些协作对象 Mock）",
+        "强调重构的安全步骤：如何保证行为不变"
+      ],
+      "constraints": [
+        "只输出方案与关键代码骨架，不要求完整实现",
+        "不引入新框架，不改变对外接口签名"
+      ],
+      "deliverables": [
+        "问题清单（按严重程度）",
+        "重构后的方法结构图（文字版即可）",
+        "事务边界说明与测试策略"
+      ],
+      "acceptance": [
+        "拆分后每个方法职责单一、命名达意（如 validate、assemble、persist）",
+        "短信发送明确移出事务，并说明了失败后的处理策略（异步重试或降级）",
+        "测试策略落到「先测纯函数/装配逻辑，再 Mock 仓储测编排」的两层"
+      ],
+      "rubric": [
+        { "dimension": "方案设计", "weight": 35, "guidance": "拆分方案有清晰的层次（校验/装配/持久化/副作用），方法间数据流向明确。" },
+        { "dimension": "工程规范", "weight": 35, "guidance": "事务边界划分正确，副作用（通知、日志）出事务，符合可测试性要求。" },
+        { "dimension": "沟通表达", "weight": 30, "guidance": "像一份可评审的重构提案：问题 → 方案 → 风险 → 验证。" }
+      ],
+      "mockHints": {
+        "keywords": {
+          "方案设计": ["职责", "拆分", "单一", "校验", "装配", "持久化", "编排", "方法"],
+          "工程规范": ["事务", "边界", "事务外", "短信", "异步", "事件", "@Transactional"],
+          "沟通表达": ["重构", "风险", "验证", "行为不变", "评审", "测试"]
+        },
+        "strengths": [
+          { "text": "把方法拆成 校验/装配/持久化/副作用 四层，每层可独立测试", "keywords": ["校验", "装配", "持久化", "拆分"] },
+          { "text": "把短信移出事务（事务提交后发事件或异步执行），避免外部调用拖长事务", "keywords": ["事务", "短信", "异步", "移出"] },
+          { "text": "强调重构先补测试再动刀，用现有行为锁定验证重构不改变结果", "keywords": ["测试", "行为不变", "验证"] }
+        ],
+        "problems": [
+          { "dimension": "方案设计", "text": "只是把 200 行按行数切成 5 个小方法，职责依然混在一起" },
+          { "dimension": "工程规范", "text": "短信发送留在事务里，外部接口超时会拖住数据库事务" },
+          { "dimension": "沟通表达", "text": "没有说明重构的风险控制（如何保证行为不变、如何灰度上线）" }
+        ],
+        "edgeCases": [
+          "拆分后方法间通过参数传递的隐式约定：优先用小的值对象而不是 8 个散参",
+          "扣库存失败时的回滚范围：明确哪些表回滚、哪些动作（短信）永不回滚",
+          "重构期间的兼容：旧方法保留 @Deprecated 过渡，日志埋点对比新旧路径"
+        ],
+        "followUps": [
+          "你会先给这个 200 行方法补什么样的测试作为重构保护网？",
+          "领域事件（事务提交后再发）和事务提交后回调 TransactionSynchronization 各适合什么场景？",
+          "如果一个方法依赖了 6 个其他 Bean，这通常说明什么设计问题？"
+        ],
+        "nextTaskCodes": ["TEST-001", "TS-004"]
+      }
+    },
+    {
+      "code": "API-003",
+      "title": "设计「作业截止提醒」功能方案",
+      "category": "api-design",
+      "difficulty": "MEDIUM",
+      "tags": "方案设计,定时任务,需求分析",
+      "summary": "从模糊的产品诉求出发，补全需求、设计数据与接口、选择提醒触发机制，输出一份可评审的方案。",
+      "estimatedMinutes": 40,
+      "background": "课程助手的产品说：「给学生加个作业截止提醒，别让他们错过 DDL」。这是一个典型的一句话需求。你需要把它变成可开发方案：作业表 assignment 已存在（含 id、course_id、title、due_at），学生与作业的关联表 student_assignment 也已存在。提醒渠道暂定站内信，未来可能加邮件。",
+      "requirements": [
+        "把一句话需求补全成明确规则：什么时间提醒、提醒几次、重复提交后还提醒吗",
+        "设计所需的数据变更（如果需要新表/新字段）与接口",
+        "设计提醒的触发机制：定时任务扫描还是延迟消息，说明选择理由",
+        "考虑幂等：同一次提醒不能重复发",
+        "为未来「接入邮件渠道」预留扩展点"
+      ],
+      "constraints": [
+        "单体 Spring Boot 应用，可以引入 spring 的任务调度（@Scheduled），暂不引入 MQ",
+        "提醒量级：全校约 2 万学生，作业截止时间集中在周日 23:59"
+      ],
+      "deliverables": [
+        "需求规则清单（含边界场景的决策）",
+        "数据与接口设计",
+        "触发机制选型说明与伪代码"
+      ],
+      "acceptance": [
+        "提醒规则明确到可测试（如：截止前 24h 与 1h 各提醒一次，已提交则取消）",
+        "选型理由成立：为什么扫描 + 记录表满足当前量级，什么时候需要升级",
+        "有防重发机制（如 (assignment_id, student_id, type) 唯一约束）"
+      ],
+      "rubric": [
+        { "dimension": "需求理解", "weight": 35, "guidance": "把模糊诉求翻译成明确规则，主动暴露并决策边界场景（已提交、多次提醒、补交）。" },
+        { "dimension": "方案设计", "weight": 45, "guidance": "数据/接口/触发机制成体系，选型与量级匹配，扩展点自然。" },
+        { "dimension": "沟通表达", "weight": 20, "guidance": "方案结构完整，明确写出假设与未覆盖范围，便于评审聚焦。" }
+      ],
+      "mockHints": {
+        "keywords": {
+          "需求理解": ["提醒", "截止", "24", "1", "已提交", "规则", "取消", "边界"],
+          "方案设计": ["@Scheduled", "定时", "扫描", "记录表", "唯一", "幂等", "策略", "接口", "渠道"],
+          "沟通表达": ["假设", "范围", "评审", "扩展", "权衡", "量级"]
+        },
+        "strengths": [
+          { "text": "把「别错过 DDL」翻译成可测试规则：截止前 24h/1h 各一次，已提交自动取消", "keywords": ["截止", "24", "已提交", "规则"] },
+          { "text": "用「提醒记录表 + 唯一约束」防重发，@Scheduled 扫描待提醒列表并推进状态", "keywords": ["唯一", "幂等", "@Scheduled", "扫描"] },
+          { "text": "渠道抽象为 NotificationSender 接口，站内信是第一个实现，邮件是下一个实现", "keywords": ["渠道", "接口", "扩展", "策略"] }
+        ],
+        "problems": [
+          { "dimension": "需求理解", "text": "没有定义提醒时间规则与「已提交还提醒吗」的决策，方案无法开发" },
+          { "dimension": "方案设计", "text": "每分钟全表扫描 assignment，没有过滤条件与量级估算，周日 23:59 会撞车" },
+          { "dimension": "沟通表达", "text": "没有写明假设与未覆盖范围（如推送渠道降级），评审时无法对焦" }
+        ],
+        "edgeCases": [
+          "服务在提醒时间点宕机：重启后补扫窗口（如扫描 due_at 在过去 2h 内的）避免漏发",
+          "学生补交后取消未发的提醒：发送前二次校验提交状态",
+          "同一分钟数千条提醒的发送限速：批量分页 + 限流，避免打垮站内信写入"
+        ],
+        "followUps": [
+          "@Scheduled 的 cron 与 fixedDelay 有什么区别？多实例部署会重复执行吗？怎么解决？",
+          "如果未来接入 MQ，扫描方案怎么平滑升级成延迟消息？",
+          "唯一约束防重与「先查后插」防重，哪个更可靠？为什么？"
+        ],
+        "nextTaskCodes": ["API-001", "DB-001"]
+      }
+    },
+    {
+      "code": "TS-006",
+      "title": "解决高并发下的「重复提交」问题",
+      "category": "troubleshooting",
+      "difficulty": "HARD",
+      "tags": "并发,幂等,分布式锁",
+      "summary": "抢票/报名类接口在并发下产生重复记录。分析「先查后插」为什么失效，设计多层防重方案。",
+      "estimatedMinutes": 45,
+      "background": "校园活动报名接口在开放瞬间被打爆：3000 个学生同时点击「报名」，活动只允许每人报名一次，结果数据库里同一个 user_id 出现了多条报名记录。现有代码是典型的「先查后插」：先 SELECT COUNT(*) 判断是否已报名，没有就 INSERT。数据库为 MySQL 8 单机，应用部署两个实例。",
+      "requirements": [
+        "解释「先查后插」在并发下为什么会失效（画时间线说明）",
+        "给出数据库层面的兜底方案并解释为什么它最可靠",
+        "给出应用层的防重方案（两个实例部署的前提下），说明各层分工",
+        "说明报错时的用户体验处理：并发冲突对用户应呈现为什么"
+      ],
+      "constraints": [
+        "不引入 Redis 也可以答，但若引入需说明两个实例下分布式锁的必要性",
+        "方案要能覆盖「应用层拦截失效」的最坏情况"
+      ],
+      "deliverables": [
+        "失效时间线分析",
+        "分层防重方案（DB 兜底必选）",
+        "用户侧交互与错误语义设计"
+      ],
+      "acceptance": [
+        "数据库层有 uk_activity_user 唯一约束且应用处理 DuplicateKeyException",
+        "能解释唯一约束是最后一道防线：即使上游全部失效也不会产生脏数据",
+        "冲突时返回 409 或幂等成功，并说明两种选择的适用场景"
+      ],
+      "rubric": [
+        { "dimension": "问题定位", "weight": 35, "guidance": "用时间线讲清「两个请求都查到不存在、然后都插入」的竞态本质。" },
+        { "dimension": "正确性", "weight": 40, "guidance": "唯一约束 + DuplicateKey 处理 + 应用层拦截三层方案完整，层次职责清楚。" },
+        { "dimension": "方案设计", "weight": 25, "guidance": "考虑两实例部署对锁方案的影响，用户侧语义设计合理。" }
+      ],
+      "mockHints": {
+        "keywords": {
+          "问题定位": ["并发", "时间线", "竞态", "先查后插", "两个请求", "同时", "窗口"],
+          "正确性": ["唯一约束", "UNIQUE", "DuplicateKeyException", "兜底", "INSERT", "冲突"],
+          "方案设计": ["分布式锁", "Redis", "幂等", "409", "前端", "防抖", "限流", "两层"]
+        },
+        "strengths": [
+          { "text": "给出数据库唯一约束作为最终防线，并在应用层捕获 DuplicateKeyException 转为幂等成功", "keywords": ["唯一约束", "UNIQUE", "DuplicateKeyException", "兜底"] },
+          { "text": "解释了竞态时间线：T1 查询无记录、T2 查询无记录、T1 插入、T2 插入，两次都成功", "keywords": ["时间线", "并发", "竞态"] },
+          { "text": "区分了「返回 409 冲突」与「幂等返回已有报名」两种语义及适用场景", "keywords": ["409", "幂等", "冲突"] }
+        ],
+        "problems": [
+          { "dimension": "问题定位", "text": "只说「加个锁」，没有解释先查后插的竞态窗口在哪里" },
+          { "dimension": "正确性", "text": "只加应用层锁（如 JVM 内 synchronized），两个实例部署下完全无效" },
+          { "dimension": "方案设计", "text": "没有数据库唯一约束，任何一层失效都会产生脏数据" }
+        ],
+        "edgeCases": [
+          "唯一约束下的 insert 冲突会回滚整个事务：注意与业务其他写操作的组合影响",
+          "前端防抖只是体验优化，不是正确性保证：不能作为方案主要防线",
+          "秒级并发峰值还可以用排队/限流保护数据库，但正确性仍靠约束"
+        ],
+        "followUps": [
+          "MySQL 唯一约束冲突时，INSERT ... ON DUPLICATE KEY UPDATE 与普通 INSERT 的区别？",
+          "Redis 分布式锁（SETNX + 过期时间）在什么情况下会误释放别人的锁？",
+          "为什么说「数据库约束是最后一道防线」，而不是「锁是最后一道防线」？"
+        ],
+        "nextTaskCodes": ["TS-004", "RF-001"]
+      }
+    }
+  ]
+}

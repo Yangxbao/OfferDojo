@@ -1,0 +1,18 @@
+# ---------- MySQL 8 开发环境 ----------
+# 前置条件：已有一个可连接的 MySQL 8 实例（docker compose up -d 可启动一个）。
+# 数据库若不存在请先执行：CREATE DATABASE jobsim DEFAULT CHARACTER SET utf8mb4;
+spring:
+  datasource:
+    url: jdbc:mysql://${MYSQL_HOST:127.0.0.1}:${MYSQL_PORT:3306}/${MYSQL_DATABASE:jobsim}?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+    username: ${MYSQL_USERNAME:jobsim}
+    password: ${MYSQL_PASSWORD:jobsim123}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  sql:
+    init:
+      # 应用启动时自动执行 schema-mysql.sql；脚本全部是 CREATE TABLE IF NOT EXISTS，可重复执行
+      mode: always
+      platform: mysql
+      schema-locations: classpath:sql/schema-mysql.sql
+      # 脚本包含中文注释，必须显式指定 UTF-8：
+      # Windows 默认编码可能是 GBK，会导致多字节字符错位、建表语句被错误拆分
+      encoding: UTF-8

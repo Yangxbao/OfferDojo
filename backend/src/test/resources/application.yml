@@ -1,0 +1,43 @@
+# ---------- 测试环境（src/test/resources，优先级高于主配置） ----------
+# 注意：本文件会整体覆盖主 application.yml，因此应用启动所需的
+# 全部配置项都要在这里给出（数据源使用 H2 内存库，任何机器可直接 mvn test）。
+spring:
+  datasource:
+    url: jdbc:h2:mem:jobsim-test;MODE=MySQL;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE;DB_CLOSE_DELAY=-1
+    username: sa
+    password: ""
+    driver-class-name: org.h2.Driver
+  sql:
+    init:
+      mode: always
+      platform: h2
+      schema-locations: classpath:sql/schema-h2.sql
+      encoding: UTF-8
+
+jobsim:
+  jwt:
+    secret: test-only-jobsim-secret-key-not-for-production
+    ttl-hours: 1
+  cors:
+    allowed-origins: http://localhost:*
+  seed:
+    enabled: true
+  ai:
+    provider: mock
+
+server:
+  port: 0
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+  global-config:
+    banner: false
+    db-config:
+      id-type: auto
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

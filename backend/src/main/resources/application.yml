@@ -1,0 +1,66 @@
+# ============================================================
+# 公共配置（所有环境共享）
+# 环境选择：SPRING_PROFILES_ACTIVE，默认 mysql
+#   mysql —— 连接真实 MySQL 8（需要先准备好数据库）
+#   demo  —— 零依赖演示模式（H2 文件数据库，无需安装任何数据库）
+#   prod  —— 生产环境（从环境变量读取全部敏感配置）
+# ============================================================
+spring:
+  application:
+    name: jobsim-ai
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:mysql}
+  jackson:
+    time-zone: Asia/Shanghai
+    date-format: yyyy-MM-dd HH:mm:ss
+
+server:
+  # 默认 8090：8080 在很多开发机上已被其他应用占用（如其他 Java 服务）
+  port: ${SERVER_PORT:8090}
+
+mybatis-plus:
+  configuration:
+    # 数据库下划线列名自动映射到 Java 驼峰属性
+    map-underscore-to-camel-case: true
+  global-config:
+    banner: false
+    db-config:
+      # 主键使用数据库自增
+      id-type: auto
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+jobsim:
+  jwt:
+    # 生产环境必须通过环境变量 JWT_SECRET 注入随机长字符串；
+    # 这里的默认值仅供本地开发，不代表任何真实密钥。
+    secret: ${JWT_SECRET:dev-only-jobsim-secret-key-please-change-me-0123456789}
+    ttl-hours: ${JWT_TTL_HOURS:72}
+  cors:
+    # 使用 origin pattern 放行本地开发端口（Vite 端口冲突时会自动换端口）；生产环境用 CORS_ALLOWED_ORIGINS 收紧
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:*,http://127.0.0.1:*}
+  seed:
+    # 首次启动自动写入演示账号与 12 个内置任务（见 DemoDataInitializer）
+    enabled: true
+  ai:
+    # mock = 本地模拟评估（默认，无需任何 API Key）
+    # remote = 调用 OpenAI 兼容接口（需要 AI_API_KEY，失败时自动降级为 mock）
+    provider: ${AI_PROVIDER:mock}
+    base-url: ${AI_BASE_URL:https://api.openai.com/v1}
+    api-key: ${AI_API_KEY:}
+    model: ${AI_MODEL:gpt-4o-mini}
+    timeout-seconds: ${AI_TIMEOUT_SECONDS:30}
+
+logging:
+  level:
+    com.jobsim: INFO
