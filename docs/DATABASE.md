@@ -1,6 +1,6 @@
 # 数据库设计
 
-共 5 张表。建表脚本：`backend/src/main/resources/sql/schema-mysql.sql`（MySQL）与 `schema-h2.sql`（H2 兼容，结构一致），全部 `CREATE TABLE IF NOT EXISTS`，可重复执行。演示账号由 `DemoDataInitializer` 在用户表为空时写入；内置任务（52 个，题库文件 `demo/demo-tasks*.json`）按编码增量播种——编码已存在则跳过，题库扩充后重启即自动补齐。
+共 6 张表。建表脚本：`backend/src/main/resources/sql/schema-mysql.sql`（MySQL）与 `schema-h2.sql`（H2 兼容，结构一致），全部 `CREATE TABLE IF NOT EXISTS`，可重复执行。演示账号由 `DemoDataInitializer` 在用户表为空时写入；内置任务（214 个，题库文件 `demo/demo-tasks*.json`）与八股题库（75 个，`bagu/bagu-*.json`）按编码增量播种——编码已存在则跳过，题库扩充后重启即自动补齐。
 
 ## ER 图
 
@@ -77,6 +77,10 @@ erDiagram
 ### ai_call_log AI 调用日志表
 
 记录每次远程评估的结果与失败（provider/model/task_code/success/error_type/message/duration_ms），供后台查看失败记录。`message` 只含错误类别与简述，不含密钥与完整响应。
+
+### interview_question 八股题库表
+
+只读知识库：一句话总结（one_liner）、大白话解释（plain）、背诵要点（points JSON）、示例（example）、追问（follow_ups JSON），配合考察频率（frequency）与类目（category）筛选。内容由 `bagu/bagu-*.json` 增量播种，业务代码不做写操作。学习路线图（`demo/roadmap.json`）不落库，由后端解析 JSON 并关联任务表实时计算进度。
 
 ## 统计口径（与能力分析页对应）
 

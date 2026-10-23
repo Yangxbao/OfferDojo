@@ -15,6 +15,8 @@ import type {
   TaskSaveRequest,
   TaskVO,
   UserVO,
+  BaguVO,
+  RoadmapStageVO,
 } from './types'
 
 export const authApi = {
@@ -47,6 +49,24 @@ export const submissionApi = {
 
 export const progressApi = {
   get: () => request<ProgressVO>({ url: '/my/progress', method: 'get' }),
+}
+
+export const baguApi = {
+  questions: (params: {
+    category?: string
+    frequency?: string
+    keyword?: string
+    page?: number
+    size?: number
+  }) => request<PageResult<BaguVO>>({ url: '/bagu/questions', method: 'get', params }),
+  categories: () => request<{ category: string; label: string; count: number }[]>({
+    url: '/bagu/categories',
+    method: 'get',
+  }),
+}
+
+export const roadmapApi = {
+  get: () => request<RoadmapStageVO[]>({ url: '/roadmap', method: 'get' }),
 }
 
 export const adminApi = {

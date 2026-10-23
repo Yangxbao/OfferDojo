@@ -24,7 +24,7 @@ export interface TaskVO {
   title: string
   category: string
   categoryLabel: string
-  difficulty: 'EASY' | 'MEDIUM' | 'HARD'
+  difficulty: 'EASY' | 'MEDIUM' | 'HARD' | 'EXPERT'
   tags: string[]
   summary: string
   estimatedMinutes: number
@@ -206,4 +206,39 @@ export interface TaskSaveRequest {
   rubric: RubricItem[]
   status: string
   sortOrder: number
+}
+
+/** 八股复习题目 */
+export interface BaguVO {
+  id: number
+  code: string
+  category: string
+  categoryLabel: string
+  title: string
+  frequency: 'HIGH' | 'MID' | 'LOW'
+  difficulty: string
+  tags: string[]
+  oneLiner: string
+  plain: string
+  points: string[]
+  example: string | null
+  followUps: string[]
+}
+
+/** 学习路线图阶段 */
+export interface RoadmapStageVO {
+  order: number
+  title: string
+  goal: string
+  knowledge: string[]
+  tasks: {
+    id: number
+    code: string
+    title: string
+    difficulty: string
+    estimatedMinutes: number
+    myStatus: 'NOT_STARTED' | 'DRAFTING' | 'COMPLETED'
+    myBestScore: number | null
+  }[]
+  milestone: string
 }

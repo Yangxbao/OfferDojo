@@ -23,8 +23,10 @@ const router = createRouter({
       component: AppLayout,
       children: [
         { path: '', name: 'dashboard', component: () => import('@/views/DashboardView.vue'), meta: { title: '工作台' } },
+        { path: 'roadmap', name: 'roadmap', component: () => import('@/views/RoadmapView.vue'), meta: { title: '学习路线图' } },
         { path: 'tasks', name: 'tasks', component: () => import('@/views/TaskListView.vue'), meta: { title: '任务中心' } },
         { path: 'tasks/:id', name: 'task-detail', component: () => import('@/views/TaskDetailView.vue'), meta: { title: '任务详情' } },
+        { path: 'bagu', name: 'bagu', component: () => import('@/views/BaguView.vue'), meta: { title: '八股复习' } },
         { path: 'records', name: 'records', component: () => import('@/views/RecordsView.vue'), meta: { title: '练习记录' } },
         { path: 'records/:id', name: 'record-detail', component: () => import('@/views/RecordDetailView.vue'), meta: { title: '评估报告' } },
         { path: 'analysis', name: 'analysis', component: () => import('@/views/AnalysisView.vue'), meta: { title: '能力分析' } },

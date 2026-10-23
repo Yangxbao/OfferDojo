@@ -1,0 +1,279 @@
+{
+  "tasks": [
+    {
+      "code": "API-005", "title": "RESTful 设计规范细则与常见反例", "category": "api-design", "difficulty": "EASY",
+      "tags": "REST,规范,接口设计", "summary": "整理一份团队 RESTful 细则：路径/方法/状态码/幂等性的正反例。", "estimatedMinutes": 20,
+      "background": "API-001 只做了单次设计，这里沉淀成团队规范文档。你整理细则与反例清单。",
+      "requirements": ["路径：名词复数、层级表达归属、避免动词（动作类接口的例外处理）", "方法语义与幂等性表：GET/PUT/DELETE 幂等、POST 不幂等", "状态码使用规范：200/201/204/400/401/403/404/409/422/500", "反例清单：URL 带动词、全 POST、状态码一律 200 包 error 字段"],
+      "constraints": ["结合本项目接口举例"], "deliverables": ["规范细则", "幂等性表", "反例清单"],
+      "acceptance": ["幂等性表准确", "「动作类接口」（如启用/禁用）的合理例外设计出现", "结合本项目接口举正反例"],
+      "rubric": [ { "dimension": "工程规范", "weight": 55, "guidance": "细则可执行。" }, { "dimension": "正确性", "weight": 45, "guidance": "语义与幂等准确。" } ]
+    },
+    {
+      "code": "API-006", "title": "接口版本化管理", "category": "api-design", "difficulty": "MEDIUM",
+      "tags": "版本化,接口演进", "summary": "对比 URL/Header 版本化方案，设计平滑的版本共存与下线流程。", "estimatedMinutes": 25,
+      "background": "接口给小程序和 App 两端用，改字段不能两端同时升级。你设计版本化方案。",
+      "requirements": ["方案对比：URL 路径版本（/api/v1）vs Header 版本（Accept-Version）的取舍", "共存策略：新旧版本并行期、数据双写或兼容层", "字段兼容原则：只增不改不删（破坏性变更的处理）", "下线流程：废弃标注 → 流量监控 → 下线窗口"],
+      "constraints": [], "deliverables": ["方案对比", "共存与下线流程"],
+      "acceptance": ["「只增不改不删」的兼容原则明确", "下线前流量观测的步骤", "结合本项目统一响应结构说明影响面"],
+      "rubric": [ { "dimension": "方案设计", "weight": 55, "guidance": "方案与流程完整。" }, { "dimension": "工程规范", "weight": 45, "guidance": "兼容原则清晰。" } ]
+    },
+    {
+      "code": "API-007", "title": "错误码设计规范", "category": "api-design", "difficulty": "MEDIUM",
+      "tags": "错误码,规范,设计", "summary": "设计分段式错误码体系：编码规则、登记治理与前端消费。", "estimatedMinutes": 25,
+      "background": "错误码乱起是技术债之源。你设计：分段规则（模块+类型）、与 HTTP 状态码的关系、登记表治理、前端消费策略。",
+      "requirements": ["分段设计：如 Axxxx 用户侧、Bxxxx 系统、Cxxxx 第三方（参考阿里错误码规范）", "与 HTTP 状态码的分工（HTTP 表传输层语义、业务码表业务语义）", "治理：错误码登记表、防重复分配、文案与 code 绑定", "前端消费：按 code 分支处理（跳登录/提示/静默）"],
+      "constraints": ["结合本项目 ApiResponse 的演进建议"], "deliverables": ["编码规则", "治理机制", "消费策略"],
+      "acceptance": ["分段规则明确且可扩展", "「错误码必须有登记表」的治理意识", "复用 FW-026 的统一响应基础"],
+      "rubric": [ { "dimension": "方案设计", "weight": 55, "guidance": "体系设计完整。" }, { "dimension": "工程规范", "weight": 45, "guidance": "治理机制到位。" } ]
+    },
+    {
+      "code": "API-008", "title": "列表接口规范：分页 / 筛选 / 排序的统一约定", "category": "api-design", "difficulty": "EASY",
+      "tags": "分页,规范,列表", "summary": "制定列表类接口的统一约定：参数命名、上限、空结果语义。", "estimatedMinutes": 20,
+      "background": "本项目已有分页实践。你沉淀成规范：参数约定、默认值与上限、排序白名单、空结果与越界的语义。",
+      "requirements": ["参数约定：page/size（或 cursor）、筛选字段命名一致", "默认值与上限（size≤50，复用本项目 PageUtils）", "排序字段白名单防注入（呼应 FW-003）", "语义：越界返回空列表而非报错、total 的产品取舍（引 DB-017）"],
+      "constraints": ["以本项目 TaskController 为例"], "deliverables": ["约定清单", "本项目对照"],
+      "acceptance": ["排序白名单防注入讲到", "越界返回空列表的语义明确", "与项目现状对照给出一致点与可改进点"],
+      "rubric": [ { "dimension": "工程规范", "weight": 55, "guidance": "约定完整结合项目。" }, { "dimension": "正确性", "weight": 45, "guidance": "安全与语义正确。" } ]
+    },
+    {
+      "code": "API-009", "title": "开放接口签名与防重放（含 SDK 设计）",
+      "category": "api-design", "difficulty": "HARD",
+      "tags": "签名,开放接口,安全", "summary": "设计开放接口的签名鉴权全案，并给出调用方 SDK 的接口设计。", "estimatedMinutes": 40,
+      "background": "DS-014 讲了机制，这里补全「开放给第三方」的完整工程：接入流程、SDK 设计、测试沙箱与频控策略。",
+      "requirements": ["接入流程：申请 AppKey → 沙箱联调 → 上线（引用 DS-014 签名机制）", "SDK 设计：签名封装、重试与超时、错误码转异常", "沙箱环境与联调数据的设计", "频控按 AppKey 分级与配额售卖的认知"],
+      "constraints": ["与 DS-014 配合学习"], "deliverables": ["接入流程", "SDK 接口设计", "沙箱方案"],
+      "acceptance": ["SDK 把「签名细节」对调用方隐藏的设计", "沙箱与生产隔离的密钥体系", "频控与计费的关联认知"],
+      "rubric": [ { "dimension": "方案设计", "weight": 55, "guidance": "全案完整、SDK 设计合理。" }, { "dimension": "正确性", "weight": 45, "guidance": "安全机制正确。" } ]
+    },
+    {
+      "code": "API-010", "title": "Webhook 事件推送设计", "category": "api-design", "difficulty": "MEDIUM",
+      "tags": "Webhook,事件推送,集成", "summary": "设计对外事件推送：订阅管理、可靠投递、签名与重试策略。", "estimatedMinutes": 30,
+      "background": "第三方需要实时知道「订单完成了」。你设计 Webhook 推送体系：订阅配置、推送可靠性（重试+签名）、对方失败的处理与自检接口。",
+      "requirements": ["订阅模型：事件类型 + 回调地址 + 密钥，管理端维护", "投递可靠性：异步推送 + 指数退避重试（如 5 次）+ 最终失败告警", "安全：推送体签名（复用 DS-014）+ 回调地址 HTTPS 校验", "配套：推送日志查询、手动重推、自检（test event）接口"],
+      "constraints": ["与支付回调场景呼应"], "deliverables": ["订阅与投递设计", "安全与重试策略", "自检接口"],
+      "acceptance": ["指数退避的间隔设计（如 1m/5m/30m/2h/6h）", "「对方 200 才算成功」的语义明确", "自检事件帮助接入方验证"],
+      "rubric": [ { "dimension": "方案设计", "weight": 55, "guidance": "推送体系完整。" }, { "dimension": "正确性", "weight": 45, "guidance": "可靠性与安全正确。" } ]
+    },
+    {
+      "code": "API-011", "title": "批量接口设计：batch 语义与部分失败",
+      "category": "api-design", "difficulty": "MEDIUM",
+      "tags": "批量接口,部分失败,设计", "summary": "设计批量接口：大小限制、部分失败的返回语义与幂等。", "estimatedMinutes": 25,
+      "background": "「批量导入 1000 个学生，第 356 行手机号重复」怎么返回？你设计批量接口规范：上限、逐项结果、事务语义（全成/部分成/全败）的选择。",
+      "requirements": ["事务语义三选一：全部成功才提交 / 尽量成功部分失败 / 原子批次——各自的产品场景", "返回结构：整体状态 + 逐项结果（行号 + 原因）", "限制：单次条数上限、导入异步化阈值", "幂等：批量导入按「导入批次号」防重"],
+      "constraints": [], "deliverables": ["语义设计", "返回结构示例", "幂等方案"],
+      "acceptance": ["「尽量成功」模式的逐项结果结构清晰", "大批量走异步任务（上传文件 + 任务进度）的阈值判断", "批次号防重的实现"],
+      "rubric": [ { "dimension": "方案设计", "weight": 55, "guidance": "语义与返回设计完整。" }, { "dimension": "正确性", "weight": 45, "guidance": "幂等与限制正确。" } ]
+    },
+    {
+      "code": "API-012", "title": "GraphQL 认知与 REST 的边界",
+      "category": "api-design", "difficulty": "MEDIUM",
+      "tags": "GraphQL,API,认知", "summary": "了解 GraphQL 的核心概念与适用边界，避免「银弹」误判。", "estimatedMinutes": 25,
+      "background": "面试偶尔会问「了解 GraphQL 吗」。你写一篇认知文：查询/变更/订阅三概念、与 REST 的本质差异、适用与不适用。",
+      "requirements": ["核心概念：Schema、Query（按需取字段）、Mutation、Resolver", "与 REST 的本质差异：客户端定义返回形状 vs 服务端定义资源", "适用：聚合多端差异化的展示需求；不适用：简单 CRUD、缓存语义复杂化", "安全问题：复杂查询拖垮服务的防护（深度/复杂度限制）"],
+      "constraints": ["认知级，不要求实现"], "deliverables": ["概念说明", "边界分析"],
+      "acceptance": ["「一次请求按需取字段」的优势场景讲清", "N+1 问题与 DataLoader 的认知提及", "「大多数管理后台 REST 足够」的务实结论"],
+      "rubric": [ { "dimension": "正确性", "weight": 50, "guidance": "概念与边界准确。" }, { "dimension": "沟通表达", "weight": 50, "guidance": "不吹不黑的务实判断。" } ]
+    },
+    {
+      "code": "TS-008", "title": "日志体系与 ELK 排查实践",
+      "category": "troubleshooting", "difficulty": "MEDIUM",
+      "tags": "日志,ELK,排查", "summary": "从日志规范到集中式查询：设计一套能「按 traceId 秒查」的日志体系。", "estimatedMinutes": 30,
+      "background": "EN-003 定了规范，这里讲集中式：日志采集 → 存储 → 查询的体系设计（ELK/ Loki 认知），以及一次按 traceId 排查的实操流程。",
+      "requirements": ["采集链路：应用日志 → 采集器（Filebeat）→ 存储（ES）→ 查询（Kibana）的认知级架构", "结构化日志的价值：JSON 格式便于字段检索", "按 traceId 串联多服务日志的实操查询", "成本与治理：日志分级保留（ERROR 30 天/INFO 7 天）、量控"],
+      "constraints": ["架构认知级，不深入 ES 调优"], "deliverables": ["体系架构", "排查实操流程", "治理策略"],
+      "acceptance": ["结构化日志与 traceId 的组合价值讲清", "保留策略的成本意识", "结合 DS-010 的 traceId 实践"],
+      "rubric": [ { "dimension": "方案设计", "weight": 50, "guidance": "体系设计完整。" }, { "dimension": "问题定位", "weight": 50, "guidance": "实操流程可用。" } ]
+    },
+    {
+      "code": "TS-009", "title": "内存泄漏实战复盘：一个缓存引发的 Full GC",
+      "category": "troubleshooting", "difficulty": "EXPERT",
+      "tags": "内存泄漏,FullGC,复盘", "summary": "复盘一次「本地缓存无上限导致频繁 Full GC」的完整事故处理。", "estimatedMinutes": 40,
+      "background": "线上服务每隔一小时 Full GC 数秒，接口间歇超时。你按真实事故的节奏复盘：监控发现 → 堆分析 → 根因（无界本地缓存）→ 修复（Caffeine 上限+过期）→ 防复发。",
+      "requirements": ["监控信号：Full GC 频率、老年代占用锯齿不回落", "分析：jstat/jmap + MAT 支配树定位到缓存 Map 持有量", "根因：本地缓存无上限、无过期（呼应 JC-010 但更聚焦缓存）", "修复与防复发：Caffeine（maximumSize/expireAfterWrite）、监控指标接入、上线评审加「缓存必须有界」检查项"],
+      "constraints": ["数据可合理假设并标注"], "deliverables": ["复盘报告", "修复代码要点", "防复发清单"],
+      "acceptance": ["「老年代锯齿不回落」的判断依据讲清", "Caffeine 参数与业务量的匹配计算", "防复发进入团队评审清单"],
+      "rubric": [ { "dimension": "问题定位", "weight": 55, "guidance": "信号→分析→根因链完整。" }, { "dimension": "方案设计", "weight": 45, "guidance": "修复与防复发到位。" } ]
+    },
+    {
+      "code": "TS-010", "title": "数据库连接池打满事故处理",
+      "category": "troubleshooting", "difficulty": "MEDIUM",
+      "tags": "连接池,事故,排查", "summary": "复盘连接池打满：现象、根因分层（慢SQL/事务泄漏/配置过小）与处理。", "estimatedMinutes": 30,
+      "background": "全站接口报 connection timeout。你按连接池打满的三个典型根因分支（慢 SQL、事务未关闭、池太小）写排查剧本。",
+      "requirements": ["现象确认：连接池活跃数打满、等待线程堆积（复用 DB-015）", "根因分支一：慢 SQL 占住连接（配合 DB-010 优化）", "根因分支二：事务/连接泄漏（代码未关闭、@Transactional 内做慢 IO）", "应急与根治：临时重启 vs 杀会话 vs 修复代码；配置复核"],
+      "constraints": [], "deliverables": ["排查剧本", "三分支分析", "预防清单"],
+      "acceptance": ["「事务里调 HTTP/发文件」是连接泄漏高发的警告", "杀会话的取舍（可能中断事务）", "预防：慢 SQL 监控 + 事务内禁慢 IO 的规约"],
+      "rubric": [ { "dimension": "问题定位", "weight": 55, "guidance": "分支覆盖与定位准确。" }, { "dimension": "工程规范", "weight": 45, "guidance": "预防规约实用。" } ]
+    },
+    {
+      "code": "TS-011", "title": "接口偶发超时：从 1% 超时率说起",
+      "category": "troubleshooting", "difficulty": "HARD",
+      "tags": "超时,排查,偶发", "summary": "定位「99% 请求正常、1% 偶发超时」的长尾问题。", "estimatedMinutes": 35,
+      "background": "平均响应正常但 P99 超时——长尾问题比全慢更难查。你写排查方法：P99/P95 指标、常见长尾根因（GC 停顿、锁竞争、连接获取等待、偶发慢 SQL、定时任务抢资源）。",
+      "requirements": ["指标视角：看 P99 而非平均；分位数统计的意义", "根因清单与定位手段：GC 日志（JC-043）、线程 dump（锁竞争）、连接池等待时间、定时任务重叠", "偶发慢 SQL 的抓取（慢日志阈值临时调低）", "修复后验证：对比 P99 而非均值"],
+      "constraints": [], "deliverables": ["指标说明", "根因-手段对照表", "验证方法"],
+      "acceptance": ["「平均正常 P99 爆炸」的分布认知", "至少 4 个长尾根因的定位手段", "复用 arthas trace 定位耗时的方法（JC-044）"],
+      "rubric": [ { "dimension": "问题定位", "weight": 60, "guidance": "长尾思维与手段准确。" }, { "dimension": "沟通表达", "weight": 40, "guidance": "对照表清晰。" } ]
+    },
+    {
+      "code": "TS-012", "title": "Full GC 频繁排查手册",
+      "category": "troubleshooting", "difficulty": "HARD",
+      "tags": "FullGC,JVM,排查", "summary": "整理 Full GC 频繁的排查手册：原因分类与对应处理。", "estimatedMinutes": 35,
+      "background": "Full GC 是 JVM 事故之王。你写手册：原因分类（内存不足/内存泄漏/大对象/元空间/显式 System.gc）与对应处理路径。",
+      "requirements": ["原因分类树：堆不够、泄漏（TS-009）、大对象分配、元空间不足、显式触发、碎片", "定位手段：GC 日志分析（jstat -gcutil）、dump 对比两份", "处理对照：加内存 / 修泄漏 / 拆大对象 / 调元空间 / 去掉 System.gc", "G1 下的特殊点：Mixed GC 与 to-space exhausted"],
+      "constraints": ["以 JDK 17 + G1 为准"], "deliverables": ["原因分类树", "定位与处理对照表"],
+      "acceptance": ["「先看 GC 日志再谈其他」的顺序", "dump 两份对比找增长对象的技巧", "每类原因至少一个真实感案例"],
+      "rubric": [ { "dimension": "问题定位", "weight": 60, "guidance": "分类树与手段准确。" }, { "dimension": "正确性", "weight": 40, "guidance": "处理路径正确。" } ]
+    },
+    {
+      "code": "TS-013", "title": "线上死锁与卡死的检测恢复",
+      "category": "troubleshooting", "difficulty": "HARD",
+      "tags": "死锁,卡死,应急", "summary": "制定「系统卡死不响应」的应急检测与恢复流程。", "estimatedMinutes": 30,
+      "background": "服务进程在但不响应请求——比崩溃更吓人。你写应急流程：区分死锁/锁竞争/线程池耗尽/GC 卡住的检测顺序与恢复手段。",
+      "requirements": ["检测顺序：健康检查 → jstack（死锁报告/线程状态分布）→ GC 日志 → 连接池状态", "四种卡死形态的栈特征：死锁（Found deadlock）、大量 WAITING（线程池耗尽）、GC 线程高 CPU、外部依赖挂起", "恢复：定位后重启是最后手段、优先解除阻塞源", "预防：超时全覆盖（呼应 FW-028）与熔断（DS-004）"],
+      "constraints": [], "deliverables": ["应急流程", "形态特征表", "预防清单"],
+      "acceptance": ["线程状态分布的解读（大量 WAITING 指向线程池耗尽）", "「全覆盖超时」是预防卡死的核心", "恢复顺序有纪律（先诊断后重启）"],
+      "rubric": [ { "dimension": "问题定位", "weight": 60, "guidance": "检测顺序与特征准确。" }, { "dimension": "工程规范", "weight": 40, "guidance": "预防清单完整。" } ]
+    },
+    {
+      "code": "TS-014", "title": "网关 502/504 的分层排查",
+      "category": "troubleshooting", "difficulty": "MEDIUM",
+      "tags": "502,504,网关,排查", "summary": "针对 Nginx/网关返回 502/504 的分层排查清单。", "estimatedMinutes": 25,
+      "background": "「网站 502 了」是用户看到的报障。你写排查清单：502 与 504 的语义区别、逐层定位（网关 → 上游服务 → 依赖）、常见根因。",
+      "requirements": ["语义：502（上游返回无效响应/连接被拒）vs 504（上游超时）", "排查链路：网关日志 → 上游进程存活与端口 → 上游日志 → 上游的下游", "常见根因：进程 OOM 被杀、线程池满拒连、上游连接超时配置、keepalive 配置不当", "配置要点：网关到上游的超时应大于上游自身处理能力的上限"],
+      "constraints": [], "deliverables": ["语义说明", "排查清单", "配置要点"],
+      "acceptance": ["502 与 504 的语义区分准确", "「网关超时 < 上游实际处理时间」导致 504 的配置问题", "上游被 OOMKilled 的检查（呼应 DS-013）"],
+      "rubric": [ { "dimension": "问题定位", "weight": 55, "guidance": "分层排查清晰。" }, { "dimension": "正确性", "weight": 45, "guidance": "语义与配置准确。" } ]
+    },
+    {
+      "code": "TS-015", "title": "时间与时区错乱的排查",
+      "category": "troubleshooting", "difficulty": "MEDIUM",
+      "tags": "时区,时间,排查", "summary": "系统排查「时间差 8 小时/日期错一天」的各环节。", "estimatedMinutes": 25,
+      "background": "时间问题横跨 JVM/DB/JSON/前端四层。你写排查清单：逐层核对时区设置、序列化格式、数据库会话时区。",
+      "requirements": ["四层清单：JVM 默认时区 → JSON 序列化格式与时区 → DB 连接 serverTimezone 与字段类型 → 前端展示时区", "常见坑：容器内 UTC 与本地差 8 小时（呼应 EN-004）、new Date() 序列化为时间戳", "规范建议：全链路统一 UTC 或统一东八区 + 显式序列化格式", "排查方法：先确定「哪一层开始的偏差」"],
+      "constraints": ["呼应 JC-026"], "deliverables": ["四层排查清单", "规范建议"],
+      "acceptance": ["serverTimezone 参数的影响讲清", "容器 UTC 问题的解决方案（TZ 环境变量）", "「定位偏差起始层」的排查方法论"],
+      "rubric": [ { "dimension": "问题定位", "weight": 55, "guidance": "四层清单完整。" }, { "dimension": "正确性", "weight": 45, "guidance": "各层机制准确。" } ]
+    },
+    {
+      "code": "TEST-003", "title": "Mockito 进阶：参数捕获与行为验证",
+      "category": "testing", "difficulty": "MEDIUM",
+      "tags": "Mockito,单元测试", "summary": "掌握 ArgumentCaptor、verify 次数与顺序、doThrow 等进阶用法。", "estimatedMinutes": 25,
+      "background": "TEST-001 是入门，这一课讲进阶：验证「调用参数是否正确」「调了几次」「异常路径」。你写教程与示例。",
+      "requirements": ["ArgumentCaptor 捕获参数断言（如保存的用户对象字段）", "verify 的次数与顺序：times(1)/never/inOrder", "异常路径：doThrow + assertThrows 的组合", "反模式提醒：不要 verify 一切实现细节（测试要测行为）"],
+      "constraints": ["JUnit 5 + Mockito"], "deliverables": ["教程文档", "示例代码"],
+      "acceptance": ["ArgumentCaptor 示例正确", "「测行为不测实现」的边界讨论出现", "异常路径测试完整"],
+      "rubric": [ { "dimension": "正确性", "weight": 50, "guidance": "API 用法准确。" }, { "dimension": "工程规范", "weight": 50, "guidance": "反模式提醒到位。" } ]
+    },
+    {
+      "code": "TEST-004", "title": "覆盖率与有效用例：别为数字写测试",
+      "category": "testing", "difficulty": "MEDIUM",
+      "tags": "覆盖率,有效测试", "summary": "理解覆盖率指标的价值与陷阱，建立「断言质量优先」的观念。", "estimatedMinutes": 20,
+      "background": "覆盖率 90% 但全是无断言测试等于 0。你写一篇：行/分支覆盖率的意义、无效覆盖的识别、有效用例的判断标准。",
+      "requirements": ["覆盖率类型：行覆盖 vs 分支覆盖的差异", "无效覆盖识别：无断言、断言恒真、只测 happy path", "有效标准：一个用例一个明确断言目标、覆盖边界与异常", "团队策略：关键模块分支覆盖门槛而非全仓一刀切"],
+      "constraints": [], "deliverables": ["指标说明", "无效覆盖示例", "团队策略"],
+      "acceptance": ["「无断言的测试」识别示例", "变异测试的认知提及（杀死突变体）", "门槛分模块的务实策略"],
+      "rubric": [ { "dimension": "正确性", "weight": 50, "guidance": "指标与陷阱准确。" }, { "dimension": "工程规范", "weight": 50, "guidance": "策略务实。" } ]
+    },
+    {
+      "code": "TEST-005", "title": "集成测试的环境管理",
+      "category": "testing", "difficulty": "MEDIUM",
+      "tags": "集成测试,环境,H2", "summary": "解决集成测试的环境问题：数据库隔离、数据清理与并行安全。", "estimatedMinutes": 25,
+      "background": "本项目用 H2 内存库。你写进阶：测试数据隔离策略（事务回滚/每次清库/独立 schema）、并行执行的坑、与 Testcontainers 的演进方向。",
+      "requirements": ["隔离策略三种：@Transactional 回滚（注意异步线程不回滚）、@Sql 清理、随机库", "测试数据构造：Builder/工厂方法、避免用例间共享可变数据", "并行执行：junit-platform 并行配置与共享资源的坑", "Testcontainers 演进：真实 MySQL 的价值（复用 TESTING.md 的讨论）"],
+      "constraints": ["结合本项目测试现状"], "deliverables": ["隔离策略对比", "并行注意事项", "演进路线"],
+      "acceptance": ["「@Transactional 回滚对异步线程无效」的坑讲到", "Testcontainers 的取舍复用项目已有结论", "数据构造器让用例意图清晰的示例"],
+      "rubric": [ { "dimension": "正确性", "weight": 50, "guidance": "隔离机制准确。" }, { "dimension": "工程规范", "weight": 50, "guidance": "结合项目演进。" } ]
+    },
+    {
+      "code": "TEST-006", "title": "接口自动化框架设计思路",
+      "category": "testing", "difficulty": "HARD",
+      "tags": "自动化测试,框架,设计", "summary": "设计一个接口自动化测试框架：分层、数据驱动、环境切换与报告。", "estimatedMinutes": 35,
+      "background": "从「写用例」到「建框架」是测试开发的进阶。你设计框架：分层结构（用例/业务流/驱动）、数据驱动（YAML/Excel 用例）、多环境切换、报告与失败重试。",
+      "requirements": ["分层：用例层（业务语义）/ 流程层（接口编排）/ 驱动层（HTTP 封装+断言）", "数据驱动：用例与数据分离（参数化）", "环境切换：配置文件 + 环境变量（呼应 EN-005）", "报告与稳定性：失败截图/日志收集、自动重试一次的取舍"],
+      "constraints": ["设计文档 + 关键代码骨架"], "deliverables": ["框架分层设计", "数据驱动示例", "稳定性策略"],
+      "acceptance": ["「用例不写 HTTP 细节」的分层纪律", "自动重试可能掩盖不稳定问题的提醒", "与 CI 的集成方式（复用项目 workflow）"],
+      "rubric": [ { "dimension": "方案设计", "weight": 55, "guidance": "分层与扩展性合理。" }, { "dimension": "工程规范", "weight": 45, "guidance": "稳定性与 CI 考虑周到。" } ]
+    },
+    {
+      "code": "TEST-007", "title": "压力测试入门：指标、工具与瓶颈判断",
+      "category": "testing", "difficulty": "MEDIUM",
+      "tags": "压测,性能,指标", "summary": "压测入门：核心指标（TPS/RT）、JMeter/wrk 使用与瓶颈定位顺序。", "estimatedMinutes": 30,
+      "background": "「系统抗得住多少并发」要靠压测回答。你写入门：指标定义（TPS/QPS/RT/P99）、工具认知、瓶颈判断顺序（压测机 → 网络 → 网关 → 应用 → DB）。",
+      "requirements": ["指标：TPS/QPS/并发数/RT 分布（P50/P99）的关系", "工具：JMeter（图形化）/ wrk（轻量命令行）基本用法", "加压方法：阶梯加压找拐点、思考时间的设置", "瓶颈定位顺序与常见瓶颈（DB 连接、锁、GC、带宽）"],
+      "constraints": ["结合本项目（对任务接口压测的设想）"], "deliverables": ["指标说明", "加压方法", "瓶颈判断顺序"],
+      "acceptance": ["TPS 与 RT 的反比关系（饱和后）讲清", "「先确认压测机不是瓶颈」的检查", "对本项目某个接口给出压测方案设计"],
+      "rubric": [ { "dimension": "正确性", "weight": 50, "guidance": "指标与判断准确。" }, { "dimension": "方案设计", "weight": 50, "guidance": "方案结合项目。" } ]
+    },
+    {
+      "code": "TEST-008", "title": "Bug 报告与定位沟通的艺术",
+      "category": "testing", "difficulty": "EASY",
+      "tags": "沟通,Bug,协作", "summary": "写一份高质量 Bug 报告模板与「开发说无法复现」的沟通策略。", "estimatedMinutes": 15,
+      "background": "软技能题：测试与开发的摩擦大多来自信息不全。你写模板与沟通策略。",
+      "requirements": ["Bug 报告要素：环境、前置条件、步骤、期望/实际、证据（截图/traceId）", "「无法复现」的处理：补充环境与时间点、提供 traceId、录屏", "优先级与严重性的区分", "修复验证的闭环（回归 + 关联用例）"],
+      "constraints": [], "deliverables": ["报告模板", "沟通策略"],
+      "acceptance": ["traceId 在沟通中的作用（呼应 DS-010）", "严重性 vs 优先级的区分正确", "模板可直接使用"],
+      "rubric": [ { "dimension": "工程规范", "weight": 50, "guidance": "模板完整。" }, { "dimension": "沟通表达", "weight": 50, "guidance": "协作策略成熟。" } ]
+    },
+    {
+      "code": "RF-003", "title": "卫语句与条件表达式重构",
+      "category": "refactoring", "difficulty": "MEDIUM",
+      "tags": "重构,可读性", "summary": "用卫语句消灭嵌套 if，提炼条件表达式为有意义的方法。", "estimatedMinutes": 25,
+      "background": "重构基础课：深层嵌套的 if-else 是可读性杀手。你用卫语句与条件提炼重构一段真实风格的校验代码。",
+      "requirements": ["卫语句：提前返回处理异常路径，消灭 else 嵌套", "条件提炼：把复杂布尔表达式提炼为命名方法（isValidOrder）", "多态替代 switch 的边界（何时值得、何时过度）", "重构前后代码对照与圈复杂度变化"],
+      "constraints": ["保持行为不变"], "deliverables": ["重构前后对照", "提炼原则清单"],
+      "acceptance": ["卫语句重构后嵌套明显降低", "条件提炼的方法名表意准确", "「多态替代 switch 需要分支会增长」的克制判断"],
+      "rubric": [ { "dimension": "方案设计", "weight": 50, "guidance": "重构手法正确。" }, { "dimension": "工程规范", "weight": 50, "guidance": "对照与原则清晰。" } ]
+    },
+    {
+      "code": "RF-004", "title": "继承转组合：一个真实的重构案例",
+      "category": "refactoring", "difficulty": "MEDIUM",
+      "tags": "组合,继承,重构", "summary": "把「为复用而继承」重构为组合委托，并说明判断标准。", "estimatedMinutes": 30,
+      "background": "团队里 Service 层互相 extends 导致改一个类牵连一片。你写重构案例：识别「为复用而继承」的坏味道、重构为组合、判断标准总结。",
+      "requirements": ["坏味道识别：子类只用父类方法而不满足 is-a、父类改动影响所有子类", "重构为组合：父类变成员 + 委托调用", "判断标准：is-a 用继承、has-a 用组合；模板方法场景例外", "重构安全网：先补测试（复用 TEST-002 思想）"],
+      "constraints": ["给出重构前后代码"], "deliverables": ["案例重构", "判断标准", "安全网说明"],
+      "acceptance": ["is-a/has-a 判断准确", "重构后接口边界更清晰的论证", "模板方法保留继承的例外说明"],
+      "rubric": [ { "dimension": "方案设计", "weight": 50, "guidance": "重构手法与标准正确。" }, { "dimension": "工程规范", "weight": 50, "guidance": "案例真实、安全网完整。" } ]
+    },
+    {
+      "code": "RF-005", "title": "重复代码的消除策略",
+      "category": "refactoring", "difficulty": "MEDIUM",
+      "tags": "重复代码,抽象,重构", "summary": "辨析「真重复」与「假重复」，掌握提取方法/模板/策略的时机。", "estimatedMinutes": 25,
+      "background": "三处相似代码要不要抽象？——「Rule of Three」背后有真思考。你写一篇：真/假重复的辨析、提取的层次（方法/类/模板）、过早抽象的代价。",
+      "requirements": ["假重复：两段代码相似但业务演进方向不同（强行合并成 if-else 更糟）", "提取层次：提取方法（最常用）、提取类、泛型/模板、策略", "Rule of Three 与过早抽象的代价（抽象泄漏）", "工具辅助：IDEA 重复代码检测、Sonar 重复率"],
+      "constraints": [], "deliverables": ["辨析说明", "提取层次清单", "判断流程"],
+      "acceptance": ["真假重复的辨析案例讲清", "「抽象错了比重复更难改」的代价认知", "判断流程图式总结"],
+      "rubric": [ { "dimension": "方案设计", "weight": 50, "guidance": "辨析深刻。" }, { "dimension": "工程规范", "weight": 50, "guidance": "流程可执行。" } ]
+    },
+    {
+      "code": "RF-006", "title": "魔法值治理与常量/枚举设计",
+      "category": "refactoring", "difficulty": "EASY",
+      "tags": "魔法值,常量,枚举", "summary": "清理代码中的魔法值，设计常量类与枚举的归属规范。", "estimatedMinutes": 20,
+      "background": "代码里 if (type == 3) 的「3」是什么？你写治理方案：魔法值清理、常量归属、枚举替代 int 常量。",
+      "requirements": ["魔法值识别与治理（IDEA 检查）", "常量归属：领域常量放领域类、跨域放统一 Constants 的取舍", "枚举替代 int/String 常量的收益（类型安全 + 行为承载）", "与数据库字典的一致性维护（枚举 code 与 DB 值映射）"],
+      "constraints": ["结合本项目状态常量（如 Submission.STATUS_DRAFT）举例"], "deliverables": ["治理方案", "枚举改造示例", "归属规范"],
+      "acceptance": ["结合本项目已有常量举例", "枚举承载行为的示例（如状态是否可流转）", "DB 字典与枚举的同步策略"],
+      "rubric": [ { "dimension": "正确性", "weight": 50, "guidance": "治理方法正确。" }, { "dimension": "工程规范", "weight": 50, "guidance": "结合项目实际。" } ]
+    },
+    {
+      "code": "RF-007", "title": "长参数列表重构为参数对象",
+      "category": "refactoring", "difficulty": "MEDIUM",
+      "tags": "参数对象,重构", "summary": "把 8 个参数的方法重构为参数对象与 Builder，改善可读与扩展性。", "estimatedMinutes": 25,
+      "background": "方法签名 8 个参数、一半可 null——调用与维护都是灾难。你重构为参数对象：识别内聚的参数组、Builder 模式、与 Map 传参的对比。",
+      "requirements": ["识别内聚参数组（如查询条件组 → 查询对象）", "参数对象的构造：Builder 模式 vs 静态工厂", "与 Map<String,Object> 传参的对比（类型安全）", "行为与数据一起迁移：相关方法收进参数对象或领域对象"],
+      "constraints": ["给出重构前后对照"], "deliverables": ["重构对照", "Builder 示例", "取舍说明"],
+      "acceptance": ["参数组的内聚性判断准确", "Builder 的必填校验设计", "「不是所有多参数都要对象：2-3 个同层参数保留」的克制"],
+      "rubric": [ { "dimension": "方案设计", "weight": 50, "guidance": "重构手法正确。" }, { "dimension": "工程规范", "weight": 50, "guidance": "取舍克制务实。" } ]
+    },
+    {
+      "code": "RF-008", "title": "单测保护下的重构工作流",
+      "category": "refactoring", "difficulty": "MEDIUM",
+      "tags": "重构,工作流,测试", "summary": "总结「测试锁行为 → 小步重构 → 频繁验证」的完整工作流与检查点。", "estimatedMinutes": 30,
+      "background": "RF 系列的收官课：把重构从「勇气活」变成「流程活」。你总结完整工作流：识别坏味道 → 补测试 → 小步走（每次一步重构手法）→ 频繁运行 → 提交粒度。",
+      "requirements": ["坏味道识别清单：长方法/大类/重复/魔法值/发散变化", "测试先行：先给现有行为补测试（哪怕是「特征测试」）", "小步纪律：一次只做一个重构手法、每步跑测试、commit 粒度", "工具辅助：IDEA 重构快捷键的信任与验证"],
+      "constraints": ["作为 RF 系列总结"], "deliverables": ["工作流清单", "坏味道速查", "commit 粒度示例"],
+      "acceptance": ["「特征测试」（给未测试代码补测试）的方法讲清", "小步纪律与回滚便利的关系", "与 Git 工作流（EN-001）衔接"],
+      "rubric": [ { "dimension": "方案设计", "weight": 50, "guidance": "工作流完整闭环。" }, { "dimension": "工程规范", "weight": 50, "guidance": "纪律可执行。" } ]
+    }
+  ]
+}

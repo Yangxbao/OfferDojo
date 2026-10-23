@@ -1,0 +1,274 @@
+{
+  "tasks": [
+    {
+      "code": "FW-014", "title": "IoC 容器：控制反转到底反转了什么", "category": "framework", "difficulty": "MEDIUM",
+      "tags": "IoC,Spring,面试高频", "summary": "讲清 IoC/DI 的本质、BeanFactory 与 ApplicationContext 的关系。", "estimatedMinutes": 30,
+      "background": "「什么是 IoC」看似简单，答好需要讲清控制了什么、反转了什么。你写一篇内训稿：从 new 对象的痛点讲起，落到容器职责与两种容器的关系。",
+      "requirements": ["从「对象自己 new 依赖」的耦合痛点引出控制反转", "IoC 与 DI 的关系：思想与实现手段", "BeanFactory（延迟）与 ApplicationContext（提前初始化 + 事件 + 国际化）", "结合本项目：容器替我们装配了哪些 Bean"],
+      "constraints": ["结合本项目真实 Bean 举例"], "deliverables": ["IoC 本质说明", "两种容器对比", "项目实例清单"],
+      "acceptance": ["「依赖的查找与组装权交给容器」讲清", "ApplicationContext 的额外能力列举", "能指出本项目至少 3 个容器管理的 Bean"],
+      "rubric": [ { "dimension": "正确性", "weight": 55, "guidance": "概念本质与容器关系准确。" }, { "dimension": "沟通表达", "weight": 45, "guidance": "从痛点讲起，落地项目。" } ]
+    },
+    {
+      "code": "FW-015", "title": "@ConfigurationProperties vs @Value", "category": "framework", "difficulty": "EASY",
+      "tags": "配置,绑定", "summary": "对比两种配置绑定方式，说明批量绑定与类型安全的优势。", "estimatedMinutes": 15,
+      "background": "项目里 AI 配置既有 @Value 又有 @ConfigurationProperties。你写一篇说明：两者区别、何时用哪个（以本项目 AiProperties 为例）。",
+      "requirements": ["@Value：单值注入、SpEL 支持、松散绑定弱", "@ConfigurationProperties：前缀批量绑定、类型安全、元数据提示", "校验配合：@Validated + JSR-303 校验配置项", "结合本项目 jobsim.ai 配置结构举例"],
+      "constraints": ["以本项目代码为例"], "deliverables": ["对比表", "项目实例解读"],
+      "acceptance": ["松散绑定（relaxed binding）讲清", "配置项校验示例正确", "给出选择建议：相关配置成组用 Properties、单个值用 @Value"],
+      "rubric": [ { "dimension": "正确性", "weight": 55, "guidance": "绑定机制准确。" }, { "dimension": "工程规范", "weight": 45, "guidance": "结合项目落地。" } ]
+    },
+    {
+      "code": "FW-016", "title": "Spring 事件机制：解耦的进程内总线", "category": "framework", "difficulty": "MEDIUM",
+      "tags": "事件,解耦,Spring", "summary": "用「注册成功后发欢迎邮件」场景讲清事件发布/监听与事务绑定。", "estimatedMinutes": 25,
+      "background": "注册成功后要发欢迎邮件，直接调用会让注册流程耦合通知逻辑。你用 Spring 事件重构：自定义事件、@EventListener、@TransactionalEventListener 与异步监听。",
+      "requirements": ["定义事件 + 发布（ApplicationEventPublisher）+ 监听（@EventListener）三件套", "@TransactionalEventListener 的 AFTER_COMMIT 语义与用途", "异步监听：@Async + 线程池的配合与异常处理", "对比直接调用/MQ：什么规模用事件、什么规模上 MQ"],
+      "constraints": ["给出可编译示例"], "deliverables": ["事件重构示例", "事务绑定说明", "与 MQ 的边界"],
+      "acceptance": ["AFTER_COMMIT 保证「提交后再发」讲清", "监听器异常不影响主流程的处理方式给出", "「进程内事件不能替代 MQ」的边界明确"],
+      "rubric": [ { "dimension": "正确性", "weight": 50, "guidance": "事件机制与事务绑定准确。" }, { "dimension": "方案设计", "weight": 50, "guidance": "场景方案与边界清晰。" } ]
+    },
+    {
+      "code": "FW-017", "title": "条件注解实战：让组件按环境自动装配", "category": "framework", "difficulty": "MEDIUM",
+      "tags": "条件注解,自动配置", "summary": "用「AI Provider 双实现切换」场景讲清条件注解家族。", "estimatedMinutes": 25,
+      "background": "本项目 AiProviderConfig 就是按配置在 Mock 与 Remote 间切换的活例子。你以此为教材讲清条件注解家族与自定义条件。",
+      "requirements": ["常用条件注解：@ConditionalOnProperty/OnClass/OnMissingBean/OnBean", "本项目 AiProviderConfig 的装配逻辑解读", "自定义 Condition 类的实现方式", "条件评估顺序的坑（OnBean 依赖 Bean 创建顺序）"],
+      "constraints": ["必须以本项目代码为例"], "deliverables": ["注解说明", "项目代码解读", "自定义 Condition 示例"],
+      "acceptance": ["项目「无 Key 自动降级 Mock」的机制讲清", "OnMissingBean 的顺序陷阱点到", "自定义 Condition 示例可编译"],
+      "rubric": [ { "dimension": "正确性", "weight": 50, "guidance": "注解语义与顺序陷阱准确。" }, { "dimension": "工程规范", "weight": 50, "guidance": "以真实代码为教材。" } ]
+    },
+    {
+      "code": "FW-018", "title": "@Lazy 与延迟注入：打破初始化依赖", "category": "framework", "difficulty": "MEDIUM",
+      "tags": "@Lazy,注入,Spring", "summary": "讲清 @Lazy 的两种用法（注入代理与延迟初始化）与适用场景。", "estimatedMinutes": 20,
+      "background": "启动太慢或循环依赖时，@Lazy 常被当作万金油。你写一篇：它的两种语义、正确的使用场景、以及「别用它掩盖设计问题」的提醒。",
+      "requirements": ["@Lazy 在注入点：注入代理，首次使用才解析目标", "@Lazy 在 Bean 定义：容器启动不初始化，首次获取才创建", "适用场景：启动提速、可选依赖、打破非构造循环依赖", "反模式：用 @Lazy 掩盖循环依赖的设计问题"],
+      "constraints": [], "deliverables": ["两种语义说明", "适用与反模式清单"],
+      "acceptance": ["注入代理的机制（仍走容器解析）讲清", "「先重构后 @Lazy」的立场明确", "与 ObjectProvider 的差异一句话"],
+      "rubric": [ { "dimension": "正确性", "weight": 50, "guidance": "两种语义区分准确。" }, { "dimension": "工程规范", "weight": 50, "guidance": "使用边界明确。" } ]
+    },
+    {
+      "code": "FW-019", "title": "Spring Boot 配置加载优先级", "category": "framework", "difficulty": "MEDIUM",
+      "tags": "配置,优先级,SpringBoot", "summary": "理清配置来源的优先级链，并解释「为什么环境变量总是生效」。", "estimatedMinutes": 20,
+      "background": "「我改了 yml 怎么没生效」通常是优先级问题。你写一篇：常见配置来源与优先级、本项目 profile + 环境变量的组合解读。",
+      "requirements": ["优先级链（高到低）：命令行参数 → 环境变量 → application-{profile} → application.yml", "profile 的激活方式与环境选择", "外部化配置的意义（容器部署传环境变量）", "排查方法：/actuator/env 或条件评估报告"],
+      "constraints": ["结合本项目 SERVER_PORT/JOBSIM 配置举例"], "deliverables": ["优先级说明", "项目配置组合解读"],
+      "acceptance": ["环境变量覆盖 yml 的机制讲清", "本项目「默认 mysql、可切 demo」的组合解读", "给出配置不生效的排查步骤"],
+      "rubric": [ { "dimension": "正确性", "weight": 55, "guidance": "优先级顺序准确。" }, { "dimension": "工程规范", "weight": 45, "guidance": "结合项目实例。" } ]
+    },
+    {
+      "code": "FW-020", "title": "Actuator 与生产可观测性入门", "category": "framework", "difficulty": "MEDIUM",
+      "tags": "Actuator,监控,运维", "summary": "用本项目已暴露的 health 端点讲起，扩展到生产监控的端点清单与安全。", "estimatedMinutes": 20,
+      "background": "项目已暴露 /actuator/health。你写一篇：Actuator 还有哪些端点、生产上该开哪些、怎么保护。",
+      "requirements": ["常用端点：health/info/metrics/env/loggers", "health 的分组与自定义 HealthIndicator", "生产暴露原则：最小暴露 + 独立端口/权限保护", "与 Prometheus/Grafana 的衔接一句话（micrometer）"],
+      "constraints": ["以本项目配置为起点"], "deliverables": ["端点清单", "暴露策略", "自定义指标示例思路"],
+      "acceptance": ["loggers 端点动态调整日志级别的用法讲到", "env 端点的敏感信息风险与保护", "最小暴露原则明确"],
+      "rubric": [ { "dimension": "正确性", "weight": 50, "guidance": "端点功能准确。" }, { "dimension": "工程规范", "weight": 50, "guidance": "生产策略合理。" } ]
+    },
+    {
+      "code": "FW-021", "title": "MyBatis 一级与二级缓存",
+      "category": "framework", "difficulty": "MEDIUM",
+      "tags": "MyBatis,缓存,面试高频", "summary": "讲清两级缓存的作用域与坑，并给出「生产是否开启」的建议。", "estimatedMinutes": 25,
+      "background": "MyBatis 缓存是高频考点也是高频事故源。你写一篇：一级缓存的 SqlSession 作用域、二级缓存的 namespace 作用域与脏读风险、生产建议。",
+      "requirements": ["一级缓存：SqlSession 级、默认开启、Spring 集成下每次请求新 SqlSession 的表现", "二级缓存：namespace 级、跨 SqlSession、序列化要求", "二级缓存的脏数据风险：多表关联更新导致不同 namespace 缓存不一致", "生产建议：默认关闭二级缓存、用 Redis 等应用层缓存替代"],
+      "constraints": [], "deliverables": ["两级缓存说明", "脏读风险场景", "生产建议"],
+      "acceptance": ["Spring 集成下一级缓存「同一事务内生效」的表现讲清", "多表更新导致脏读的场景举例", "结论「业务缓存显式设计而非依赖 ORM 缓存」"],
+      "rubric": [ { "dimension": "正确性", "weight": 55, "guidance": "作用域与风险机制准确。" }, { "dimension": "工程规范", "weight": 45, "guidance": "生产建议明确。" } ]
+    },
+    {
+      "code": "FW-022", "title": "MyBatis 插件原理：拦截器如何改写 SQL", "category": "framework", "difficulty": "HARD",
+      "tags": "MyBatis,插件,分页", "summary": "讲清 MyBatis 插件的动态代理机制与四大拦截点，以分页插件为例。", "estimatedMinutes": 30,
+      "background": "本项目用的分页插件就是 MyBatis 插件机制的产物。你写一篇：拦截点（Executor/StatementHandler 等）、责任链与动态代理、分页插件改写 SQL 的原理。",
+      "requirements": ["四大拦截点及用途（Executor 增删改查、StatementHandler 语句、ParameterHandler 参数、ResultSetHandler 结果）", "插件链 = 动态代理层层包装的责任链", "分页插件：拦截 StatementHandler → 改写 SQL 加 LIMIT → 另发 count 语句", "自定义插件：实现 Interceptor + @Intercepts 签名"],
+      "constraints": ["以 MyBatis-Plus 分页为例"], "deliverables": ["机制说明", "分页插件原理", "自定义插件示例思路"],
+      "acceptance": ["代理链的包装顺序讲清", "count 语句的生成时机正确", "拦截点选择「越靠内越精细、越靠外越通用」的判断"],
+      "rubric": [ { "dimension": "正确性", "weight": 55, "guidance": "拦截机制与改写原理准确。" }, { "dimension": "方案设计", "weight": 45, "guidance": "自定义插件路径清晰。" } ]
+    },
+    {
+      "code": "FW-023", "title": "MyBatis 动态 SQL 全家桶", "category": "framework", "difficulty": "MEDIUM",
+      "tags": "MyBatis,动态SQL", "summary": "梳理 if/where/foreach/set/choose 的用法与易错点。", "estimatedMinutes": 25,
+      "background": "动态 SQL 写多必错。你写一篇速查：每个标签的用途、易错点（where 与 and、foreach 的集合空判断、set 尾逗号）。",
+      "requirements": ["if + where 组合处理动态条件（where 标签自动去 and）", "foreach 的 collection/item/separator/open/close 与空集合问题", "set 标签动态更新与「全空更新」风险", "choose/when/otherwise 与 bind 的一句话用途"],
+      "constraints": ["与 #{} 注入安全呼应（FW-003）"], "deliverables": ["标签速查表", "易错点清单", "典型 Mapper 片段"],
+      "acceptance": ["foreach 空集合导致 SQL 语法错误的防护讲到", "动态 update 缺少条件会全表更新的警告", "示例 XML 片段正确"],
+      "rubric": [ { "dimension": "正确性", "weight": 50, "guidance": "标签行为准确。" }, { "dimension": "工程规范", "weight": 50, "guidance": "易错点来自真实开发。" } ]
+    },
+    {
+      "code": "FW-024", "title": "Spring Security 过滤器链入门",
+      "category": "framework", "difficulty": "MEDIUM",
+      "tags": "SpringSecurity,过滤器链,安全", "summary": "讲清过滤器链结构，并以本项目 JWT 方案为例解读。", "estimatedMinutes": 30,
+      "background": "本项目已实现 SecurityFilterChain + JWT 过滤器。你写一篇解读：过滤器链的概念、请求如何被逐层处理、本项目各配置项对应哪个环节。",
+      "requirements": ["过滤器链概念：SecurityFilterChain 由一组 Filter 组成、顺序敏感", "关键过滤器：SecurityContextPersistenceFilter（旧）/CsrfFilter/异常翻译/授权过滤器", "本项目配置逐行解读：csrf 关闭的理由、sessionStateless、授权规则、JWT 过滤器位置", "自定义过滤器的插入时机（addFilterBefore 的意义）"],
+      "constraints": ["以本项目 SecurityConfig 为例"], "deliverables": ["过滤器链说明", "本项目配置解读", "扩展指引（加一个自定义过滤器）"],
+      "acceptance": ["JWT 过滤器放在 UsernamePasswordAuthenticationFilter 之前的理由", "STATELESS 与不创建 HttpSession 的关系", "异常翻译过滤器把内部异常转成 401/403 的机制"],
+      "rubric": [ { "dimension": "正确性", "weight": 55, "guidance": "链结构与顺序机制准确。" }, { "dimension": "工程规范", "weight": 45, "guidance": "结合项目逐项解读。" } ]
+    },
+    {
+      "code": "FW-025", "title": "JWT 登录方案设计与安全加固", "category": "framework", "difficulty": "MEDIUM",
+      "tags": "JWT,认证,安全", "summary": "基于本项目实现讲 JWT 方案的完整设计点与加固清单。", "estimatedMinutes": 30,
+      "background": "本项目已实现 JWT 签发/校验。你写一篇方案复盘：设计点（claims、过期、密钥管理）与已知短板（吊销、续期）的加固路线。",
+      "requirements": ["claims 设计：sub/uid/role 的取舍（不放敏感信息）", "密钥管理：HS256 密钥来源与轮换思路", "已知短板：无法主动吊销、续期需要 refresh token", "加固清单：短期 access + 长期 refresh、黑名单（Redis）、签名算法升级路径"],
+      "constraints": ["以本项目 JwtService 为例"], "deliverables": ["设计点复盘", "短板与加固路线", "与 Session 方案的一句话边界"],
+      "acceptance": ["「登出即黑名单」的 Redis 实现思路给出", "refresh token 的轮换机制描述正确", "密钥轮换的兼容策略（kid）点到"],
+      "rubric": [ { "dimension": "正确性", "weight": 50, "guidance": "机制与短板分析准确。" }, { "dimension": "方案设计", "weight": 50, "guidance": "加固路线可落地。" } ]
+    },
+    {
+      "code": "FW-026", "title": "统一响应与全局异常的组合设计",
+      "category": "framework", "difficulty": "EASY",
+      "tags": "统一响应,异常处理", "summary": "复盘本项目 ApiResponse + 全局异常处理器的设计收益与扩展点。", "estimatedMinutes": 15,
+      "background": "本项目已实现统一响应与全局异常。你写一篇复盘：这套组合解决了什么问题、还有哪些常见扩展（错误码分段、业务异常码）。",
+      "requirements": ["组合的收益：Controller 零 try-catch、前端单一约定", "常见扩展：业务错误码分段（如 1xxxx 用户、2xxxx 订单）、携带 details 字段", "校验错误的友好化（字段名映射中文）", "与 Swagger 文档的一致性维护"],
+      "constraints": ["以本项目 common 包为例"], "deliverables": ["复盘说明", "扩展建议清单"],
+      "acceptance": ["结合项目真实代码举例", "扩展建议不超过合理范围（不过度设计）", "提到「错误码要有一张登记表」的治理意识"],
+      "rubric": [ { "dimension": "正确性", "weight": 50, "guidance": "机制理解准确。" }, { "dimension": "工程规范", "weight": 50, "guidance": "扩展建议务实。" } ]
+    },
+    {
+      "code": "FW-027", "title": "参数校验进阶：分组、嵌套与自定义注解",
+      "category": "framework", "difficulty": "MEDIUM",
+      "tags": "校验,Bean Validation", "summary": "在基础校验之上讲清分组校验、嵌套校验与自定义校验注解的实现。", "estimatedMinutes": 25,
+      "background": "本项目已用基础校验。你写进阶篇：同一 DTO 在新增/编辑场景的不同规则（分组）、嵌套对象校验、自定义「手机号」注解的实现。",
+      "requirements": ["分组校验：@Validated(Create.class) 的用法与场景", "嵌套校验：字段上的 @Valid 级联", "自定义注解：实现 ConstraintValidator（手机号示例）", "校验与全局异常的配合（复用 FW-026）"],
+      "constraints": ["给出可编译代码"], "deliverables": ["分组示例", "自定义注解代码", "场景选择建议"],
+      "acceptance": ["分组校验解决「新增必填、编辑可空」的场景讲清", "ConstraintValidator 的 isValid 实现正确", "提到容器元素校验（本项目已用 List<@NotBlank>）"],
+      "rubric": [ { "dimension": "正确性", "weight": 50, "guidance": "机制与代码正确。" }, { "dimension": "工程规范", "weight": 50, "guidance": "场景选择务实。" } ]
+    },
+    {
+      "code": "FW-028", "title": "HTTP 客户端选型：RestTemplate / WebClient / RestClient",
+      "category": "framework", "difficulty": "MEDIUM",
+      "tags": "HTTP客户端,Spring,选型", "summary": "对比三种客户端与 JDK HttpClient，给出选型与超时配置纪律。", "estimatedMinutes": 25,
+      "background": "本项目 RemoteAiProvider 用了 JDK HttpClient。你写一篇选型对比：三种 Spring 客户端的定位、超时与连接池配置、以及「为什么本项目选了 JDK HttpClient」。",
+      "requirements": ["RestTemplate 的现状（维护模式）与阻塞模型", "WebClient：响应式、支持流式；RestClient：3.2+ 的同步流式 API", "JDK HttpClient 的原生定位（本项目选择理由：零依赖、超时可控、教学清晰）", "共性纪律：必须显式配置超时与连接池上限"],
+      "constraints": ["结合本项目 RemoteAiProvider 举例"], "deliverables": ["选型对比表", "本项目选型论证", "超时配置示例"],
+      "acceptance": ["三种客户端定位准确", "本项目选型理由自洽（教学项目、依赖最小化）", "「默认无超时是事故之源」的警告明确"],
+      "rubric": [ { "dimension": "正确性", "weight": 50, "guidance": "定位与机制准确。" }, { "dimension": "方案设计", "weight": 50, "guidance": "选型论证自洽。" } ]
+    },
+    {
+      "code": "FW-029", "title": "测试切片：@WebMvcTest 与集成测试的组合",
+      "category": "framework", "difficulty": "MEDIUM",
+      "tags": "测试,切片,SpringBootTest", "summary": "讲清全量集成测试与切片测试的分层，以及本项目测试策略的扩展方向。", "estimatedMinutes": 25,
+      "background": "本项目用全量 @SpringBootTest 跑集成测试。你写一篇：切片测试（@WebMvcTest/@JsonTest）与全量测试的分工、以及把本项目测试升级为两层的方法。",
+      "requirements": ["@WebMvcTest：只加载 MVC 层、Mock Service、测参数校验与异常映射", "@JsonTest：序列化一致性", "全量 @SpringBootTest 的价值：真实链路与安全规则", "两层组合的落地方案（哪些接口用切片、哪些用全量）"],
+      "constraints": ["结合本项目 FullFlowIntegrationTest"], "deliverables": ["分层说明", "升级方案", "一个 @WebMvcTest 示例"],
+      "acceptance": ["切片测试加载范围讲清", "示例代码正确（@MockBean/@MockitoBean 模拟 Service）", "给出本项目测试的渐进升级建议"],
+      "rubric": [ { "dimension": "正确性", "weight": 50, "guidance": "切片机制准确。" }, { "dimension": "方案设计", "weight": 50, "guidance": "升级方案务实。" } ]
+    },
+    {
+      "code": "FW-030", "title": "Spring 扩展点总览：Aware / BPP / BFPP / Event",
+      "category": "framework", "difficulty": "HARD",
+      "tags": "扩展点,Spring,进阶", "summary": "把 Spring 的主要扩展点串成一张地图，说明各自的介入时机与选用。", "estimatedMinutes": 35,
+      "background": "Spring 的「魔法」都来自扩展点。你写一张「扩展点地图」：每个扩展点的介入时机、典型用途、风险，并给出「改哪个用什么」的速查。",
+      "requirements": ["BeanFactoryPostProcessor：容器级配置元数据修改（占位符解析）", "BeanPostProcessor：Bean 级包装（AOP）", "Aware 系列：拿到容器内部对象", "事件机制与 Lifecycle/SmartLifecycle 的定位", "速查表：想改配置元数据/想包装 Bean/想感知容器/想在提交后做事分别用什么"],
+      "constraints": ["结合 FW-004/013/016 的内容不重复展开"], "deliverables": ["扩展点地图", "速查表", "风险提示"],
+      "acceptance": ["介入时机按容器启动顺序排列正确", "每个扩展点给出一个 Spring 内部实例", "「优先用高级抽象、少碰底层扩展点」的立场明确"],
+      "rubric": [ { "dimension": "正确性", "weight": 55, "guidance": "时机与职责准确。" }, { "dimension": "方案设计", "weight": 45, "guidance": "速查表实用。" } ]
+    },
+    {
+      "code": "FW-031", "title": "定时任务：@Scheduled 与分布式调度",
+      "category": "framework", "difficulty": "MEDIUM",
+      "tags": "定时任务,@Scheduled,分布式", "summary": "从 @Scheduled 到多实例防重与分布式调度框架的演进。", "estimatedMinutes": 30,
+      "background": "API-003 已用过 @Scheduled。你写进阶篇：cron/fixedDelay 区别、多实例部署的重复执行问题（分布式锁/分片）、以及什么时候引入 XXL-Job 类调度平台。",
+      "requirements": ["cron 与 fixedDelay/fixedRate 的语义差异", "多实例重复执行的两种解法：分布式锁 / 分片执行", "任务超时与错过触发（misfire）的处理思路", "引入调度平台的信号：任务量大、需可视化、需失败告警与手动触发"],
+      "constraints": ["与 API-003 不重复，聚焦工程化"], "deliverables": ["语义对比", "多实例方案", "平台选型信号"],
+      "acceptance": ["fixedDelay 与 fixedRate 的区别讲清", "分布式锁方案复用 RD-005 的结论", "调度平台的核心增值点列举（可视化/告警/分片）"],
+      "rubric": [ { "dimension": "正确性", "weight": 50, "guidance": "语义与方案准确。" }, { "dimension": "方案设计", "weight": 50, "guidance": "演进路线清晰。" } ]
+    },
+    {
+      "code": "MQ-001", "title": "为什么需要消息队列：三个核心价值与代价",
+      "category": "mq", "difficulty": "EASY",
+      "tags": "MQ,异步,解耦,削峰", "summary": "讲清 MQ 的三大价值（异步/解耦/削峰）与引入的代价。", "estimatedMinutes": 20,
+      "background": "「为什么要用 MQ」的第一问。你用注册发邮件、订单扣库存、秒杀三个场景讲价值，并诚实讲代价。",
+      "requirements": ["异步：主流程不等待旁路（注册 vs 发邮件）", "解耦：生产者不关心消费者是谁（订单事件多订阅）", "削峰：写入排队、消费匀速（秒杀下单）", "代价：一致性问题、复杂度、重复消费与顺序问题、运维成本"],
+      "constraints": [], "deliverables": ["三价值场景", "代价清单"],
+      "acceptance": ["每个价值有具体场景", "代价不能漏（尤其一致性与复杂度）", "结论「不是所有系统都需要 MQ」"],
+      "rubric": [ { "dimension": "正确性", "weight": 50, "guidance": "价值与代价准确。" }, { "dimension": "方案设计", "weight": 50, "guidance": "场景贴合、立场诚实。" } ]
+    },
+    {
+      "code": "MQ-002", "title": "Kafka 核心架构与术语",
+      "category": "mq", "difficulty": "MEDIUM",
+      "tags": "Kafka,架构,面试高频", "summary": "讲清 Broker/Topic/Partition/副本/消费组等核心概念与存储模型。", "estimatedMinutes": 30,
+      "background": "Kafka 是面试主流。你写一篇概念地图：从消息写入到被消费的完整数据流，把术语全部串起来。",
+      "requirements": ["Topic/Partition 的关系与并行度含义", "副本机制：leader/follower、ISR 一句话", "消费组：组内独占、组间广播；分区数与消费者数的关系", "存储模型：顺序写 + 分段日志 + offset 定位"],
+      "constraints": ["以 Kafka 2.x/3.x 通用行为为准"], "deliverables": ["概念地图", "数据流说明", "并行度分析"],
+      "acceptance": ["「分区是并行与顺序的单元」讲清", "消费组内一个分区只被一个消费者消费", "顺序写是 Kafka 高吞吐的原因之一"],
+      "rubric": [ { "dimension": "正确性", "weight": 55, "guidance": "概念与机制准确。" }, { "dimension": "沟通表达", "weight": 45, "guidance": "概念串成数据流。" } ]
+    },
+    {
+      "code": "MQ-003", "title": "Kafka 分区与消息顺序保证",
+      "category": "mq", "difficulty": "MEDIUM",
+      "tags": "Kafka,顺序,分区", "summary": "讲清分区内有序的保证与全局顺序的代价方案。", "estimatedMinutes": 25,
+      "background": "「Kafka 怎么保证顺序」要先纠正「全局有序」的误区。你写一篇：分区内有序、key 路由、乱序场景与方案。",
+      "requirements": ["分区内有序的保证机制（追加写 + offset）", "key 路由：同一业务键进同一分区（按订单号分区）", "重试导致的乱序（max.in.flight > 1）与解决方案", "全局顺序的代价：单分区（牺牲并行）——通常用「局部有序」替代"],
+      "constraints": [], "deliverables": ["有序性说明", "乱序场景与修复", "业务键分区建议"],
+      "acceptance": ["按 key 分区的路由机制讲对", "max.in.flight 与重试的乱序组合讲到", "结论「按业务实体保证局部有序」"],
+      "rubric": [ { "dimension": "正确性", "weight": 55, "guidance": "顺序保证机制准确。" }, { "dimension": "方案设计", "weight": 45, "guidance": "业务落地方案可行。" } ]
+    },
+    {
+      "code": "MQ-004", "title": "消费组与重平衡（Rebalance）",
+      "category": "mq", "difficulty": "MEDIUM",
+      "tags": "Kafka,消费组,重平衡", "summary": "讲清重平衡的触发条件、影响与减少重平衡的实践。", "estimatedMinutes": 25,
+      "background": "线上偶发「消费暂停几秒」通常是重平衡。你写一篇：触发条件、重平衡过程、对业务的影响与减少发生的实践。",
+      "requirements": ["触发条件：成员增减、订阅变化、分区数变化", "重平衡期间消费暂停的影响", "常见误触发：消费超时（max.poll.interval.ms）、心跳丢失", "实践：合理设置 max.poll.records/超时、静态成员、协作式重平衡一句话"],
+      "constraints": [], "deliverables": ["触发与影响", "参数调优清单"],
+      "acceptance": ["消费超时导致被踢出组的机制讲清", "max.poll.records 调小的理由（单次处理时间可控）", "「先看是否误触发再谈扩容」的排查顺序"],
+      "rubric": [ { "dimension": "正确性", "weight": 55, "guidance": "触发与参数机制准确。" }, { "dimension": "工程规范", "weight": 45, "guidance": "实践清单可执行。" } ]
+    },
+    {
+      "code": "MQ-005", "title": "延迟消息的四种实现方案",
+      "category": "mq", "difficulty": "MEDIUM",
+      "tags": "延迟消息,设计", "summary": "对比轮询扫表 / 延迟等级 / 时间轮 / 分层存储四种延迟方案。", "estimatedMinutes": 30,
+      "background": "订单 30 分钟未支付自动关闭需要延迟消息。你对比四种实现：各自精度、吞吐、复杂度，给出选型。",
+      "requirements": ["方案一：DB 轮询扫表（简单、精度差、扫表压力）", "方案二：RabbitMQ 死信/TTL 或 RocketMQ 延迟等级（固定档位）", "方案三：时间轮（Netty HashedWheelTimer，O(1) 插入）", "方案四：Redis zset / Kafka 分层跳表类方案的思路与取舍"],
+      "constraints": ["结合订单超时场景（SD-008）"], "deliverables": ["四方案对比表", "选型建议"],
+      "acceptance": ["扫表方案的查询设计与索引讲到", "时间轮的 O(1) 插入与精度权衡", "结论结合量级：小量扫表、大量用时间轮/成熟 MQ 能力"],
+      "rubric": [ { "dimension": "正确性", "weight": 50, "guidance": "各方案机制准确。" }, { "dimension": "方案设计", "weight": 50, "guidance": "对比与选型有量级意识。" } ]
+    },
+    {
+      "code": "MQ-006", "title": "事务消息与本地消息表",
+      "category": "mq", "difficulty": "EXPERT",
+      "tags": "事务消息,最终一致,分布式", "summary": "解决「DB 写成功但消息发不出」的一致性问题：半消息与本地消息表两种方案。", "estimatedMinutes": 45,
+      "background": "订单落库成功了但 MQ 消息没发出去，下游永远不知道——分布式一致性的经典问题。你对比 RocketMQ 事务消息与本地消息表两种方案，给出选型与实现细节。",
+      "requirements": ["问题定义：DB 事务与消息发送的原子性", "RocketMQ 半消息：half message → 本地事务 → 回查机制", "本地消息表：业务与消息同库同事务 + 后台扫描重发 + 幂等消费", "两方案对比（依赖组件/侵入性/吞吐）与选型建议"]
+      , "constraints": ["消费端幂等是前提（引用 FW-009）"], "deliverables": ["问题定义", "两方案实现细节", "选型建议"],
+      "acceptance": ["半消息的回查语义讲清", "本地消息表的表结构设计与扫描任务给出", "结论「多数团队本地消息表更可控」并说明理由"],
+      "rubric": [ { "dimension": "正确性", "weight": 50, "guidance": "两方案机制准确。" }, { "dimension": "方案设计", "weight": 50, "guidance": "对比与选型有工程判断。" } ]
+    },
+    {
+      "code": "MQ-007", "title": "削峰填谷案例：把 1 万 TPS 的写入压到 1 千",
+      "category": "mq", "difficulty": "MEDIUM",
+      "tags": "削峰,MQ,容量", "summary": "设计一个写入削峰链路：限流入口、队列缓冲、匀速消费与反馈。", "estimatedMinutes": 30,
+      "background": "活动开始瞬间写入是平时的 10 倍。你设计削峰链路：入口限流、MQ 缓冲、消费速率匹配 DB 能力、堆积监控与用户反馈。",
+      "requirements": ["入口层：限流（复用 DS-003）与快速响应「排队中」", "缓冲层：MQ 消息模型与分区设计", "消费层：消费速率与 DB 写入能力匹配（批量写）", "可观测：堆积量告警与端到端延迟目标"],
+      "constraints": ["给出容量估算示例"], "deliverables": ["链路设计", "容量估算", "监控指标"],
+      "acceptance": ["批量写入提升 DB 吞吐的估算给出", "「队列不是无限缓冲」的堆积上限设计", "端到端延迟 SLO 明确"],
+      "rubric": [ { "dimension": "方案设计", "weight": 55, "guidance": "链路完整、容量有估算。" }, { "dimension": "正确性", "weight": 45, "guidance": "各层机制正确。" } ]
+    },
+    {
+      "code": "MQ-008", "title": "RabbitMQ vs Kafka vs RocketMQ 选型",
+      "category": "mq", "difficulty": "MEDIUM",
+      "tags": "选型,MQ,对比", "summary": "从模型、吞吐、顺序、延迟消息、运维五个维度做选型对比。", "estimatedMinutes": 25,
+      "background": "「为什么选 Kafka 不选 RabbitMQ」需要结构化回答。你写选型对比：五个维度打分，给三类业务的推荐组合。",
+      "requirements": ["模型差异：RabbitMQ 队列+交换机路由 vs Kafka 分区日志 vs RocketMQ 类 Kafka + 事务/延迟", "吞吐与延迟的大致量级认知", "关键能力对照：顺序、延迟消息、事务消息、死信、重试", "三类业务推荐：业务事件总线 / 日志采集大吞吐 / 复杂路由小规模"],
+      "constraints": ["允许量级估算，标注为经验值"], "deliverables": ["五维对比表", "选型建议"],
+      "acceptance": ["模型差异讲清（路由 vs 日志）", "不背「Kafka 一定快」，分场景", "团队熟悉度也是选型因素的观点出现"],
+      "rubric": [ { "dimension": "正确性", "weight": 50, "guidance": "差异与能力对照准确。" }, { "dimension": "方案设计", "weight": 50, "guidance": "选型分场景。" } ]
+    },
+    {
+      "code": "MQ-009", "title": "消息积压应急演练方案",
+      "category": "mq", "difficulty": "HARD",
+      "tags": "积压,应急,消息队列", "summary": "制定积压事件的应急预案：定位、扩容、降级、复盘的完整剧本。", "estimatedMinutes": 35,
+      "background": "凌晨收到堆积告警怎么办？你写一份应急剧本：5 分钟定位、30 分钟止血、事后复盘，覆盖各种根因分支。",
+      "requirements": ["快速定位：消费延迟指标 → 根因分支（消费报错/下游慢/流量突增）", "止血手段：扩消费者、批量处理、跳过与非核心降级、临时转发", "根治与复盘：根因修复、预案沉淀、容量复盘", "红线：跳过消息必须有对账补偿配合"],
+      "constraints": ["剧本要分时间线"], "deliverables": ["应急剧本", "根因决策树", "复盘模板"],
+      "acceptance": ["定位时间线明确（先看错误率再看下游）", "「跳过消息必须配对账」的红线明确", "剧本可直接当值班手册"],
+      "rubric": [ { "dimension": "问题定位", "weight": 50, "guidance": "决策树覆盖主要根因。" }, { "dimension": "工程规范", "weight": 50, "guidance": "剧本可执行、红线清晰。" } ]
+    },
+    {
+      "code": "MQ-010", "title": "顺序消费的全面方案",
+      "category": "mq", "difficulty": "HARD",
+      "tags": "顺序消费,MQ", "summary": "设计「同一订单状态变更按序消费」的端到端方案。", "estimatedMinutes": 35,
+      "background": "订单状态机要求消息按状态变更顺序消费。你设计端到端方案：生产端路由、Broker 保证、消费端串行与并行度平衡、失败阻断策略。",
+      "requirements": ["生产端：同一订单 ID 路由到同一分区/队列（复用 MQ-003）", "Broker：分区内追加写保证", "消费端：单分区内串行消费 vs 按业务键内存队列并行（提高吞吐）", "失败处理：失败是否阻塞后续消息（阻断 vs 跳过+对账）"],
+      "constraints": ["以 Kafka/RocketMQ 通用模型为准"], "deliverables": ["端到端方案", "吞吐优化", "失败策略"],
+      "acceptance": ["内存队列按业务键分组的并行方案讲清", "失败阻断的代价与兜底（对账）分析", "明确「全局顺序」几乎不必要"],
+      "rubric": [ { "dimension": "正确性", "weight": 50, "guidance": "顺序保证链路准确。" }, { "dimension": "方案设计", "weight": 50, "guidance": "吞吐与可靠性的平衡有方案。" } ]
+    }
+  ]
+}

@@ -8,15 +8,20 @@ import java.util.Map;
  */
 public class CategoryLabels {
 
-    public static final Map<String, String> LABELS = Map.of(
-            "api-design", "需求分析与 API 设计",
-            "db-design", "数据库设计",
-            "troubleshooting", "问题排查",
-            "testing", "测试与质量",
-            "refactoring", "代码设计与重构",
-            "java-core", "Java 核心与并发",
-            "framework", "Spring 与框架",
-            "cache", "Redis 与缓存"
+    public static final Map<String, String> LABELS = Map.ofEntries(
+            Map.entry("api-design", "需求分析与 API 设计"),
+            Map.entry("db-design", "数据库设计"),
+            Map.entry("troubleshooting", "问题排查"),
+            Map.entry("testing", "测试与质量"),
+            Map.entry("refactoring", "代码设计与重构"),
+            Map.entry("java-core", "Java 核心与并发"),
+            Map.entry("framework", "Spring 与框架"),
+            Map.entry("cache", "Redis 与缓存"),
+            Map.entry("network-os", "网络与操作系统"),
+            Map.entry("mq", "消息队列与异步"),
+            Map.entry("distributed", "分布式与微服务"),
+            Map.entry("system-design", "系统设计场景"),
+            Map.entry("engineering", "工程素养与工具")
     );
 
     private CategoryLabels() {

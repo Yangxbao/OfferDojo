@@ -1,0 +1,366 @@
+{
+  "tasks": [
+    {
+      "code": "DS-001", "title": "CAP 与 BASE：分布式的一致性世界观", "category": "distributed", "difficulty": "MEDIUM",
+      "tags": "CAP,BASE,理论", "summary": "准确理解 CAP 的取舍场景与 BASE 的工程实践意义。", "estimatedMinutes": 25,
+      "background": "CAP 是被误解最多的理论。你写一篇纠偏文：P 是必选项、CA 在分布式里不可兼得，以及 BASE 如何指导工程（最终一致）。",
+      "requirements": ["三属性定义与「P 必选」的原因（网络分区不可避免）", "CP 与 AP 的典型系统举例（ZooKeeper/etcd 偏 CP，Eureka/多数业务偏 AP）", "BASE：基本可用、软状态、最终一致的业务映射", "纠偏：不是「三选二」的简单口号，而是分区发生时的取舍"],
+      "constraints": [], "deliverables": ["理论纠偏说明", "系统举例", "业务映射"],
+      "acceptance": ["「分区发生时才选 C 或 A」的准确表述", "最终一致的业务例子（订单状态异步同步）", "把理论与 RD-003 的缓存一致性结论关联"],
+      "rubric": [ { "dimension": "正确性", "weight": 55, "guidance": "理论表述准确无俗解。" }, { "dimension": "沟通表达", "weight": 45, "guidance": "落到工程语言。" } ]
+    },
+    {
+      "code": "DS-002", "title": "分布式 ID：四种方案对比与选型",
+      "category": "distributed", "difficulty": "MEDIUM",
+      "tags": "分布式ID,雪花算法,面试高频", "summary": "对比 UUID / 号段 / 雪花 / Redis 自增，按有序性与部署复杂度选型。", "estimatedMinutes": 30,
+      "background": "分库分表后自增 ID 失效。你对比四种分布式 ID 方案：唯一性、趋势递增、信息量、依赖组件。",
+      "requirements": ["UUID：全局唯一但无序（页分裂）、过长", "数据库号段：批量取号、双 buffer 优化（呼应 API-004）", "雪花算法：结构（时间戳+机器+序列）、趋势递增、时钟回拨问题与应对", "选型矩阵：按有序性需求、运维成本、是否暴露业务量"],
+      "constraints": [], "deliverables": ["四方案对比表", "雪花算法详解", "选型建议"],
+      "acceptance": ["时钟回拨的应对（等待/拒绝/备用位）讲到", "趋势递增对 InnoDB 主键友好的原因", "美团 Leaf/百度 UidGenerator 的存在性提及"],
+      "rubric": [ { "dimension": "正确性", "weight": 55, "guidance": "各方案机制准确。" }, { "dimension": "方案设计", "weight": 45, "guidance": "选型矩阵实用。" } ]
+    },
+    {
+      "code": "DS-003", "title": "限流算法四种实现与对比",
+      "category": "distributed", "difficulty": "MEDIUM",
+      "tags": "限流,算法,面试高频", "summary": "手推计数器/滑动窗口/漏桶/令牌桶的机制与差异，并给单机与分布式实现。", "estimatedMinutes": 30,
+      "background": "限流是稳定性三板斧之一。你写一篇：四种算法机制与临界问题、单机实现与 Redis 分布式实现、并结合网关/接口场景选型。",
+      "requirements": ["固定窗口计数器：临界突刺问题", "滑动窗口：精度与成本的权衡", "漏桶：恒定速率、平滑但无法应对突发", "令牌桶：允许突发、Guava RateLimiter；分布式实现用 Redis+Lua（复用 RD-013）"],
+      "constraints": [], "deliverables": ["四算法对比", "实现示例", "选型结论"],
+      "acceptance": ["临界突刺的具体例子（窗口边界两倍流量）", "漏桶 vs 令牌桶的方向性差异讲清", "分布式限流的原子性用 Lua 保证"],
+      "rubric": [ { "dimension": "正确性", "weight": 55, "guidance": "算法机制准确。" }, { "dimension": "方案设计", "weight": 45, "guidance": "实现与选型落地。" } ]
+    },
+    {
+      "code": "DS-004", "title": "熔断降级与资源隔离思想",
+      "category": "distributed", "difficulty": "MEDIUM",
+      "tags": "熔断,降级,稳定性", "summary": "讲清雪崩效应与熔断/降级/隔离三板斧，及 Sentinel 的核心思想。", "estimatedMinutes": 30,
+      "background": "一个下游卡死拖垮全站是分布式第一事故。你写一篇：雪崩链路、熔断器三态、降级策略与隔离手段。",
+      "requirements": ["雪崩链路：慢调用占满线程池 → 连锁拖垮", "熔断器三态（闭合/打开/半开）与转换条件", "降级策略：默认值/缓存旧值/功能降级；隔离：线程池/信号量", "Sentinel 的资源/规则模型与 SlidingWindow 统计思想；超时与重试的纪律（重试风暴）"],
+      "constraints": [], "deliverables": ["雪崩链路分析", "三板斧说明", "实践清单"],
+      "acceptance": ["熔断打开后探测恢复的半开机制讲对", "「重试必须配退避与上限」的纪律", "降级是有损服务、需要产品确认的观点出现"],
+      "rubric": [ { "dimension": "正确性", "weight": 50, "guidance": "机制与状态转换准确。" }, { "dimension": "方案设计", "weight": 50, "guidance": "实践清单完整。" } ]
+    },
+    {
+      "code": "DS-005", "title": "分布式事务：2PC / TCC / SAGA 全景",
+      "category": "distributed", "difficulty": "EXPERT",
+      "tags": "分布式事务,2PC,TCC", "summary": "对比强一致与最终一致各方案：原理、业务侵入、适用场景。", "estimatedMinutes": 45,
+      "background": "「跨服务扣库存和下单怎么保证一致」是高级岗必问。你写全景对比：2PC/XA、TCC、SAGA、消息最终一致（引 MQ-006），每种的机制、代价、典型框架。",
+      "requirements": ["2PC/XA：prepare/commit 两阶段、同步阻塞与协调者单点", "TCC：Try/Confirm/Cancel 的业务侵入与空回滚/悬挂问题", "SAGA：长事务拆分 + 补偿、编排 vs 协同", "选型结论：多数业务用「本地消息表 + 幂等」的最终一致，强一致场景才上 TCC/XA"],
+      "constraints": ["结论结合常见互联网业务"], "deliverables": ["方案对比表", "TCC 三问题说明", "选型结论"],
+      "acceptance": ["TCC 空回滚与悬挂的定义与防御（事务控制表）讲清", "SAGA 补偿的顺序与不可逆操作提醒", "结论落在工程现实而非理论完美"],
+      "rubric": [ { "dimension": "正确性", "weight": 55, "guidance": "各方案机制与问题准确。" }, { "dimension": "方案设计", "weight": 45, "guidance": "选型贴近工程现实。" } ]
+    },
+    {
+      "code": "DS-006", "title": "最终一致工程化：本地消息表 + 对账",
+      "category": "distributed", "difficulty": "HARD",
+      "tags": "最终一致,对账,工程化", "summary": "把「最终一致」做成可运维体系：消息表、补偿、对账与告警。", "estimatedMinutes": 35,
+      "background": "理论都懂，工程怎么做？你写一套落地体系：本地消息表、重试策略、对账任务、差异处理与告警分级。",
+      "requirements": ["本地消息表结构：状态、重试次数、下次重试时间", "补偿策略：指数退避、最大次数后人工介入队列", "对账任务：定时比对两侧数据、差异生成待处理单", "告警分级：差异率阈值触发不同级别告警"],
+      "constraints": ["与 MQ-006 呼应但偏运营体系"], "deliverables": ["体系设计", "表结构与任务设计", "告警分级"],
+      "acceptance": ["重试策略避免风暴（退避 + 上限）", "对账是「资损防线」的定位明确", "差异处理有人工兜底通道"],
+      "rubric": [ { "dimension": "方案设计", "weight": 55, "guidance": "体系完整可运维。" }, { "dimension": "工程规范", "weight": 45, "guidance": "细节（退避/告警）到位。" } ]
+    },
+    {
+      "code": "DS-007", "title": "服务注册与发现原理",
+      "category": "distributed", "difficulty": "HARD",
+      "tags": "注册中心,服务发现,微服务", "summary": "讲清注册中心的机制：注册、心跳、摘除、订阅推送，及 CAP 取舍差异。", "estimatedMinutes": 30,
+      "background": "「服务宕机了调用方怎么知道」的背后是注册中心。你写一篇：注册/心跳/发现机制、推拉模式、Nacos/Eureka/Consul 的 CAP 取舍差异。",
+      "requirements": ["机制：服务注册 → 心跳续约 → 异常摘除 → 订阅发现", "推送 vs 拉取：配置变更感知的实时性与一致性权衡", "Eureka（AP、自我保护）vs Nacos（AP/CP 可切）vs Consul/ZK（CP）", "健康检查的层次（端口存活 vs 真正可服务）"],
+      "constraints": [], "deliverables": ["机制说明", "CAP 取舍对比", "健康检查层次说明"],
+      "acceptance": ["自我保护模式（网络抖动不误删）讲清", "「摘除 ≠ 实例真的挂了」的误判场景", "优雅上下线（先摘流量再停机）的流程给出"],
+      "rubric": [ { "dimension": "正确性", "weight": 55, "guidance": "机制与取舍准确。" }, { "dimension": "工程规范", "weight": 45, "guidance": "优雅上下线可操作。" } ]
+    },
+    {
+      "code": "DS-008", "title": "API 网关的职责与设计",
+      "category": "distributed", "difficulty": "HARD",
+      "tags": "网关,微服务,架构", "summary": "梳理网关的六大职责、性能要点与自研/选型建议。", "estimatedMinutes": 30,
+      "background": "网关是流量入口。你写一篇：统一鉴权/限流/路由/灰度/日志/防护六大职责、性能设计（复用 NO-010/011）、选型建议（Nginx/Kong/Spring Cloud Gateway）。",
+      "requirements": ["六大职责逐项说明与实现要点", "性能：异步 IO（Netty）、连接复用（呼应 NO-011）", "灰度发布在网关层的实现（按用户/比例路由）", "选型：Nginx（纯流量）/ Spring Cloud Gateway（Java 生态）/ Kong（插件生态）"],
+      "constraints": [], "deliverables": ["职责说明", "性能要点", "选型建议"],
+      "acceptance": ["「业务逻辑不下沉网关」的边界纪律", "灰度路由的实现要点（Header/用户标签）", "网关自身的高可用（多实例 + 无状态）"],
+      "rubric": [ { "dimension": "正确性", "weight": 50, "guidance": "职责与机制准确。" }, { "dimension": "方案设计", "weight": 50, "guidance": "边界与选型清晰。" } ]
+    },
+    {
+      "code": "DS-009", "title": "配置中心与动态刷新",
+      "category": "distributed", "difficulty": "MEDIUM",
+      "tags": "配置中心,Nacos,动态刷新", "summary": "讲清配置中心的价值、动态刷新原理与发布纪律。", "estimatedMinutes": 25,
+      "background": "改一个开关要重启一百台机器？配置中心解决它。你写一篇：价值、长轮询推送机制、@RefreshScope 原理、发布纪律（灰度/审计/回滚）。",
+      "requirements": ["价值：集中管理、环境隔离、动态刷新、变更审计", "Nacos 长轮询机制（30s 内感知变更的原理）", "@RefreshScope 与 Bean 重建、注意有状态 Bean 的刷新风险", "发布纪律：变更评审、灰度推送、一键回滚"],
+      "constraints": [], "deliverables": ["价值说明", "刷新原理", "发布纪律清单"],
+      "acceptance": ["长轮询优于短轮询的权衡讲清", "刷新只对 @RefreshScope Bean 生效的限制", "「配置变更也是发布」的纪律意识"],
+      "rubric": [ { "dimension": "正确性", "weight": 50, "guidance": "机制准确。" }, { "dimension": "工程规范", "weight": 50, "guidance": "纪律清单完整。" } ]
+    },
+    {
+      "code": "DS-010", "title": "链路追踪与 traceId 实践",
+      "category": "distributed", "difficulty": "MEDIUM",
+      "tags": "链路追踪,traceId,可观测", "summary": "讲清分布式追踪模型（trace/span）与 traceId 传递的落地。", "estimatedMinutes": 25,
+      "background": "一次请求跨五个服务，日志怎么串？你写一篇：trace/span 模型、traceId 的透传（HTTP 头/MQ 属性）、与日志系统（TS-008）的组合。",
+      "requirements": ["模型：trace（全链路）→ span（一次调用）→ 父子关系", "透传：HTTP Header（W3C traceparent）与 MQ 属性的传递", "日志埋点：MDC 注入 traceId（复用 EN-003）", "生态：OpenTelemetry 的统一趋势与 SkyWalking/Zipkin 认知"],
+      "constraints": ["以日志 traceId 落地为主，APM 工具认知为辅"], "deliverables": ["模型说明", "透传落地", "与日志的组合"],
+      "acceptance": ["跨线程（异步任务）丢 traceId 的坑与传递方案", "采样率的取舍（全量成本高）", "「没有 traceId 的分布式排查是瞎子」的立场"],
+      "rubric": [ { "dimension": "正确性", "weight": 50, "guidance": "模型与透传机制准确。" }, { "dimension": "工程规范", "weight": 50, "guidance": "落地细节实用。" } ]
+    },
+    {
+      "code": "DS-011", "title": "微服务拆分：什么时候拆、怎么拆",
+      "category": "distributed", "difficulty": "EXPERT",
+      "tags": "微服务,拆分,架构", "summary": "给出微服务化的决策框架：拆分信号、拆分维度、拆分代价与单体优先策略。", "estimatedMinutes": 40,
+      "background": "「上来就微服务」是新团队最大的坑。你写一篇决策文档：什么信号才该拆、按业务能力怎么划边界、拆分的真实代价清单，以及模块化单体优先策略。",
+      "requirements": ["拆分信号：团队规模、部署/扩展差异化、故障隔离需求", "拆分维度：按业务能力（DDD 限界上下文一句话）、避免按技术层拆", "代价清单：分布式事务、运维复杂度、联调成本、数据一致性", "模块化单体：逻辑清晰的单体 + 未来可拆的边界（呼应 RF 系列的模块化设计）"],
+      "constraints": ["立场：单体优先，按需演进"], "deliverables": ["决策框架", "拆分维度说明", "代价清单"],
+      "acceptance": ["「康威定律」与团队结构对架构的影响点到", "分布式事务代价引用 DS-005", "明确反对过早微服务化的立场"],
+      "rubric": [ { "dimension": "方案设计", "weight": 55, "guidance": "决策框架成熟。" }, { "dimension": "正确性", "weight": 45, "guidance": "代价与信号判断准确。" } ]
+    },
+    {
+      "code": "DS-012", "title": "认证方案全景：Session / JWT / OAuth2 / SSO",
+      "category": "distributed", "difficulty": "HARD",
+      "tags": "认证,OAuth2,SSO", "summary": "把认证体系串成全景：单体到多服务的认证演进与授权码流程。", "estimatedMinutes": 35,
+      "background": "「单点登录怎么实现」是体系题。你写全景：单体 Session → 多服务 JWT/网关统一认证 → 第三方登录 OAuth2 授权码流程 → SSO 的本质（共享认证中心）。",
+      "requirements": ["演进：单体会话 → 多服务 token 校验（网关统一）→ 认证中心签发", "OAuth2 四种模式概览，重点授权码模式流程（回调 + code 换 token）", "OIDC 一句话（OAuth2 + 身份层 id_token）", "SSO 的本质：统一登录态 + 各系统本地会话"],
+      "constraints": ["结合本项目 JWT 基础（FW-025）"], "deliverables": ["演进路线", "授权码流程图", "方案选择建议"],
+      "acceptance": ["授权码模式的步骤完整且解释了「为什么需要 code 中转」", "state 参数防 CSRF 提到", "「认证中心挂了全站登录挂」的高可用提醒"],
+      "rubric": [ { "dimension": "正确性", "weight": 55, "guidance": "流程与演进准确。" }, { "dimension": "方案设计", "weight": 45, "guidance": "选择建议清晰。" } ]
+    },
+    {
+      "code": "DS-013", "title": "容器与 K8s 认知地图",
+      "category": "distributed", "difficulty": "HARD",
+      "tags": "K8s,容器,云原生", "summary": "建立 K8s 认知地图：核心对象、部署流程与后端工程师的必备知识边界。", "estimatedMinutes": 35,
+      "background": "后端不需要会运维 K8s，但必须看得懂它。你写一张认知地图：Pod/Deployment/Service/Ingress 的关系、一次发布的流程、与 Spring Boot 应用的配合（健康检查/优雅停机）。",
+      "requirements": ["核心对象关系：Deployment 管 Pod 副本、Service 做负载、Ingress 做入口", "滚动发布与回滚的机制", "与 Spring Boot 的配合：readiness/liveness 探针指向 /actuator/health、优雅停机（SIGTERM 处理）", "ConfigMap/Secret 与配置注入（呼应 EN-005）"],
+      "constraints": ["认知地图而非运维手册"], "deliverables": ["对象关系图", "发布流程", "应用配合清单"],
+      "acceptance": ["readiness 与 liveness 的区别（摘流量 vs 重启容器）讲清", "优雅停机：处理 SIGTERM、完成存量请求、关闭连接池", "资源 limit 与 OOMKilled 的关联"],
+      "rubric": [ { "dimension": "正确性", "weight": 55, "guidance": "对象与机制准确。" }, { "dimension": "工程规范", "weight": 45, "guidance": "与应用的配合实用。" } ]
+    },
+    {
+      "code": "DS-014", "title": "开放平台 API 签名与防重放",
+      "category": "distributed", "difficulty": "HARD",
+      "tags": "签名,防重放,开放平台", "summary": "设计开放 API 的签名机制：参数签名、时间戳防重放与密钥管理。", "estimatedMinutes": 35,
+      "background": "对外开放接口如何防止伪造与重放？你设计签名方案：AppKey/AppSecret、参数排序签名、时间戳+nonce 防重放、错误码与限流配合。",
+      "requirements": ["签名流程：参数排序拼接 → 加 HMAC → 携带签名", "防重放：timestamp 窗口 + nonce 一次性（Redis 记录）", "安全细节：secret 不上送、HTTPS 必须、错误信息不泄露细节", "配套：调用方接入文档、SDK 设计、限流按 AppKey"],
+      "constraints": ["呼应 API-009（互为补充可合并学习）"], "deliverables": ["签名流程", "防重放设计", "接入文档要点"],
+      "acceptance": ["签名串的构造规则明确（排序/编码/分隔符）", "timestamp 窗口与 nonce 存储的 TTL 关系讲清", "「签名的目的是防篡改与防抵赖，不替代认证」的定位"],
+      "rubric": [ { "dimension": "正确性", "weight": 55, "guidance": "签名与防重放机制准确。" }, { "dimension": "方案设计", "weight": 45, "guidance": "配套体系完整。" } ]
+    },
+    {
+      "code": "SD-001", "title": "秒杀系统设计",
+      "category": "system-design", "difficulty": "HARD",
+      "tags": "秒杀,系统设计,面试高频", "summary": "设计秒杀系统：流量漏斗、库存预扣、防刷与兜底，全链路自洽。", "estimatedMinutes": 45,
+      "background": "系统设计面试第一题。你设计完整秒杀链路：前端拦截、网关限流、Redis 预扣、MQ 异步下单、DB 兜底、防刷与对账——把课程里所有知识串起来。",
+      "requirements": ["流量漏斗：静态化/按钮防重/网关限流/队列缓冲，逐层削减流量", "库存：Redis Lua 原子预扣 + MQ 异步落库 + DB 条件更新兜底（复用 DB-003/TS-006）", "防刷：限购（唯一约束）、设备与账号风控、验证码削峰", "兜底：超卖监控、对账、页面降级与排队提示"],
+      "constraints": ["每个环节标注估算依据"], "deliverables": ["全链路设计", "关键伪代码", "容量估算"],
+      "acceptance": ["漏斗各层的削流量逻辑量化（如 10 万 → 1 千）", "库存链路三层（Redis/MQ/DB）职责清晰", "降级与用户体验（排队提示）有设计"],
+      "rubric": [ { "dimension": "方案设计", "weight": 55, "guidance": "链路完整、估算量化。" }, { "dimension": "正确性", "weight": 45, "guidance": "库存与防刷机制正确。" } ]
+    },
+    {
+      "code": "SD-002", "title": "拼手气红包：随机拆分算法",
+      "category": "system-design", "difficulty": "MEDIUM",
+      "tags": "红包,算法,并发", "summary": "设计抢红包：金额拆分算法、抢的并发控制与领取记录。", "estimatedMinutes": 30,
+      "background": "「微信红包怎么设计」是经典系统题。你设计：二倍均值法拆分、抢红包的原子扣减（Redis）、领取记录与过期退款。",
+      "requirements": ["二倍均值法：每次在 [0.01, 剩余/剩余人数*2] 随机，保证不超发", "抢的并发：Redis 预扣数量（Lua 原子）+ 记录领取人（set 防重）", "存储：红包表 + 领取记录表的设计", "过期退款：24 小时未领完自动退回（复用延迟方案）"],
+      "constraints": ["金额用分为单位（整数运算）"], "deliverables": ["拆分算法与示例", "并发方案", "表设计"],
+      "acceptance": ["二倍均值法的数学正确性说明", "领取防重用 set 或唯一约束", "「分」为单位避免小数误差"],
+      "rubric": [ { "dimension": "正确性", "weight": 55, "guidance": "算法与并发控制正确。" }, { "dimension": "方案设计", "weight": 45, "guidance": "存储与退款完整。" } ]
+    },
+    {
+      "code": "SD-003", "title": "投票系统：计票、防刷与实时榜",
+      "category": "system-design", "difficulty": "MEDIUM",
+      "tags": "投票,防刷,设计", "summary": "设计校园歌手大赛投票：一人一票约束、防刷与实时榜单。", "estimatedMinutes": 30,
+      "background": "校园投票活动最怕刷票。你设计：投票约束（每人每类目一票）、防刷体系、实时榜单与数据修正。",
+      "requirements": ["约束：user_id + category 唯一约束兜底（复用 TS-006）", "计数：Redis incr + 定时与 DB 对账", "防刷：频控（IP/设备/行为）、异常票延迟生效（缓冲期）、举报通道", "榜单：zset 实时榜 + 快照固化（防作弊篡改历史）"],
+      "constraints": [], "deliverables": ["方案设计", "防刷清单", "榜单方案"],
+      "acceptance": ["唯一约束作为最终防线", "「延迟生效」给刷票撤销留窗口的思路", "榜单快照防止历史被改"],
+      "rubric": [ { "dimension": "方案设计", "weight": 50, "guidance": "方案与防刷体系完整。" }, { "dimension": "正确性", "weight": 50, "guidance": "约束与对账机制正确。" } ]
+    },
+    {
+      "code": "SD-004", "title": "签到系统设计：从日签到到连续奖励",
+      "category": "system-design", "difficulty": "MEDIUM",
+      "tags": "签到,设计,bitmap", "summary": "设计签到系统：bitmap 存储、连续天数计算、补签与奖励发放。", "estimatedMinutes": 30,
+      "background": "学习平台要做签到送积分。你设计：bitmap 存储月度签到、连续签到天数的高效计算、补签的边界处理、奖励与防重（复用 DB-001 思想）。",
+      "requirements": ["存储：bitmap（userId + 月份 → key），setbit 记录", "连续天数：位运算计算（bitfield 取出后逐位判断或预计算）", "补签：补签卡机制与 bitmap 修正、补签的幂等", "奖励：签到 + 连续奖励发放防重（唯一约束）"],
+      "constraints": ["与 DB-001 积分体系衔接"], "deliverables": ["存储与计算方案", "补签设计", "奖励防重"],
+      "acceptance": ["连续天数的位计算方案正确", "补签不破坏历史统计的处理", "奖励发放幂等有唯一约束"],
+      "rubric": [ { "dimension": "正确性", "weight": 55, "guidance": "存储与计算正确。" }, { "dimension": "方案设计", "weight": 45, "guidance": "补签与奖励完整。" } ]
+    },
+    {
+      "code": "SD-005", "title": "Feed 流设计：推模式 / 拉模式 / 推拉结合",
+      "category": "system-design", "difficulty": "HARD",
+      "tags": "Feed流,推拉,系统设计", "summary": "设计关注动态流：三种模式的机制、大 V 问题与收件箱方案。", "estimatedMinutes": 35,
+      "background": "「朋友圈/微博怎么设计」核心在 Feed 流。你写一篇：推模式（写扩散）、拉模式（读扩散）、推拉结合的机制与大 V 问题。",
+      "requirements": ["推模式：发布时写入所有粉丝收件箱（读快、写放大、大 V 写爆炸）", "拉模式：读取时聚合关注列表（写快、读慢）", "推拉结合：普通人推、大 V 拉（或粉丝量分级阈值）", "收件箱存储：Redis zset（时间线分页）与持久化、删除动态的处理"],
+      "constraints": [], "deliverables": ["三模式对比", "大 V 问题方案", "收件箱设计"],
+      "acceptance": ["推拉结合的阈值策略讲清", "收件箱用 zset 按时间分页的实现", "取消关注后收件箱清理的取舍"],
+      "rubric": [ { "dimension": "方案设计", "weight": 55, "guidance": "三模式与大 V 方案完整。" }, { "dimension": "正确性", "weight": 45, "guidance": "机制与存储设计正确。" } ]
+    },
+    {
+      "code": "SD-006", "title": "抽奖系统设计：概率、库存与公平",
+      "category": "system-design", "difficulty": "MEDIUM",
+      "tags": "抽奖,概率,设计", "summary": "设计可验证的抽奖系统：概率模型、奖品库存控制与审计日志。", "estimatedMinutes": 30,
+      "background": "抽奖系统最怕「说不清」。你设计：权重概率模型、库存扣减（分奖品等级）、抽奖记录留痕与可审计、防连抽刷奖。",
+      "requirements": ["概率模型：权重随机（alias/前缀和）与概率配置化", "库存：每个奖品独立库存扣减（复用 DB-003），中奖后库存不足的降级", "留痕：抽奖请求、结果、发放记录三张表可审计", "防刷：次数限制、异常中奖率监控"],
+      "constraints": ["概率结果必须可复现审计"], "deliverables": ["概率模型", "库存与降级", "审计设计"],
+      "acceptance": ["权重随机的实现正确（前缀和法）", "奖品库存不足时的降级策略（转谢谢参与）", "「中奖率可从记录反推验证」的审计意识"],
+      "rubric": [ { "dimension": "正确性", "weight": 50, "guidance": "概率与库存机制正确。" }, { "dimension": "方案设计", "weight": 50, "guidance": "可审计性设计到位。" } ]
+    },
+    {
+      "code": "SD-007", "title": "防刷与风控基础体系",
+      "category": "system-design", "difficulty": "HARD",
+      "tags": "风控,防刷,安全", "summary": "设计一套渐进式防刷体系：从频控到设备指纹到行为验证。", "estimatedMinutes": 35,
+      "background": "所有 ToC 系统都会被刷。你写一套分层防刷：基础频控（IP/用户/设备）、验证码升级策略、设备指纹与行为特征、处置策略（限流/验证/封禁）与误杀治理。",
+      "requirements": ["第一层：频控（Redis 计数，多维度 key 设计）", "第二层：验证码升级策略（滑块/行为验证的触发时机）", "第三层：设备指纹与黑灰产名单、行为序列特征（认知级）", "处置与误杀：分级处置、申诉通道、监控误杀率"],
+      "constraints": ["风控模型认知级即可，不深入算法"], "deliverables": ["分层体系", "触发策略", "误杀治理"],
+      "acceptance": ["频控 key 的维度设计（不能只有 IP：NAT 误伤）", "验证码按风险分级触发而非全员", "误杀治理有申诉与监控"],
+      "rubric": [ { "dimension": "方案设计", "weight": 55, "guidance": "分层体系完整。" }, { "dimension": "正确性", "weight": 45, "guidance": "各层机制与误判认知准确。" } ]
+    },
+    {
+      "code": "SD-008", "title": "订单超时自动关闭的五种方案",
+      "category": "system-design", "difficulty": "MEDIUM",
+      "tags": "订单,延迟,方案对比", "summary": "对比五种超时关闭方案并给出选型，重点讲幂等与并发取消。", "estimatedMinutes": 30,
+      "background": "「订单 30 分钟未支付自动关闭」是最常见的业务定时需求。你对比五种方案（复用 MQ-005 并扩展），重点解决「关闭与支付并发」的竞态。",
+      "requirements": ["五方案对比：定时轮询 / JDK 延迟队列 / 时间轮 / MQ 延迟消息 / Redis 过期监听（及其不可靠性）", "竞态核心：到点关闭与用户恰好支付的并发——状态机条件更新解决", "关闭动作：释放库存/优惠券的补偿链路", "选型建议"],
+      "constraints": ["与 MQ-005 互补，重点在竞态"], "deliverables": ["五方案对比表", "竞态解决方案", "关闭链路"],
+      "acceptance": ["「WHERE status=UNPAID 条件更新」解决竞态的机制讲清", "Redis 过期监听不可靠的原因（不保证及时/丢失）", "关闭后的库存释放幂等"],
+      "rubric": [ { "dimension": "正确性", "weight": 50, "guidance": "竞态解决方案正确。" }, { "dimension": "方案设计", "weight": 50, "guidance": "对比与选型完整。" } ]
+    },
+    {
+      "code": "SD-009", "title": "点赞与收藏系统设计",
+      "category": "system-design", "difficulty": "MEDIUM",
+      "tags": "点赞,计数,设计", "summary": "设计点赞收藏：防重、计数异步化、取消与个人主页查询。", "estimatedMinutes": 30,
+      "background": "点赞看似简单，做好不易。你设计：点赞防重（唯一约束）、计数的异步合并（避免每次 +1 打库）、取消点赞、我的收藏列表。",
+      "requirements": ["存储：点赞关系表（user+target 唯一）+ 计数表/缓存", "计数优化：Redis 计数 + 定时批量同步 DB（削峰）", "取消：状态位更新而非删除（保留历史与去重）", "个人主页：我的点赞/收藏列表的分页设计"],
+      "constraints": [], "deliverables": ["存储设计", "计数方案", "查询设计"],
+      "acceptance": ["批量同步计数的间隔与丢失容忍分析", "唯一约束防重复点赞", "热门内容的计数热点问题（分片计数提及）"],
+      "rubric": [ { "dimension": "方案设计", "weight": 50, "guidance": "方案完整。" }, { "dimension": "正确性", "weight": 50, "guidance": "防重与同步机制正确。" } ]
+    },
+    {
+      "code": "SD-010", "title": "评论系统：楼层结构与敏感内容处理",
+      "category": "system-design", "difficulty": "MEDIUM",
+      "tags": "评论,设计,树结构", "summary": "设计两级评论结构、分页策略与敏感词过滤流程。", "estimatedMinutes": 30,
+      "background": "评论区的「楼中楼」怎么存、热评怎么排、敏感内容怎么拦？你设计：两级评论模型（避免无限递归树）、分页策略、敏感词与审核流程。",
+      "requirements": ["模型：根评论 + 回复（reply 挂根，避免深层树），存储与展示分离", "排序与分页：时间/热度的多排序支持，根评论分页 + 回复懒加载", "敏感处理：前置过滤（DFA 一句话）+ 先发后审/先审后发的取舍", "计数：评论数与回复数的维护"],
+      "constraints": [], "deliverables": ["数据模型", "分页方案", "审核流程"],
+      "acceptance": ["「两层结构 + 挂根」避免深树的论证", "先发后审的舆情风险与补偿删除", "热评算法的认知（互动加权）出现"],
+      "rubric": [ { "dimension": "方案设计", "weight": 50, "guidance": "模型与分页合理。" }, { "dimension": "正确性", "weight": 50, "guidance": "审核与计数机制正确。" } ]
+    },
+    {
+      "code": "SD-011", "title": "搜索联想与热词榜设计",
+      "category": "system-design", "difficulty": "MEDIUM",
+      "tags": "搜索,联想,设计", "summary": "设计搜索框联想与热词榜：数据结构、排序与实时性权衡。", "estimatedMinutes": 30,
+      "background": "搜索框的联想词与热搜榜背后是两套设计。你设计：前缀联想（Trie/ES completion）、热词统计（滑动窗口计数）、拼音与纠错认知。",
+      "requirements": ["联想：前缀匹配的存储方案（Redis zset 前缀约定 / Trie / ES suggest）", "热词：滑动窗口计数（按分钟桶统计）+ 归一化（去停用词）", "排序因子：频次 + 时效衰减 + 人工干预位", "拼音首字母与纠错（编辑距离）认知级"],
+      "constraints": ["以轻量实现为主，ES 方案提及"], "deliverables": ["联想方案", "热词方案", "排序因子设计"],
+      "acceptance": ["滑动窗口计数的实现（分钟桶 + 聚合）", "人工干预位（运营置顶）的设计", "数据量小时用 Redis、量大用 ES 的边界"],
+      "rubric": [ { "dimension": "方案设计", "weight": 50, "guidance": "两套方案完整。" }, { "dimension": "正确性", "weight": 50, "guidance": "数据结构与排序正确。" } ]
+    },
+    {
+      "code": "SD-012", "title": "RBAC 权限系统设计",
+      "category": "system-design", "difficulty": "MEDIUM",
+      "tags": "权限,RBAC,设计", "summary": "设计经典 RBAC 权限模型：表结构、菜单/按钮级控制与数据权限扩展。", "estimatedMinutes": 30,
+      "background": "每个管理后台都要权限系统。你设计 RBAC：用户-角色-权限表结构、接口与按钮权限、数据权限（只看本部门）的扩展思路。",
+      "requirements": ["RBAC 表结构：user/role/permission + 两张关联表", "权限粒度：菜单权限、按钮权限（前端控制 + 后端校验双保险）", "后端校验落地：注解 + 拦截（本项目 @PreAuthorize 的扩展）", "数据权限：行级过滤的实现思路（SQL 注入 where 条件）"],
+      "constraints": ["结合本项目 ADMIN 角色现状谈扩展"], "deliverables": ["表结构设计", "校验落地", "数据权限扩展"],
+      "acceptance": ["「前端隐藏按钮不等于权限控制」的安全观点", "数据权限的实现层选择（SQL 拼接 vs 中间件）", "角色爆炸问题的提醒（权限组/继承认知）"],
+      "rubric": [ { "dimension": "正确性", "weight": 50, "guidance": "模型与校验机制正确。" }, { "dimension": "方案设计", "weight": 50, "guidance": "扩展与安全意识到位。" } ]
+    },
+    {
+      "code": "SD-013", "title": "对账系统设计：资金与数据的最后防线",
+      "category": "system-design", "difficulty": "EXPERT",
+      "tags": "对账,资损,企业实战", "summary": "设计 T+1 对账体系：数据采集、核对模型、差异处理与告警。", "estimatedMinutes": 45,
+      "background": "「钱对不上」是资损事故。你设计对账体系：对账对象与文件获取、核对模型（单边/金额不平）、差异分类与处理流程、告警与人工通道。",
+      "requirements": ["对账对象：上游渠道账单 vs 本地流水，T+1 拉取与解析", "核对模型：按业务单号配对，核对状态与金额，产出：平账/单边/金额不平", "差异处理：自动重试（次日再对）、人工工单、挂账流程", "告警分级与报表：差异率阈值、每日对账报告"],
+      "constraints": ["围绕「钱」的高可靠要求展开"], "deliverables": ["体系设计", "核对模型", "差异处理流程"],
+      "acceptance": ["「先对总额再对明细」的两级核对", "单边账的两种方向（我有他无/他有我无）与含义", "挂账（暂时无法处理）的台账管理"],
+      "rubric": [ { "dimension": "方案设计", "weight": 55, "guidance": "体系完整、模型正确。" }, { "dimension": "正确性", "weight": 45, "guidance": "差异分类与处理严谨。" } ]
+    },
+    {
+      "code": "SD-014", "title": "IM 聊天消息系统设计",
+      "category": "system-design", "difficulty": "HARD",
+      "tags": "IM,长连接,消息", "summary": "设计 IM：长连接接入、消息投递可靠性、已读与多端同步。", "estimatedMinutes": 40,
+      "background": "「IM 怎么设计」是长连接系统的代表题。你设计：连接接入层、消息 ID 与顺序、投递可靠性（ACK + 重发 + 去重）、离线消息与多端同步。",
+      "requirements": ["接入：WebSocket 长连接网关、连接路由（用户 → 网关实例的注册表）", "消息可靠性：客户端 ACK + 服务端重发 + 消息去重（消息 ID）", "离线消息：拉取模式（按 seq 拉缺口）", "多端同步：seq 号分配与各端同步游标"],
+      "constraints": ["长连接为主，推送兜底提及"], "deliverables": ["架构设计", "可靠性方案", "多端同步设计"],
+      "acceptance": ["「先落库再投递 + ACK 确认」的可靠性模型讲清", "seq 单调分配的归属（会话维度）与多端游标", "连接路由跨实例的消息转发"],
+      "rubric": [ { "dimension": "方案设计", "weight": 55, "guidance": "架构与可靠性完整。" }, { "dimension": "正确性", "weight": 45, "guidance": "去重与同步机制正确。" } ]
+    },
+    {
+      "code": "SD-015", "title": "文件上传与存储设计",
+      "category": "system-design", "difficulty": "MEDIUM",
+      "tags": "文件上传,存储,对象存储", "summary": "设计文件上传：直传与中转、分片续传、校验与安全。", "estimatedMinutes": 30,
+      "background": "头像、作业附件都涉及文件。你设计上传方案：服务端中转 vs 前端直传（STS 临时凭证）、大文件分片续传、类型校验与访问控制。",
+      "requirements": ["两种路径：服务端中转（简单可控）vs 前端直传对象存储（省带宽，用临时凭证）", "大文件：分片上传 + 断点续传（分片记录）+ 秒传（hash 去重）", "安全：类型白名单（魔数校验而非扩展名）、大小限制、私有读（签名 URL）", "元数据：文件表（hash/大小/引用计数）设计"],
+      "constraints": ["以对象存储（OSS 类）为目标架构"], "deliverables": ["两种路径对比", "分片方案", "安全清单"],
+      "acceptance": ["STS 临时凭证的安全意义（不泄露长期密钥）", "魔数校验防伪装文件", "引用计数支持「删除不误删共享文件」"],
+      "rubric": [ { "dimension": "方案设计", "weight": 55, "guidance": "路径与方案完整。" }, { "dimension": "正确性", "weight": 45, "guidance": "安全与去重机制正确。" } ]
+    },
+    {
+      "code": "SD-016", "title": "热点排行榜系统：实时榜与周期榜",
+      "category": "system-design", "difficulty": "MEDIUM",
+      "tags": "排行榜,实时,设计", "summary": "设计支持实时与周期（日/周榜）的排行榜，处理并列与快照固化。", "estimatedMinutes": 30,
+      "background": "排行榜是 zset 的招牌场景，但周期榜与历史快照有讲究。你设计：实时榜（zset）、日/周榜的周期重置、历史快照固化、并列名次的处理。",
+      "requirements": ["实时榜：zincrby + zrevrange（复用 RD-015）", "周期榜：按周期分 key（day:20261024），到期归档", "快照：周期结束固化到 DB（可查历史、防篡改）", "并列：score 组合次级排序（时间早者靠前）"],
+      "constraints": ["与 RD-015 互补，聚焦周期与快照"], "deliverables": ["方案设计", "周期与快照处理", "并列处理"],
+      "acceptance": ["周期分 key 的命名与归档任务", "快照固化的事务与幂等", "「实时榜可被刷」与快照对账的提醒"],
+      "rubric": [ { "dimension": "方案设计", "weight": 55, "guidance": "周期与快照设计完整。" }, { "dimension": "正确性", "weight": 45, "guidance": "并列与归档正确。" } ]
+    },
+    {
+      "code": "SD-017", "title": "排队叫号与公平性设计",
+      "category": "system-design", "difficulty": "MEDIUM",
+      "tags": "排队,公平,设计", "summary": "设计高并发下的公平排队：号段发放、超时叫回与插队策略。", "estimatedMinutes": 30,
+      "background": "抢票、抢课都需要排队。你设计：排队号发放（Redis 原子自增）、按序处理、超时未响应的叫回、优先级插队的产品需求处理。",
+      "requirements": ["发号：Redis incr 原子取号 + 排队状态存储", "处理：按号消费（队列）与处理进度查询", "超时叫回：预留时间未完成 → 号作废重排（或顺延一次）", "插队需求：优先级队列的公平性代价说明"],
+      "constraints": [], "deliverables": ["排队方案", "超时策略", "公平性讨论"],
+      "acceptance": ["发号与消费的原子性保证", "「公平 vs 效率」的插队取舍明确", "排队进度对用户的透明展示"],
+      "rubric": [ { "dimension": "方案设计", "weight": 55, "guidance": "方案与超时策略完整。" }, { "dimension": "正确性", "weight": 45, "guidance": "原子性与公平机制正确。" } ]
+    },
+    {
+      "code": "SD-018", "title": "优惠券系统设计：发放、核销与预算控制",
+      "category": "system-design", "difficulty": "HARD",
+      "tags": "优惠券,营销,设计", "summary": "设计优惠券全生命周期：批次发放、叠加互斥、核销与预算熔断。", "estimatedMinutes": 40,
+      "background": "优惠券是营销核心也是资损高发区。你设计：券批次与模板、发放（每人限领、库存控制）、叠加互斥规则、核销（订单联动）、预算熔断与防套利。",
+      "requirements": ["模型：券模板（规则）+ 券实例（属于用户）两表设计", "发放：限量（Redis 预扣 + DB 唯一约束限领次数）", "核销：订单使用券 → 状态机（未用/锁定/已用/过期）与订单回滚联动", "资损控制：预算熔断（发放总量阈值告警停发）、防套利（新用户判定）"],
+      "constraints": ["状态机设计为评分重点"], "deliverables": ["模型设计", "全生命周期流程", "资损控制"],
+      "acceptance": ["券实例状态机完整（含锁定态：下单锁券、取消回券）", "预算熔断的触发与处理", "过期券的批量处理与提醒（复用延迟方案）"],
+      "rubric": [ { "dimension": "方案设计", "weight": 55, "guidance": "全生命周期完整。" }, { "dimension": "正确性", "weight": 45, "guidance": "状态机与资损控制正确。" } ]
+    },
+    {
+      "code": "SD-019", "title": "分布式定时任务调度设计",
+      "category": "system-design", "difficulty": "HARD",
+      "tags": "调度,定时任务,分布式", "summary": "设计分布式任务调度：分片、容错、错过触发与可视化诉求。", "estimatedMinutes": 35,
+      "background": "FW-031 讲了信号，这里把调度系统设计写全。你设计：任务注册与分片（多实例分摊）、失败重试与告警、misfire 处理、手动触发与依赖编排。",
+      "requirements": ["分片：广播分片（每实例处理 1/N）与路由策略（轮询/一致性哈希）", "容错：失败重试次数、告警、卡死任务的超时kill", "misfire：服务重启错过的任务是补跑还是跳过（幂等为前提）", "编排：任务依赖（A 成功后跑 B）与手动触发接口"],
+      "constraints": ["以自研轻量版为主，XXL-Job/PowerJob 认知提及"], "deliverables": ["调度设计", "容错与 misfire", "编排能力"],
+      "acceptance": ["分片的幂等前提（每个分片独立可重跑）明确", "misfire 策略与业务语义挂钩", "「不要重复造轮子」的边界：规模小用 @Scheduled+锁，规模大上平台"],
+      "rubric": [ { "dimension": "方案设计", "weight": 55, "guidance": "调度与容错完整。" }, { "dimension": "正确性", "weight": 45, "guidance": "分片与幂等机制正确。" } ]
+    },
+    {
+      "code": "SD-020", "title": "综合大题：校园外卖平台全链路设计",
+      "category": "system-design", "difficulty": "EXPERT",
+      "tags": "综合设计,企业实战,全链路", "summary": "企业实战终极题：从需求澄清到容量估算到核心链路到演进路线的完整设计。", "estimatedMinutes": 60,
+      "background": "这道题是全平台的「毕业考」：设计一个日活 1 万（峰值 1 千并发下单）的校园外卖平台。你要像资深工程师一样：先澄清需求与边界，再容量估算，再核心链路（下单/派单/骑手状态/退款），最后给演进路线——每一步都有取舍。",
+      "requirements": [
+        "需求澄清：核心角色（学生/商家/骑手）、核心流程（下单-接单-配送-完成）、非功能目标（下单成功率、峰值并发）",
+        "容量估算：峰值 1k QPS 下单 → 各层流量推算（网关/服务/DB/Redis/MQ），给出中间件选型",
+        "核心链路：下单（防重+库存+支付回调）、商家接单超时自动流转、骑手状态机与位置上报（简化）、取消与退款（状态机+补偿）",
+        "演进路线：MVP 单体 → 拆分信号（引 DS-011）→ 明确「哪些现在不做、为什么」"
+      ],
+      "constraints": [
+        "允许合理假设，但每个假设要标注",
+        "设计要点到为止，重点是「取舍有理由」"
+      ],
+      "deliverables": [
+        "需求与假设清单",
+        "容量估算表",
+        "核心链路设计（含状态机）",
+        "演进路线"
+      ],
+      "acceptance": [
+        "容量估算链路完整（每层流量有推导）",
+        "至少三个关键取舍明确说明理由（如为何不上微服务）",
+        "状态机图完整（订单与骑手两套）且与支付回调的幂等衔接",
+        "引用平台已有任务的结论（幂等/库存/延迟关闭）作为方案支撑"
+      ],
+      "rubric": [
+        { "dimension": "方案设计", "weight": 55, "guidance": "全链路自洽、取舍有据、演进务实。" },
+        { "dimension": "需求理解", "weight": 25, "guidance": "澄清与假设规范，边界清楚。" },
+        { "dimension": "正确性", "weight": 20, "guidance": "核心机制（幂等/库存/状态机）正确。" }
+      ]
+    }
+  ]
+}

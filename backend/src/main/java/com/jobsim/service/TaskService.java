@@ -253,12 +253,13 @@ public class TaskService {
         return ids;
     }
 
-    /** 难度排序权重：EASY < MEDIUM < HARD（推荐排序用） */
+    /** 难度排序权重：EASY < MEDIUM < HARD < EXPERT（推荐排序用） */
     public static int difficultyRank(Task t) {
         return switch (t.getDifficulty()) {
             case "EASY" -> 0;
             case "MEDIUM" -> 1;
-            default -> 2;
+            case "HARD" -> 2;
+            default -> 3;
         };
     }
 

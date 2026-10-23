@@ -1,0 +1,218 @@
+{
+  "tasks": [
+    {
+      "code": "DB-004", "title": "B+ 树与 MySQL 索引原理", "category": "db-design", "difficulty": "MEDIUM",
+      "tags": "索引,B+树,MySQL,面试高频", "summary": "讲清为什么用 B+ 树、聚簇与二级索引、最左前缀原则。", "estimatedMinutes": 30,
+      "background": "「为什么 MySQL 用 B+ 树不用 B 树/哈希/红黑树」是索引第一问。你写一篇：结构对比、页与磁盘 IO 的关系、索引组织方式。",
+      "requirements": ["候选结构对比：哈希（无范围查询）、红黑树（树高、磁盘 IO）、B 树（数据在所有节点）、B+ 树（数据在叶子+链表）", "页（16KB）与树高的估算：千万级数据 3 层左右", "聚簇索引与二级索引、回表", "最左前缀原则与索引失效常见情形"],
+      "constraints": ["以 InnoDB 为准"], "deliverables": ["结构对比", "回表与覆盖索引说明", "最左前缀示例"],
+      "acceptance": ["「树高决定磁盘 IO 次数」的核心逻辑讲清", "二级索引叶子存主键而非行数据", "最左前缀给出正反例"],
+      "rubric": [ { "dimension": "正确性", "weight": 55, "guidance": "结构与原理准确。" }, { "dimension": "沟通表达", "weight": 45, "guidance": "层层推导有说服力。" } ]
+    },
+    {
+      "code": "DB-005", "title": "事务隔离级别与读现象", "category": "db-design", "difficulty": "MEDIUM",
+      "tags": "事务,隔离级别,面试高频", "summary": "讲清脏读/不可重复读/幻读与四个隔离级别，及 MySQL 默认级别的理由。", "estimatedMinutes": 30,
+      "background": "「隔离级别」要求能解释现象而不是背表格。你写一篇：三种读现象的实验设计、四级别的取舍、RR 与 RC 的选择争论。",
+      "requirements": ["三种现象定义与实验设计（两个会话的操作时序）", "四个隔离级别分别消除哪些现象", "MySQL 默认 RR、很多互联网公司改用 RC 的原因（间隙锁开销）", "幻读在 RR 下如何被（部分）解决：MVCC 快照读 + 当前读的锁"],
+      "constraints": ["以 MySQL 8 + InnoDB 为准"], "deliverables": ["现象实验设计", "级别对照表", "RR/RC 选型讨论"],
+      "acceptance": ["实验时序可操作（能实际验证）", "RC 减少间隙锁提升并发的理由讲清", "「快照读靠 MVCC、当前读靠锁」的区分准确"],
+      "rubric": [ { "dimension": "正确性", "weight": 55, "guidance": "现象与级别机制准确。" }, { "dimension": "方案设计", "weight": 45, "guidance": "选型讨论有工程视角。" } ]
+    },
+    {
+      "code": "DB-006", "title": "MVCC 实现原理", "category": "db-design", "difficulty": "HARD",
+      "tags": "MVCC,InnoDB,面试高频", "summary": "讲清版本链、ReadView 的组成与可见性判断规则。", "estimatedMinutes": 35,
+      "background": "MVCC 是 RR/RC 隔离的实现核心。你写一篇：隐藏列、undo log 版本链、ReadView 四要素与可见性判断，并解释 RC 与 RR 生成 ReadView 时机差异。",
+      "requirements": ["行记录隐藏列（DB_TRX_ID/DB_ROLL_PTR）与 undo 版本链", "ReadView 组成：m_ids、min_trx_id、max_trx_id、creator_trx_id", "可见性判断算法（逐步推演）", "RC 每次读生成 ReadView、RR 首次读生成并复用——这就是隔离级别差异的本质"],
+      "constraints": ["以 InnoDB 为准"], "deliverables": ["版本链说明", "可见性判断推演", "RC/RR 差异本质"],
+      "acceptance": ["可见性判断规则推演正确（至少一个完整例子）", "「RR 下可重复读的原因」落到 ReadView 复用", "删除与更新的版本链表现讲清"],
+      "rubric": [ { "dimension": "正确性", "weight": 60, "guidance": "版本链与判断规则准确。" }, { "dimension": "沟通表达", "weight": 40, "guidance": "推演过程可跟随。" } ]
+    },
+    {
+      "code": "DB-007", "title": "InnoDB 锁机制全景", "category": "db-design", "difficulty": "HARD",
+      "tags": "锁,InnoDB,面试高频", "summary": "讲清全局锁/表锁/行锁体系：记录锁、间隙锁、临键锁与意向锁。", "estimatedMinutes": 35,
+      "background": "InnoDB 的锁体系是面试深水区。你写一篇全景：锁的分类树、RR 下的临键锁、无索引行锁升级表锁的严重后果。",
+      "requirements": ["全局锁（备份）、表级（MDL/意向锁/自增锁）、行级（记录/间隙/临键/插入意向）", "RR 下当前读的加锁规则（等值/范围、唯一/普通索引的差别概述）", "「行锁锁的是索引记录」——无索引条件更新会锁全表的原因", "死锁与间隙锁的关系一句话（引 DB-008）"],
+      "constraints": ["不要求穷举所有加锁矩阵，覆盖主干"], "deliverables": ["锁分类树", "无索引升级案例", "要点结论"],
+      "acceptance": ["「无索引条件更新锁全表」的机制与危害讲清", "临键锁 = 记录 + 间隙的防幻读定位", "意向锁的作用（表锁与行锁的共存判断）"],
+      "rubric": [ { "dimension": "正确性", "weight": 60, "guidance": "锁类型与行为准确。" }, { "dimension": "沟通表达", "weight": 40, "guidance": "分类树清晰。" } ]
+    },
+    {
+      "code": "DB-008", "title": "一次死锁的分析与解决",
+      "category": "db-design", "difficulty": "HARD",
+      "tags": "死锁,InnoDB,排查", "summary": "复现一个间隙锁引发的死锁，输出分析与修复。", "estimatedMinutes": 35,
+      "background": "两个事务「先查无记录再插入」在高并发下互相持有间隙锁导致死锁。你复现这个经典案例，输出分析报告与修复方案。",
+      "requirements": ["用 SHOW ENGINE INNODB STATUS 读取 LATEST DETECTED DEADLOCK", "案例：T1、T2 同时对不存在的记录加间隙锁，再分别插入互相等待", "分析报告：持锁/等待链、涉及锁类型", "修复：INSERT 前置检查改为唯一约束 + DuplicateKey 处理（复用 TS-006）、降低隔离级别评估、缩小事务"],
+      "constraints": ["案例可在本地 MySQL 复现（加分）"], "deliverables": ["复现步骤", "死锁日志分析", "修复方案"],
+      "acceptance": ["死锁日志的关键字段（HOLDS/WAITS）解读正确", "「select 后 insert」反模式点出", "修复方案落到唯一约束兜底"],
+      "rubric": [ { "dimension": "问题定位", "weight": 55, "guidance": "日志分析与锁等待链准确。" }, { "dimension": "方案设计", "weight": 45, "guidance": "修复方案治本。" } ]
+    },
+    {
+      "code": "DB-009", "title": "EXPLAIN 执行计划详解",
+      "category": "db-design", "difficulty": "MEDIUM",
+      "tags": "EXPLAIN,SQL优化,MySQL", "summary": "逐列解读 EXPLAIN 输出，并给出「好计划 vs 坏计划」的判别清单。", "estimatedMinutes": 30,
+      "background": "SQL 优化的第一步是会读 EXPLAIN。你写一篇逐列解读：type 等级阶梯、key/rows/Extra 的关键信号，并给出判别清单。",
+      "requirements": ["type 等级：system>const>eq_ref>ref>range>index>ALL 的含义", "key/possible_keys/rows/filtered 的解读", "Extra 关键信号：Using index（覆盖）、Using filesort、Using temporary、Using index condition", "给出「type=ALL 且 rows 巨大」「filesort+temporary」等坏计划判别与对应优化方向"],
+      "constraints": ["以 MySQL 8 为准"], "deliverables": ["逐列解读", "判别清单", "两个优化前后对比示例"],
+      "acceptance": ["type 阶梯顺序正确且举例", "filesort 与 temporary 的成因与缓解方向", "对比示例给出优化前后 EXPLAIN 变化"],
+      "rubric": [ { "dimension": "正确性", "weight": 55, "guidance": "列含义与信号解读准确。" }, { "dimension": "问题定位", "weight": 45, "guidance": "判别清单可操作。" } ]
+    },
+    {
+      "code": "DB-010", "title": "SQL 优化标准流程：从慢日志到验证",
+      "category": "db-design", "difficulty": "MEDIUM",
+      "tags": "SQL优化,慢查询,流程", "summary": "建立一条 SQL 优化的标准作业流程：定位、分析、优化、验证、防复发。", "estimatedMinutes": 30,
+      "background": "「你怎么做 SQL 优化」考察方法论而非技巧堆砌。你写一份 SOP：慢日志定位 → EXPLAIN 分析 → 索引/SQL/结构三层优化 → 验证 → 防复发。",
+      "requirements": ["定位：慢查询日志（long_query_time）、监控 TOP SQL", "分析：EXPLAIN + 表结构 + 数据分布", "优化三层：索引优化 / SQL 写法改写 / 表结构与架构（缓存、拆分）", "验证与防复发：优化前后耗时对比、上线后监控、评审把关"],
+      "constraints": ["流程化表达"], "deliverables": ["SOP 文档", "一个完整案例走查"],
+      "acceptance": ["三层优化有先后与边界（别一上来就加索引）", "案例完整走一遍流程", "「改 SQL 写法有时优于加索引」的例子出现"],
+      "rubric": [ { "dimension": "方案设计", "weight": 50, "guidance": "SOP 完整且顺序合理。" }, { "dimension": "问题定位", "weight": 50, "guidance": "案例走查真实。" } ]
+    },
+    {
+      "code": "DB-011", "title": "覆盖索引与回表的实战应用", "category": "db-design", "difficulty": "MEDIUM",
+      "tags": "覆盖索引,回表,优化", "summary": "用查询案例讲清回表代价与覆盖索引的设计方法。", "estimatedMinutes": 25,
+      "background": "「SELECT * 慢在哪」的答案常是回表。你写一篇：回表过程、覆盖索引设计、联合索引列顺序的取舍。",
+      "requirements": ["回表过程：二级索引 → 主键 → 聚簇索引取行", "覆盖索引：查询列都在索引中，Extra 显示 Using index", "联合索引设计：等值列在前、排序列在后、覆盖查询列", "SELECT * 的害处与「按需选列」的规范"],
+      "constraints": [], "deliverables": ["回表说明", "覆盖索引设计示例", "规范建议"],
+      "acceptance": ["用 EXPLAIN 的 Using index 验证覆盖", "联合索引顺序设计有推导", "「列表页禁 SELECT *」的规范明确"],
+      "rubric": [ { "dimension": "正确性", "weight": 55, "guidance": "回表与覆盖机制准确。" }, { "dimension": "工程规范", "weight": 45, "guidance": "设计方法可落地。" } ]
+    },
+    {
+      "code": "DB-012", "title": "分库分表入门：什么时候拆、怎么拆",
+      "category": "db-design", "difficulty": "EXPERT",
+      "tags": "分库分表,架构,企业实战", "summary": "给出分库分表的触发信号、拆分维度、路由方案与带来的新问题清单。", "estimatedMinutes": 45,
+      "background": "单表两千万就要分表？——这个经验值常被滥用。你写一篇决策文档：什么时候真的需要、垂直/水平怎么选、分片键怎么定、拆完之后的代价清单。",
+      "requirements": ["触发信号量化：单表数据量与增长速度、磁盘/单机容量、锁竞争", "垂直拆（按业务）与水平拆（按行）的选择", "分片键选择：查询形态优先（如 user_id），避免数据倾斜", "拆分代价清单：跨片查询、分布式事务、全局 ID、扩容迁移、运维复杂度"],
+      "constraints": ["结论要克制：能不拆就不拆"], "deliverables": ["决策文档", "分片键设计", "代价清单与应对"],
+      "acceptance": ["「先优化索引/归档/读写分离，再考虑分表」的顺序正确", "分片键与查询形态匹配的论证", "代价清单完整且每项有应对（如 ES 补查询、雪花 ID）"],
+      "rubric": [ { "dimension": "方案设计", "weight": 55, "guidance": "决策严谨、代价清单完整。" }, { "dimension": "正确性", "weight": 45, "guidance": "拆分策略与路由机制准确。" } ]
+    },
+    {
+      "code": "DB-013", "title": "主从复制原理与延迟应对",
+      "category": "db-design", "difficulty": "HARD",
+      "tags": "主从复制,MySQL,架构", "summary": "讲清复制三线程模型、延迟成因与业务侧缓解方案。", "estimatedMinutes": 30,
+      "background": "读写分离的前提是理解复制。你写一篇：binlog 三种格式、复制线程模型、延迟成因与业务缓解（强制读主/会话粘性）。",
+      "requirements": ["binlog 三种格式（statement/row/mixed）与 row 成为主流的原因", "复制链路：dump 线程 → IO 线程 → relay log → SQL 线程", "延迟成因：大事务、单线程回放、从机规格", "业务缓解：关键读强制走主、会话内写后读粘性、监控 Seconds_Behind_Master"],
+      "constraints": ["以 MySQL 8 异步复制为准，GTID/半同步一句话"], "deliverables": ["复制原理", "延迟分析", "缓解方案"],
+      "acceptance": ["row 格式主流的理由（可审计、安全）", "「写后立即读」的业务缓解方案给出", "半同步复制的一票权衡（性能换安全）点到"],
+      "rubric": [ { "dimension": "正确性", "weight": 55, "guidance": "复制链路与格式语义准确。" }, { "dimension": "方案设计", "weight": 45, "guidance": "缓解方案贴近业务。" } ]
+    },
+    {
+      "code": "DB-014", "title": "大表 DDL 变更方案",
+      "category": "db-design", "difficulty": "EXPERT",
+      "tags": "DDL,在线变更,企业实战", "summary": "为千万级大表加字段制定变更方案：原生 Online DDL 与 gh-ost/pt-osc 的选择。", "estimatedMinutes": 40,
+      "background": "给 5000 万行的订单表加一列，直接 ALTER 会出什么事？你制定变更方案：锁行为分析、三种方案对比、执行与回滚预案。",
+      "requirements": ["DDL 的风险：元数据锁（MDL）阻塞、主从延迟、长事务", "MySQL 8 原生 Online DDL：INPLACE/INSTANT 的适用（加列可 INSTANT）", "第三方工具：gh-ost / pt-online-schema-change 的原理（影子表 + binlog 追平 + 原子改名）", "执行预案：低峰窗口、磁盘空间评估、监控与中止条件、失败回退"],
+      "constraints": ["以 MySQL 8 为准"], "deliverables": ["风险分析", "方案对比与选择", "执行预案"],
+      "acceptance": ["MDL 阻塞的机制（长事务持锁导致 DDL 排队）讲清", "INSTANT 加列（8.0.12+）的条件与限制", "预案包含中止条件与数据校验"],
+      "rubric": [ { "dimension": "方案设计", "weight": 55, "guidance": "方案对比与预案完整。" }, { "dimension": "正确性", "weight": 45, "guidance": "锁行为与工具原理准确。" } ]
+    },
+    {
+      "code": "DB-015", "title": "连接池原理与参数调优", "category": "db-design", "difficulty": "MEDIUM",
+      "tags": "连接池,HikariCP,运维", "summary": "讲清连接池的工作原理与 HikariCP 关键参数，以及「连接数越大越快」的误区。", "estimatedMinutes": 25,
+      "background": "「连接池打满」是常见事故。你写一篇：池化原理、HikariCP 关键参数、连接数与 DB 能力的匹配（Hikari 官方的公式认知）。",
+      "requirements": ["池化的价值与成本（建连开销、握手认证）", "HikariCP 关键参数：maximumPoolSize、connectionTimeout、maxLifetime、idleTimeout", "连接数公式认知：CPU 核数 * 2 + 磁盘数级别，而不是拍几百", "事故模式：慢 SQL 占满连接 → 全站不可用的级联"],
+      "constraints": ["以 HikariCP 为例"], "deliverables": ["原理说明", "参数表", "事故模式与预防"],
+      "acceptance": ["「连接数不是越大越好」的论证（上下文切换与锁竞争）", "maxLifetime 要小于 MySQL wait_timeout", "慢 SQL 与连接池打满的因果链"],
+      "rubric": [ { "dimension": "正确性", "weight": 50, "guidance": "参数语义准确。" }, { "dimension": "问题定位", "weight": 50, "guidance": "事故链路与预防实用。" } ]
+    },
+    {
+      "code": "DB-016", "title": "字段类型与字符集选型规范",
+      "category": "db-design", "difficulty": "EASY",
+      "tags": "数据类型,字符集,规范", "summary": "制定建表字段类型与字符集的选择规范。", "estimatedMinutes": 20,
+      "background": "建表规范是每个团队的第一份 DB 规范。你写一份：数值/字符串/时间类型选择、金额用 DECIMAL、utf8mb4 的由来。",
+      "requirements": ["金额一律 DECIMAL 而非 FLOAT/DOUBLE（精度）", "字符串：CHAR vs VARCHAR、TEXT 的代价、枚举用 tinyint + 字典还是 ENUM", "时间：DATETIME vs TIMESTAMP（范围与时区）", "字符集 utf8mb4 的由来（MySQL 的 utf8 是残缺实现）与表情存储"],
+      "constraints": ["结合本项目表结构举例"], "deliverables": ["类型选择规范", "字符集说明", "反例清单"],
+      "acceptance": ["金额浮点误差的例子给出", "TIMESTAMP 的 2038 边界与时区转换特性", "MySQL utf8 = utf8mb3 的历史讲清"],
+      "rubric": [ { "dimension": "正确性", "weight": 50, "guidance": "类型语义准确。" }, { "dimension": "工程规范", "weight": 50, "guidance": "规范结合项目。" } ]
+    },
+    {
+      "code": "DB-017", "title": "count(*) 的性能与写法之争",
+      "category": "db-design", "difficulty": "MEDIUM",
+      "tags": "count,性能,MySQL", "summary": "辨析 count(*)/count(1)/count(id)/count(字段) 的差异与大表计数的替代方案。", "estimatedMinutes": 20,
+      "background": "「count(*) 慢怎么办」之前先要澄清 count(1) 并不更快。你写一篇：语义辨析、InnoDB 的 count 实现与 MVCC 的关系、大表方案。",
+      "requirements": ["语义：count(*) 与 count(1) 等价、count(字段) 不计 NULL", "InnoDB 不缓存总行数的原因（MVCC 下不同事务看到不同数）", "大表方案：近似值（EXPLAIN rows / information_schema）、计数表、缓存计数（Redis 的精度问题）", "分页总数优化的产品决策（最后一页策略）"],
+      "constraints": ["以 MySQL 8 InnoDB 为准"], "deliverables": ["语义辨析", "大表方案对比"],
+      "acceptance": ["「MyISAM 有总行数缓存而 InnoDB 没有」的原因（事务）讲清", "Redis 计数的精度与对账提醒", "产品侧「放弃精确 total」的建议出现"],
+      "rubric": [ { "dimension": "正确性", "weight": 55, "guidance": "语义与实现原因准确。" }, { "dimension": "方案设计", "weight": 45, "guidance": "替代方案有取舍。" } ]
+    },
+    {
+      "code": "RD-008", "title": "Redis 线程模型：单线程为什么快",
+      "category": "cache", "difficulty": "MEDIUM",
+      "tags": "Redis,线程模型,面试高频", "summary": "讲清 Redis 6 前后的线程模型与单线程快的真正原因。", "estimatedMinutes": 25,
+      "background": "「Redis 单线程为什么快」标准答案有三个要素。你写一篇：内存操作 + IO 多路复用 + 单线程无竞争，以及 6.0 的多线程 IO。",
+      "requirements": ["三个要素：纯内存操作、epoll 事件驱动（呼应 NO-010）、单线程避免锁与切换", "单线程的短板：大 key 删除/慢命令阻塞（引 RD-006 的 unlink）", "Redis 6.0 多线程 IO：只并行网络读写、命令执行仍单线程", "为什么依然要避免 KEYS/大事务类慢命令"],
+      "constraints": [], "deliverables": ["线程模型说明", "6.0 变化解读", "慢命令清单"],
+      "acceptance": ["「命令执行仍是单线程」的 6.0 语义讲对", "与 epoll 的关联解释（呼应 NO-010）", "给出慢命令的生产替代（SCAN 代替 KEYS）"],
+      "rubric": [ { "dimension": "正确性", "weight": 55, "guidance": "线程模型准确。" }, { "dimension": "沟通表达", "weight": 45, "guidance": "三要素逻辑完整。" } ]
+    },
+    {
+      "code": "RD-009", "title": "Redis 内存淘汰策略八种",
+      "category": "cache", "difficulty": "MEDIUM",
+      "tags": "Redis,内存淘汰,运维", "summary": "讲清八种淘汰策略的语义与缓存场景的推荐配置。", "estimatedMinutes": 25,
+      "background": "内存满了 Redis 怎么办？你写一篇：八种策略（noeviction 与 7 种 LRU/LFU 变体）语义、近似 LRU/LFU 的实现、缓存场景推荐。",
+      "requirements": ["八种策略语义：noeviction、volatile/allkeys × random/lru/lfu、volatile-ttl", "Redis 的近似 LRU：采样淘汰而非全局精确 LRU 的原因", "LFU 的计数衰减设计（适合偶发热点）", "缓存场景推荐 allkeys-lru 或 allkeys-lfu 及理由；持久化/主从场景避免 noeviction 风险"],
+      "constraints": ["以 Redis 7 为准"], "deliverables": ["策略语义表", "实现机制说明", "推荐配置"],
+      "acceptance": ["近似 LRU 的采样机制讲清", "LFU 与 LRU 的适用差异（偶发批量访问）", "推荐配置给出理由而非默认照抄"],
+      "rubric": [ { "dimension": "正确性", "weight": 55, "guidance": "策略语义准确。" }, { "dimension": "方案设计", "weight": 45, "guidance": "推荐有场景依据。" } ]
+    },
+    {
+      "code": "RD-010", "title": "高可用架构：主从 / 哨兵 / 集群",
+      "category": "cache", "difficulty": "EXPERT",
+      "tags": "Redis,高可用,集群", "summary": "讲清三种架构的机制与选型，以及集群模式下的限制。", "estimatedMinutes": 40,
+      "background": "「Redis 怎么保证高可用」要求讲到架构演进与代价。你写一篇：主从复制、哨兵的故障转移、Cluster 分片的哈希槽，以及各架构的限制清单。",
+      "requirements": ["主从：读写分离与复制（复用 DB-013 思想）", "哨兵：监控/选主/通知，脑裂与 min-slaves 配置", "Cluster：16384 哈希槽、key 归属、MOVED/ASK 重定向", "限制清单：Cluster 下多 key 命令与事务的槽位限制、批量用 hash tag；主从延迟下的读不一致"],
+      "constraints": ["以 Redis 7 为准"], "deliverables": ["三架构说明", "选型建议", "限制清单"],
+      "acceptance": ["哨兵选主的 quorum 与客观下线机制讲清", "hash tag 解决多 key 操作的技巧给出", "脑裂时旧主写入丢失的风险与 min-replicas 配置缓解"],
+      "rubric": [ { "dimension": "正确性", "weight": 55, "guidance": "三架构机制准确。" }, { "dimension": "方案设计", "weight": 45, "guidance": "选型与限制兼顾。" } ]
+    },
+    {
+      "code": "RD-011", "title": "缓存预热与上线初始化方案",
+      "category": "cache", "difficulty": "MEDIUM",
+      "tags": "缓存预热,上线", "summary": "设计缓存预热方案：预热对象筛选、时机、失败兜底与效果验证。", "estimatedMinutes": 25,
+      "background": "大促前必须预热缓存，否则冷启动打穿 DB。你设计预热方案：预热哪些数据、怎么预热、失败怎么办、怎么验证有效。",
+      "requirements": ["预热对象：从历史访问统计/运营名单筛选热点数据", "预热方式：启动时加载、定时任务、管理端手动触发（复用 FW-031）", "失败与兜底：预热失败的降级路径（限流 + 空值缓存）", "验证：命中率对比、DB QPS 对比"],
+      "constraints": [], "deliverables": ["预热方案", "验证指标"],
+      "acceptance": ["预热对象筛选有数据依据", "预热任务与业务解耦（可重跑）", "验证指标明确（命中率提升幅度）"],
+      "rubric": [ { "dimension": "方案设计", "weight": 55, "guidance": "方案完整可执行。" }, { "dimension": "工程规范", "weight": 45, "guidance": "验证与兜底到位。" } ]
+    },
+    {
+      "code": "RD-012", "title": "多级缓存设计：本地缓存 + Redis",
+      "category": "cache", "difficulty": "HARD",
+      "tags": "多级缓存,Caffeine,架构", "summary": "设计本地 + 远程两级缓存：一致性代价、失效广播与容量治理。", "estimatedMinutes": 35,
+      "background": "极致性能场景要把缓存推到进程内（Caffeine）。你设计两级缓存：读取路径、更新失效（广播）、容量与击穿防护、与 RD-006 组合。",
+      "requirements": ["读取路径：本地 → Redis → DB 的逐级回填", "一致性策略：本地短 TTL + 更新时广播失效（Redis pub/sub 或 MQ）", "本地容量与淘汰（Caffeine 的 maximumSize/expireAfterWrite）", "击穿防护的分层（本地互斥 + Redis 逻辑过期）"],
+      "constraints": ["明确「能容忍旧数据」是前提"], "deliverables": ["两级架构设计", "失效广播方案", "参数与治理建议"],
+      "acceptance": ["本地 TTL 与广播失效的组合权衡讲清", "广播消息丢失的兜底（TTL 最终一致）", "明确多实例间短暂不一致的业务边界"],
+      "rubric": [ { "dimension": "方案设计", "weight": 55, "guidance": "两级方案完整。" }, { "dimension": "正确性", "weight": 45, "guidance": "一致性与失效机制准确。" } ]
+    },
+    {
+      "code": "RD-013", "title": "Redis 事务与 Lua 脚本",
+      "category": "cache", "difficulty": "MEDIUM",
+      "tags": "Lua,Redis,原子性", "summary": "讲清 MULTI/EXEC 的局限与 Lua 的原子执行，及脚本管理规范。", "estimatedMinutes": 25,
+      "background": "「Redis 事务支持回滚吗」是常见误区。你写一篇：MULTI/EXEC 的语义（不回滚）、Lua 的原子执行与复用、脚本管理规范。",
+      "requirements": ["MULTI/EXEC：命令入队、执行期不插队、无回滚（错误命令跳过）", "Lua 脚本整体原子执行、可读参数（KEYS/ARGV）", "用 Lua 实现复合原子操作（限流器 / 释放锁复用 RD-005）", "脚本管理：EVALSHA、脚本版本化与禁用 RANDOM 后再写的坑"],
+      "constraints": [], "deliverables": ["事务语义说明", "Lua 实例", "管理规范"],
+      "acceptance": ["「不支持回滚」的原因（运行时错误不追溯）讲清", "Lua 示例正确且参数化（非硬编码 key）", "脚本过长影响单线程的警告"],
+      "rubric": [ { "dimension": "正确性", "weight": 55, "guidance": "事务与 Lua 语义准确。" }, { "dimension": "工程规范", "weight": 45, "guidance": "规范实用。" } ]
+    },
+    {
+      "code": "RD-014", "title": "布隆过滤器原理与手写思路",
+      "category": "cache", "difficulty": "HARD",
+      "tags": "布隆过滤器,算法,缓存", "summary": "讲清布隆过滤器的位数组与多哈希机制、误判率与变体。", "estimatedMinutes": 30,
+      "background": "防穿透的第一利器。你写一篇：机制（k 个哈希置位）、误判与漏判的不对称性、参数估算（位数组大小/哈希个数）、变体与 Redis 集成（RedisBloom）。",
+      "requirements": ["机制：插入置位 k 个比特、查询全 1 才「可能存在」", "误判可接受、漏判不可能的不对称性", "参数估算：位数组大小与哈希个数随预期元素量与目标误判率计算（给公式认知）", "变体：计数布隆（支持删除）、 cuckoo filter 一句话；Redis 集成方式"],
+      "constraints": [], "deliverables": ["机制说明", "参数估算说明", "集成方案"],
+      "acceptance": ["「误判只会说存在、不会漏判不存在」讲清", "位数组随元素增长的误判率上升与扩容/重建", "删除问题与计数布隆的代价"],
+      "rubric": [ { "dimension": "正确性", "weight": 55, "guidance": "机制与误判性质准确。" }, { "dimension": "方案设计", "weight": 45, "guidance": "集成与重建方案可行。" } ]
+    },
+    {
+      "code": "RD-015", "title": "Redis 实战三连：排行榜 / 签到 / 计数",
+      "category": "cache", "difficulty": "MEDIUM",
+      "tags": "Redis,实战,zset,bitmap", "summary": "把三个经典场景的 Redis 命令序列完整写出并讨论边界。", "estimatedMinutes": 30,
+      "background": "RD-001 选了型，这里把实现写全：排行榜（zset 并列处理）、签到（bitmap 统计）、计数（防刷与对账）。三段实现 + 边界讨论。",
+      "requirements": ["排行榜：zincrby 加分、zrevrange 取榜、并列分数的次级排序（score 拼时间）", "签到：setbit 按天偏移、bitcount 统计、月度重置策略", "计数：incr + 过期、防刷（限流键）与与 DB 对账", "三个场景各自的持久化与丢失容忍讨论"],
+      "constraints": ["命令给出可直接执行的序列"], "deliverables": ["三场景命令实现", "边界与容忍度讨论"],
+      "acceptance": ["并列分数的处理正确（score 组合或 secondary 排序）", "bitmap 偏移量计算正确（day-of-month - 1）", "每个场景回答「丢了数据怎么办」"],
+      "rubric": [ { "dimension": "正确性", "weight": 55, "guidance": "命令与偏移计算准确。" }, { "dimension": "方案设计", "weight": 45, "guidance": "边界讨论完整。" } ]
+    }
+  ]
+}

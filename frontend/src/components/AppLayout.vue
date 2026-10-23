@@ -12,7 +12,9 @@ const router = useRouter()
 const menus = computed(() => {
   const base = [
     { path: '/', title: '工作台', icon: 'Odometer' },
+    { path: '/roadmap', title: '学习路线图', icon: 'Guide' },
     { path: '/tasks', title: '任务中心', icon: 'Files' },
+    { path: '/bagu', title: '八股复习', icon: 'Reading' },
     { path: '/records', title: '练习记录', icon: 'Clock' },
     { path: '/analysis', title: '能力分析', icon: 'TrendCharts' },
   ]

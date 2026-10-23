@@ -1,0 +1,480 @@
+{
+  "tasks": [
+    {
+      "code": "EN-001", "title": "Git 工作流：从一次提交看团队协作", "category": "engineering", "difficulty": "EASY",
+      "tags": "Git,协作,工程素养", "summary": "讲清团队 Git 工作流：分支模型、commit 规范与冲突处理。", "estimatedMinutes": 20,
+      "background": "入职第一天的必修课：团队要求 feat/xxx 分支开发、commit 按规范书写、合并走 MR 评审。你整理一份 Git 协作说明，让新人第一天就能安全提交代码。",
+      "requirements": ["说明分支模型：main/develop/feature 分支的职责与生命周期", "给出 commit message 规范（类型 + 描述）与正反例", "演示遇到冲突时的处理步骤与放弃合并的方法", "说明什么情况用 rebase、什么情况用 merge"],
+      "constraints": ["以中小团队常见的简化工作流为准"], "deliverables": ["分支模型图", "commit 规范与正反例", "冲突处理步骤清单"],
+      "acceptance": ["commit 规范给出可执行的格式与反例", "讲清 merge 与 rebase 的区别及选用", "提到「不直接在 main 上开发」的基本纪律"],
+      "rubric": [ { "dimension": "工程规范", "weight": 50, "guidance": "规范可执行、正反例具体。" }, { "dimension": "沟通表达", "weight": 50, "guidance": "面向新人的说明结构清晰。" } ]
+    },
+    {
+      "code": "EN-002", "title": "Maven 依赖冲突排查", "category": "engineering", "difficulty": "EASY",
+      "tags": "Maven,依赖,排查", "summary": "用 mvn dependency:tree 定位 NoClassDefFoundError 类问题并给出修复。", "estimatedMinutes": 25,
+      "background": "项目引入 A、B 两个依赖后启动报 NoSuchMethodError——典型的依赖版本冲突。你整理排查流程与修复策略。",
+      "requirements": ["解释传递依赖与最短路径优先原则", "给出 mvn dependency:tree 与 IDEA Maven 面板的排查用法", "说明 exclusion 与 dependencyManagement 两种修复方式", "提示 optional 与 scope 对传递的影响"],
+      "constraints": ["以 Maven 3.9 + Spring Boot 项目为准"], "deliverables": ["排查流程", "修复方案代码片段"],
+      "acceptance": ["给出 dependency:tree 的实际用法", "说明 dependencyManagement 统一版本的意义", "提到 BOM 的概念"],
+      "rubric": [ { "dimension": "问题定位", "weight": 55, "guidance": "从报错到定位到修复路径完整。" }, { "dimension": "工程规范", "weight": 45, "guidance": "修复方式规范（统一版本管理）。" } ]
+    },
+    {
+      "code": "EN-003", "title": "日志打印规范：让日志能查案", "category": "engineering", "difficulty": "EASY",
+      "tags": "日志,规范,排查", "summary": "制定团队日志规范：级别使用、占位符、敏感信息与关键链路埋点。", "estimatedMinutes": 20,
+      "background": "排查线上问题时发现日志要么没有、要么是 e.printStackTrace()。你制定一份日志规范，让日志真正成为排查证据。",
+      "requirements": ["级别使用规范：ERROR/WARN/INFO/DEBUG 各自的场景", "占位符 {} 与字符串拼接的性能差异", "关键链路埋点：入参出参、耗时、traceId", "禁止行为：打印密码/token/整行堆栈刷屏"],
+      "constraints": ["以 Slf4j + Logback 为准"], "deliverables": ["规范清单", "正反例代码对照"],
+      "acceptance": ["给出占位符与拼接的对比", "明确敏感信息不出现在日志", "提到异常日志要带堆栈（log.error(\"xx\", e)）"],
+      "rubric": [ { "dimension": "工程规范", "weight": 55, "guidance": "规范全面且可直接执行。" }, { "dimension": "问题定位", "weight": 45, "guidance": "从排查视角说明日志的价值。" } ]
+    },
+    {
+      "code": "EN-004", "title": "Docker 镜像基础：把 Spring Boot 应用装进容器", "category": "engineering", "difficulty": "EASY",
+      "tags": "Docker,容器,部署", "summary": "为 Spring Boot 应用编写 Dockerfile 并说明镜像分层与常用命令。", "estimatedMinutes": 25,
+      "background": "团队开始用容器部署。你写一份入门文档：Dockerfile 怎么写、镜像和容器是什么关系、常用命令清单。",
+      "requirements": ["说明镜像/容器/仓库三者关系", "给出多阶段构建的 Dockerfile 示例（构建层 + 运行层）", "列出常用命令：build/run/logs/exec/ps", "说明容器内时区与日志的注意事项"],
+      "constraints": ["以 Linux 容器为准"], "deliverables": ["Dockerfile 示例", "常用命令清单", "踩坑提醒"],
+      "acceptance": ["多阶段构建讲清了「构建工具不进运行镜像」", "提到容器是无状态实例、数据要挂载", "给出 -e 传环境变量的配置方式（呼应项目 .env 设计）"],
+      "rubric": [ { "dimension": "正确性", "weight": 50, "guidance": "镜像分层、命令用法准确。" }, { "dimension": "工程规范", "weight": 50, "guidance": "示例可直接使用，注意事项实用。" } ]
+    },
+    {
+      "code": "EN-005", "title": "环境隔离与配置管理", "category": "engineering", "difficulty": "EASY",
+      "tags": "配置,环境,工程素养", "summary": "说明 dev/test/prod 的配置隔离方案与敏感信息管理。", "estimatedMinutes": 20,
+      "background": "新人在本地把生产库地址写进了代码。你出一篇环境隔离规范：配置分层、环境变量、密钥管理。",
+      "requirements": ["说明 Spring profiles 与配置文件分层（本项目 application-mysql/demo/prod 即实例）", "环境变量的优先级与用途", "敏感信息（密码/密钥）的管理原则", "给出「配置不允许出现在代码里」的检查清单"],
+      "constraints": ["结合本项目配置结构举例"], "deliverables": ["隔离方案说明", "检查清单"],
+      "acceptance": ["结合本项目 profile 设计举例", "提到 .env 与 .gitignore 的配合", "说明生产配置从环境变量注入而非写死"],
+      "rubric": [ { "dimension": "工程规范", "weight": 55, "guidance": "方案具体、与真实项目对应。" }, { "dimension": "正确性", "weight": 45, "guidance": "优先级与加载顺序准确。" } ]
+    },
+    {
+      "code": "EN-006", "title": "Code Review 的正确姿势", "category": "engineering", "difficulty": "EASY",
+      "tags": "评审,协作,工程素养", "summary": "写一份评审指南：评审看什么、怎么提意见、如何被评审。", "estimatedMinutes": 20,
+      "background": "团队要建立 MR 评审机制。你写一份两页指南：评审者看什么、作者如何准备、意见如何表达。",
+      "requirements": ["评审清单：正确性、可读性、边界、测试、命名", "提意见的方式：对事不对人、给建议而非命令", "作者的准备：PR 小而聚焦、描述清楚改动与影响", "哪些问题必须阻塞合并、哪些可以后续跟进"],
+      "constraints": [], "deliverables": ["评审清单", "沟通示例"],
+      "acceptance": ["清单可执行且分类清楚", "给出正反两种评论话术", "强调「小 PR 更容易被认真评审」"],
+      "rubric": [ { "dimension": "工程规范", "weight": 50, "guidance": "清单与话术可直接采用。" }, { "dimension": "沟通表达", "weight": 50, "guidance": "协作意识与表达成熟。" } ]
+    },
+    {
+      "code": "EN-007", "title": "上线检查单：一次发布前后的标准动作", "category": "engineering", "difficulty": "EASY",
+      "tags": "上线,发布,工程素养", "summary": "制定发布前/中/后的检查单，覆盖回滚预案与验证步骤。", "estimatedMinutes": 20,
+      "background": "第一次上线都紧张。你整理一份上线检查单：发布前确认什么、发布中盯什么、发布后验证什么、出问题怎么回滚。",
+      "requirements": ["发布前：代码合并、配置、数据库变更、依赖方确认", "发布中：观察日志与监控指标", "发布后：核心接口冒烟、数据对齐检查", "回滚预案：什么情况回滚、怎么回滚、回滚的代价"],
+      "constraints": ["以小型单体服务为准"], "deliverables": ["检查单", "回滚预案模板"],
+      "acceptance": ["检查单覆盖数据库变更这一高危项", "回滚预案提到「向前修复 vs 回退版本」的取舍", "提到低峰发布与灰度意识"],
+      "rubric": [ { "dimension": "工程规范", "weight": 55, "guidance": "检查单完整、顺序合理。" }, { "dimension": "沟通表达", "weight": 45, "guidance": "模板可直接使用。" } ]
+    },
+    {
+      "code": "EN-008", "title": "接口文档与契约：让前后端不打架", "category": "engineering", "difficulty": "EASY",
+      "tags": "文档,契约,协作", "summary": "说明接口文档的维护方式（Swagger/契约先行）与字段变更的风险控制。", "estimatedMinutes": 20,
+      "background": "前后端联调总因为「字段名改了没同步」返工。你出一篇接口文档规范：文档即契约，变更要过评审。",
+      "requirements": ["Swagger 注解维护文档的用法（本项目已实践）", "契约先行 vs 代码即文档的取舍", "字段变更的风险清单：改名、类型变化、删除字段", "给出接口变更的通知机制建议"],
+      "constraints": [], "deliverables": ["文档规范", "变更风险清单"],
+      "acceptance": ["结合本项目 springdoc 实践举例", "强调删除/改名是破坏性变更需要版本或灰度", "提到统一响应结构降低联调成本"],
+      "rubric": [ { "dimension": "工程规范", "weight": 50, "guidance": "规范结合实际项目。" }, { "dimension": "沟通表达", "weight": 50, "guidance": "对协作痛点有真实理解。" } ]
+    },
+    {
+      "code": "NO-001", "title": "TCP 三次握手与四次挥手", "category": "network-os", "difficulty": "EASY",
+      "tags": "TCP,网络,面试高频", "summary": "讲清握手挥手每一步的状态变化，以及为什么是三次、四次。", "estimatedMinutes": 25,
+      "background": "网络面试第一题。你写一份讲解：每一步的报文与状态（SYN_SENT/ESTABLISHED/FIN_WAIT/TIME_WAIT），并把「为什么不能两次」「为什么挥手要四次」论证清楚。",
+      "requirements": ["画出三次握手与四次挥手的报文与两端状态变化", "论证三次握手的必要性（双方确认收发能力、防旧连接）", "论证挥手四次的原因（半关闭：收到 FIN 的一方可能还有数据要发）", "说明 TIME_WAIT 的作用与持续时间（2MSL）"],
+      "constraints": ["不需要抓包，但可用 netstat 验证状态"], "deliverables": ["状态转换图", "两个「为什么」的论证", "常见追问清单"],
+      "acceptance": ["两次握手的风险（旧 SYN 建立无效连接）讲清", "TIME_WAIT 出现在主动关闭方且持续 2MSL", "提到大量 TIME_WAIT 的应对（连接复用/端口范围）"],
+      "rubric": [ { "dimension": "正确性", "weight": 55, "guidance": "状态与报文方向全部准确。" }, { "dimension": "沟通表达", "weight": 45, "guidance": "图解 + 论证，适合讲解。" } ]
+    },
+    {
+      "code": "NO-002", "title": "TCP 与 UDP 的选型", "category": "network-os", "difficulty": "EASY",
+      "tags": "TCP,UDP,网络", "summary": "对比两者特性，并为直播/文件传输/IM 等场景选型。", "estimatedMinutes": 15,
+      "background": "面试常问「什么场景用 UDP」。你写一份选型说明：特性对比加场景匹配。",
+      "requirements": ["特性对比：连接、可靠性、有序性、拥塞控制、头部开销", "场景选型：文件传输/网页（TCP）、直播音视频/DNS/游戏（UDP）及原因", "说明 TCP 可靠性的实现手段（确认重传、滑动窗口、拥塞控制一句话即可）", "提到 QUIC/HTTP3 基于 UDP 的趋势"],
+      "constraints": [], "deliverables": ["对比表", "场景选型结论"],
+      "acceptance": ["选型理由与「实时性优先于完整性」的逻辑一致", "提到 UDP 之上可自建可靠性（QUIC）", "不出现「UDP 比 TCP 快所以都用 UDP」这类错误结论"],
+      "rubric": [ { "dimension": "正确性", "weight": 55, "guidance": "特性与可靠性机制准确。" }, { "dimension": "方案设计", "weight": 45, "guidance": "场景选型有理有据。" } ]
+    },
+    {
+      "code": "NO-003", "title": "HTTP 演进：1.0 / 1.1 / 2 / 3 的关键变化", "category": "network-os", "difficulty": "MEDIUM",
+      "tags": "HTTP,网络,面试高频", "summary": "梳理各版本解决的核心问题：队头阻塞、多路复用与传输层升级。", "estimatedMinutes": 25,
+      "background": "面试常问「HTTP2 比 1.1 强在哪」。你写一份演进说明，每个版本讲「解决了什么、留下了什么」。",
+      "requirements": ["1.1 的改进：长连接、管线化（及其队头阻塞）、Host 头、分块传输", "2 的改进：二进制分帧、多路复用、头部压缩（HPACK）、服务器推送", "3 的变化：QUIC 基于 UDP、解决 TCP 层队头阻塞", "说明「队头阻塞」在 1.1 与 2 中的不同层面"],
+      "constraints": ["不需要抓包验证"], "deliverables": ["演进对照表", "队头阻塞的两种层面解释"],
+      "acceptance": ["区分「HTTP 层队头阻塞」与「TCP 层队头阻塞」", "提到 2 的多路复用依赖单一 TCP 连接", "不混淆「长连接」与「多路复用」"],
+      "rubric": [ { "dimension": "正确性", "weight": 55, "guidance": "各版本特性与阻塞层面准确。" }, { "dimension": "沟通表达", "weight": 45, "guidance": "演进主线清晰。" } ]
+    },
+    {
+      "code": "NO-004", "title": "HTTPS 握手与加密原理", "category": "network-os", "difficulty": "MEDIUM",
+      "tags": "HTTPS,加密,面试高频", "summary": "讲清 TLS 握手流程、对称与非对称加密的分工、证书的作用。", "estimatedMinutes": 25,
+      "background": "「HTTPS 为什么安全」要求讲到证书与混合加密。你写一份讲解，包含中间人攻击为什么失效。",
+      "requirements": ["混合加密分工：非对称（RSA/ECDHE）交换密钥、对称（AES）加密数据", "TLS 1.2 握手流程与随机数的作用", "证书链与 CA 签名防伪造", "说明中间人攻击为什么被证书机制阻止"],
+      "constraints": ["以 TLS 1.2 为主，TLS 1.3 一句话带过"], "deliverables": ["握手流程", "加密分工说明", "中间人攻击失效的论证"],
+      "acceptance": ["混合加密的性能理由讲清", "证书验证包含域名、有效期、签发链", "提到 TLS 1.3 握手更快的改进方向"],
+      "rubric": [ { "dimension": "正确性", "weight": 60, "guidance": "握手流程与加密分工准确。" }, { "dimension": "沟通表达", "weight": 40, "guidance": "安全逻辑成链条。" } ]
+    },
+    {
+      "code": "NO-005", "title": "DNS 解析流程与 CDN 基础", "category": "network-os", "difficulty": "EASY",
+      "tags": "DNS,CDN,网络", "summary": "讲清递归与迭代查询的顺序、缓存层级，以及 CDN 的基本原理。", "estimatedMinutes": 15,
+      "background": "「输入网址后发生了什么」的第一段就是 DNS。你讲清解析顺序与缓存，顺带说 CDN 为什么能加速。",
+      "requirements": ["解析顺序：浏览器缓存 → 系统 hosts → 本地 DNS → 根/顶级/权威", "区分递归查询与迭代查询", "DNS 记录类型一句话（A/CNAME）", "CDN 原理：边缘节点缓存 + 调度到就近节点"],
+      "constraints": [], "deliverables": ["解析流程说明", "CDN 原理一段"],
+      "acceptance": ["递归与迭代的主体讲对", "提到 DNS 缓存 TTL", "CNAME 在 CDN 接入中的作用点到"],
+      "rubric": [ { "dimension": "正确性", "weight": 60, "guidance": "解析链路准确。" }, { "dimension": "沟通表达", "weight": 40, "guidance": "简洁完整。" } ]
+    },
+    {
+      "code": "NO-006", "title": "从输入 URL 到页面展示，中间发生了什么", "category": "network-os", "difficulty": "MEDIUM",
+      "tags": "网络,综合,面试高频", "summary": "把 DNS/TCP/TLS/HTTP/渲染串成一条完整链路，前后端视角都讲到。", "estimatedMinutes": 30,
+      "background": "经典综合题，考察的是把零散知识串成链路的能力。你写一份前后端视角都覆盖的完整版答案。",
+      "requirements": ["完整链路：URL 解析 → DNS → TCP 握手 → TLS → 发送 HTTP → 服务端处理（负载均衡/网关/应用/DB）→ 响应 → 浏览器渲染", "服务端一环按本项目结构展开（Nginx/网关 → Spring Boot → MySQL/Redis）", "浏览器渲染一环简述（HTML 解析、CSSOM、渲染树）", "每一步标注一个可能的面试追问"],
+      "constraints": ["链路完整优先于每个细节的深度"], "deliverables": ["全链路说明", "每步的追问预判"],
+      "acceptance": ["服务端部分不是黑盒（讲到网关与应用）", "渲染部分简明不跑题", "追问预判有针对性（如缓存、压缩、长连接）"],
+      "rubric": [ { "dimension": "正确性", "weight": 50, "guidance": "链路顺序与各环节职责准确。" }, { "dimension": "沟通表达", "weight": 50, "guidance": "串链能力强，层次分明。" } ]
+    },
+    {
+      "code": "NO-007", "title": "Cookie / Session / Token：登录态的三种实现",
+      "category": "network-os", "difficulty": "MEDIUM",
+      "tags": "登录态,Session,JWT,面试高频", "summary": "对比三种登录态方案的机制与取舍，结合本项目 JWT 实践说明。", "estimatedMinutes": 25,
+      "background": "「为什么你们项目用 JWT 不用 Session」是高频追问。你写一份对比：机制、优缺点、结合本项目（无状态 JWT + localStorage）说明取舍与已知风险。",
+      "requirements": ["Cookie 与 Session 的配合机制（SessionId 存储、服务端状态）", "Token/JWT 的无状态机制与自包含 claims", "对比维度：服务端压力、水平扩展、注销能力、XSS/CSRF 暴露面", "结合本项目说明取舍（localStorage 存 JWT 的 XSS 风险与缓解）"],
+      "constraints": ["结合本项目 security 包的实现举例"], "deliverables": ["机制对比表", "本项目选型说明", "已知风险与缓解清单"],
+      "acceptance": ["Session 集群下需要粘性或共享存储讲到", "JWT 无法主动吊销的缺陷点到", "CSRF 与 Cookie 的关系解释正确"],
+      "rubric": [ { "dimension": "正确性", "weight": 55, "guidance": "机制与安全暴露面准确。" }, { "dimension": "方案设计", "weight": 45, "guidance": "结合项目实际取舍，不空谈。" } ]
+    },
+    {
+      "code": "NO-008", "title": "跨域 CORS：为什么会跨域、怎么解决", "category": "network-os", "difficulty": "MEDIUM",
+      "tags": "CORS,浏览器,前端协作", "summary": "讲清同源策略、简单请求与预检请求，以及服务端正确配置方式。", "estimatedMinutes": 20,
+      "background": "前端联调报 CORS 错误是新人常遇问题（本项目 SecurityConfig 就配置了 CORS）。你写一篇原理与解决说明。",
+      "requirements": ["同源策略的定义（协议/域名/端口）与目的", "简单请求与预检（OPTIONS）请求的判定", "服务端响应头：Access-Control-Allow-Origin/Headers/Methods 的含义", "结合本项目说明配置方式与常见坑（带凭证时不能用 *）"],
+      "constraints": ["结合本项目 SecurityConfig 的 CORS 配置举例"], "deliverables": ["原理说明", "本项目配置解读", "常见坑清单"],
+      "acceptance": ["预检请求的触发条件讲对", "提到本项目使用 origin pattern 放行本地端口", "说明 CORS 是浏览器行为、服务间调用不受限"],
+      "rubric": [ { "dimension": "正确性", "weight": 55, "guidance": "同源、预检、响应头机制准确。" }, { "dimension": "工程规范", "weight": 45, "guidance": "结合项目实际配置解读。" } ]
+    },
+    {
+      "code": "NO-009", "title": "进程与线程：操作系统的视角", "category": "network-os", "difficulty": "MEDIUM",
+      "tags": "操作系统,进程,线程", "summary": "讲清进程/线程/协程的关系与上下文切换成本，并落到 Java 线程模型。", "estimatedMinutes": 20,
+      "background": "并发面试的底层地基。你写一份说明：进程与线程的区别、切换成本，以及 Java 线程与内核线程的关系（顺带提 JDK 21 虚拟线程）。",
+      "requirements": ["进程与线程的资源分配与调度差异", "上下文切换的成本与触发", "Java 线程与内核线程的映射（1:1）", "协程/虚拟线程一句话：用户态调度、更轻量"],
+      "constraints": ["不需要深入调度算法"], "deliverables": ["对比说明", "与 Java 的关联"],
+      "acceptance": ["「进程是资源分配单位、线程是调度单位」讲清", "切换成本包含寄存器与缓存影响", "虚拟线程的定位点到（呼应 JC-033）"],
+      "rubric": [ { "dimension": "正确性", "weight": 55, "guidance": "概念与成本分析准确。" }, { "dimension": "沟通表达", "weight": 45, "guidance": "层层递进到 Java。" } ]
+    },
+    {
+      "code": "NO-010", "title": "IO 多路复用：select / poll / epoll",
+      "category": "network-os", "difficulty": "HARD",
+      "tags": "IO多路复用,epoll,NIO", "summary": "讲清三种 IO 多路复用的机制演进，以及为什么 Redis/Nginx 都依赖 epoll。", "estimatedMinutes": 30,
+      "background": "「Redis 为什么单线程还快」的底层答案之一就是 epoll。你写一份讲解：阻塞/非阻塞/多路复用的区别，select 与 epoll 的差距。",
+      "requirements": ["BIO/NIO/多路复用三种模型一句话对比", "select 的局限（fd 数量限制、每次全量拷贝与遍历）", "epoll 的三个关键 API 与红黑树 + 就绪链表机制", "事件驱动模型为什么适合高连接低活动场景（Redis/Nginx/Netty）"],
+      "constraints": ["以 Linux 为准"], "deliverables": ["模型对比", "select/epoll 差距分析", "应用到 Redis/Nginx 的解释"],
+      "acceptance": ["select 每次 O(n) 遍历与 epoll O(1) 就绪通知的对比讲清", "epoll 的 LT/ET 两种模式点到", "结论落到「单线程也能支撑高并发」"],
+      "rubric": [ { "dimension": "正确性", "weight": 60, "guidance": "机制对比准确，无张冠李戴。" }, { "dimension": "方案设计", "weight": 40, "guidance": "能落到真实中间件解释现象。" } ]
+    },
+    {
+      "code": "NO-011", "title": "零拷贝：Kafka 和 Nginx 快的底层原因之一", "category": "network-os", "difficulty": "HARD",
+      "tags": "零拷贝,IO,Kafka", "summary": "对比传统 read+write 的四次拷贝与 sendfile/mmap 的优化路径。", "estimatedMinutes": 25,
+      "background": "「零拷贝」是 Kafka 与 Nginx 高性能的常见答案。你讲清传统 IO 的拷贝路径与零拷贝的优化点。",
+      "requirements": ["传统 read+write：4 次拷贝（2 次 DMA + 2 次 CPU）与 4 次上下文切换", "sendfile 的优化：数据不经过用户态", "mmap 映射文件的思路", "指出 Kafka 顺序写 + 零拷贝、Nginx sendfile 的实际应用"],
+      "constraints": ["以 Linux 为准，不需要汇编级细节"], "deliverables": ["拷贝路径对比", "应用场景说明"],
+      "acceptance": ["4 次拷贝 4 次切换计数准确", "零拷贝的定义是「减少 CPU 拷贝/用户态往返」而非绝对没有拷贝", "落到 Kafka transferTo 与 Nginx sendfile on"],
+      "rubric": [ { "dimension": "正确性", "weight": 60, "guidance": "拷贝路径与优化机制准确。" }, { "dimension": "方案设计", "weight": 40, "guidance": "能解释真实中间件的性能来源。" } ]
+    },
+    {
+      "code": "NO-012", "title": "TIME_WAIT 过多的原因与治理",
+      "category": "network-os", "difficulty": "MEDIUM",
+      "tags": "TCP,TIME_WAIT,排查", "summary": "分析主动关闭方 TIME_WAIT 堆积的原因与治理手段。", "estimatedMinutes": 20,
+      "background": "压测后机器上出现上万 TIME_WAIT，服务端口不够用。你写一份分析：为什么会出现、有没有危害、怎么治理。",
+      "requirements": ["TIME_WAIT 的产生条件（主动关闭方）与 2MSL 时长", "它存在的意义（确保最后 ACK 到达、旧报文消亡）", "治理手段：连接复用（长连接/连接池）、端口范围调大、tcp_tw_reuse", "明确不建议 tcp_tw_recycle 及原因"],
+      "constraints": ["以 Linux 内核 4.x+ 为准"], "deliverables": ["成因分析", "治理清单"],
+      "acceptance": ["主动/被动关闭的判定准确", "治理优先级正确（先复用连接而不是改内核参数）", "提到本项目数据库/HTTP 客户端都应使用连接池"],
+      "rubric": [ { "dimension": "问题定位", "weight": 50, "guidance": "成因与危害判断准确。" }, { "dimension": "方案设计", "weight": 50, "guidance": "治理手段有优先级、有依据。" } ]
+    },
+    {
+      "code": "JC-015", "title": "面向对象三大特性：封装 / 继承 / 多态", "category": "java-core", "difficulty": "EASY",
+      "tags": "面向对象,基础", "summary": "用校园业务示例讲清三大特性，并说明多态的实际价值。", "estimatedMinutes": 20,
+      "background": "新手第一课。导师要求不要背定义，用校园业务（学生/教师/课程）把三大特性讲出实际价值。",
+      "requirements": ["封装：字段私有 + 行为暴露，举例说明为什么不能全 public", "继承：复用与代价（耦合），说明什么不该继承", "多态：同一方法调用不同行为（结合支付/通知示例）", "一句话回答「为什么多用组合少用继承」"],
+      "constraints": ["示例统一用校园业务"], "deliverables": ["三大特性说明", "多态示例代码", "组合优于继承的一句话论证"],
+      "acceptance": ["多态示例通过父类/接口引用调用", "指出了继承滥用的代价", "示例代码可编译"],
+      "rubric": [ { "dimension": "正确性", "weight": 50, "guidance": "概念与示例对应准确。" }, { "dimension": "沟通表达", "weight": 50, "guidance": "示例自然、不背定义。" } ]
+    },
+    {
+      "code": "JC-016", "title": "重载与重写的区别与应用", "category": "java-core", "difficulty": "EASY",
+      "tags": "重载,重写,基础", "summary": "辨析 Overload 与 Override 的规则、常见坑与使用场景。", "estimatedMinutes": 15,
+      "background": "新人常把两个词混用。你写一篇辨析：规则差异、编译器如何区分、以及常见面试坑（如重写时缩小访问权限）。",
+      "requirements": ["规则对比：参数列表、返回值、访问权限、异常", "重写的「两同两小一大」口诀解释", "坑：重载与返回值无关、static 方法不存在重写", "场景：重载用于便利 API、重写用于多态"],
+      "constraints": [], "deliverables": ["规则对比表", "坑位清单"],
+      "acceptance": ["「两同两小一大」解释正确", "指出 static/private 方法不参与重写", "给出 @Override 注解的价值（编译期检查）"],
+      "rubric": [ { "dimension": "正确性", "weight": 60, "guidance": "规则与坑位准确。" }, { "dimension": "沟通表达", "weight": 40, "guidance": "对比表直观。" } ]
+    },
+    {
+      "code": "JC-017", "title": "final / static / this / super 关键字全景",
+      "category": "java-core", "difficulty": "EASY",
+      "tags": "关键字,基础", "summary": "系统梳理四个高频关键字的语义与常见误用。", "estimatedMinutes": 20,
+      "background": "这四个关键字人人会用、常有人用错。你写一份全景梳理：修饰对象、语义、典型误用。",
+      "requirements": ["final：修饰类/方法/变量（含引用不可变 vs 对象不可变）", "static：类级成员、静态方法不能访问实例成员的原因", "this 与 super：构造器调用顺序与限制", "坑：static 集合被多请求共享导致的数据串号"],
+      "constraints": [], "deliverables": ["关键字全景表", "误用案例与修复"],
+      "acceptance": ["final 修饰引用与对象的区别讲清", "static 字段在 Web 并发下的共享风险点到", "构造器中 this/super 只能放首行"],
+      "rubric": [ { "dimension": "正确性", "weight": 55, "guidance": "语义与边界准确。" }, { "dimension": "工程规范", "weight": 45, "guidance": "误用案例来自真实场景。" } ]
+    },
+    {
+      "code": "JC-018", "title": "内部类与匿名类：什么时候用、怎么用对",
+      "category": "java-core", "difficulty": "EASY",
+      "tags": "内部类,语法", "summary": "梳理四种内部类的用途与匿名类到 Lambda 的演进。", "estimatedMinutes": 15,
+      "background": "回调、Builder、迭代器实现都离不开内部类。你写一篇梳理：四种内部类的用途、对外部类的引用关系、匿名类到 Lambda 的迁移。",
+      "requirements": ["四种内部类：成员/静态/局部/匿名，各自用途", "内部类持有外部类引用的含义（潜在泄漏点）", "匿名类到 Lambda 的迁移条件（函数式接口）", "静态嵌套类与成员内部类的选择"],
+      "constraints": [], "deliverables": ["类型对照表", "Lambda 迁移示例"],
+      "acceptance": ["静态嵌套类不持有外部引用（可作为默认选择）", "Lambda 只能替换单方法接口", "提到事件监听/Comparator 场景"],
+      "rubric": [ { "dimension": "正确性", "weight": 55, "guidance": "类型语义准确。" }, { "dimension": "工程规范", "weight": 45, "guidance": "选型建议实用。" } ]
+    },
+    {
+      "code": "JC-019", "title": "枚举与注解：别只会定义，要会用对", "category": "java-core", "difficulty": "EASY",
+      "tags": "枚举,注解,基础", "summary": "讲清枚举的属性/方法/单例用法与注解的定义和读取。", "estimatedMinutes": 20,
+      "background": "枚举与注解是项目里无处不在的两个语法。你写一篇实战向说明：枚举带行为、注解 + 反射的组合应用。",
+      "requirements": ["枚举的本质与属性/方法/构造器", "枚举实现单例与策略（结合本项目状态常量的改进建议）", "注解的元注解（@Retention/@Target）与读取方式", "示例：自定义注解 + 反射读取（呼应 FW-007 限流组件）"],
+      "constraints": [], "deliverables": ["枚举用法说明", "注解读取示例代码"],
+      "acceptance": ["枚举单例防反射的原因点到", "注解保留策略 RUNTIME 才能运行期读取", "示例与本项目场景呼应"],
+      "rubric": [ { "dimension": "正确性", "weight": 50, "guidance": "语法机制准确。" }, { "dimension": "方案设计", "weight": 50, "guidance": "能落到组件设计场景。" } ]
+    },
+    {
+      "code": "JC-020", "title": "泛型与类型擦除", "category": "java-core", "difficulty": "MEDIUM",
+      "tags": "泛型,类型擦除", "summary": "讲清泛型的编译期检查本质、类型擦除的后果与通配符使用。", "estimatedMinutes": 25,
+      "background": "「泛型是编译期的还是运行时的」是进阶必问。你写一篇讲解：擦除的后果（不能 new T、不能泛型数组）、通配符 PECS 原则。",
+      "requirements": ["泛型的价值：编译期类型检查、消除强制转换", "类型擦除：运行时没有泛型信息（桥方法一句话）", "擦除带来的限制清单（new T、instanceof 泛型、静态成员）", "通配符与 PECS（extends 读、super 写）举例"],
+      "constraints": [], "deliverables": ["擦除说明与限制清单", "PECS 示例"],
+      "acceptance": ["能解释 List<String> 与 List<Integer> 运行时是同一类型", "PECS 至少给出一个正确示例（如 copy 方法）", "提到泛型信息可通过 getGenericSuperclass 等保留的场景"],
+      "rubric": [ { "dimension": "正确性", "weight": 60, "guidance": "擦除机制与限制准确。" }, { "dimension": "沟通表达", "weight": 40, "guidance": "抽象概念讲得具体。" } ]
+    },
+    {
+      "code": "JC-021", "title": "反射：原理、应用与代价", "category": "java-core", "difficulty": "MEDIUM",
+      "tags": "反射,框架原理", "summary": "讲清反射的能力边界、框架中的应用与性能/安全代价。", "estimatedMinutes": 25,
+      "background": "Spring/MyBatis 的魔法都建立在反射上。你写一篇说明：反射能做什么、框架怎么用它、为什么业务代码要少用。",
+      "requirements": ["反射核心能力：运行时获取类信息、创建实例、调用方法/字段", "框架应用举例：Spring Bean 实例化、MyBatis Mapper 代理、Jackson 序列化", "代价：性能开销（JIT 后差距缩小）、绕过编译期检查、破坏封装", "替代方案说明：MethodHandle/LambdaMetafactory 一句话"],
+      "constraints": [], "deliverables": ["能力说明", "框架应用举例", "使用建议"],
+      "acceptance": ["至少两个框架应用举例准确", "提到 setAccessible 与封装破坏的安全权衡", "结论「业务代码优先显式调用」"],
+      "rubric": [ { "dimension": "正确性", "weight": 55, "guidance": "能力与代价准确。" }, { "dimension": "方案设计", "weight": 45, "guidance": "框架应用举例真实。" } ]
+    },
+    {
+      "code": "JC-022", "title": "ArrayList 与 LinkedList 的选型真相",
+      "category": "java-core", "difficulty": "EASY",
+      "tags": "集合,ArrayList,面试高频", "summary": "讲清两者结构差异与真实性能差异，纠正「LinkedList 增删快」的误区。", "estimatedMinutes": 20,
+      "background": "「ArrayList 和 LinkedList 区别」人人会背，但「随机位置插入 LinkedList 更快」常是错的（定位 O(n)）。你写一篇纠偏说明。",
+      "requirements": ["结构对比：动态数组 vs 双向链表（内存布局与缓存友好性）", "复杂度对比：随机访问、头尾插入、随机位置插入", "指出误区：随机位置插入 LinkedList 需先 O(n) 定位", "ArrayList 扩容机制（1.5 倍）与容量预估建议"],
+      "constraints": [], "deliverables": ["复杂度对比表", "误区解释", "选型结论"],
+      "acceptance": ["明确指出「LinkedList 增删快」的条件性（仅头尾）", "提到 CPU 缓存对数组友好", "给出默认场景优先 ArrayList 的结论"],
+      "rubric": [ { "dimension": "正确性", "weight": 55, "guidance": "复杂度与误区分析准确。" }, { "dimension": "沟通表达", "weight": 45, "guidance": "纠偏有力，结论明确。" } ]
+    },
+    {
+      "code": "JC-023", "title": "深拷贝与浅拷贝", "category": "java-core", "difficulty": "EASY",
+      "tags": "拷贝,基础", "summary": "讲清引用赋值、浅拷贝、深拷贝的差异与实现方式。", "estimatedMinutes": 15,
+      "background": "把一个 List 传给方法后原数据被改了——引用语义的经典坑。你写一篇说明：三种「复制」的差异与深拷贝的实现选择。",
+      "requirements": ["引用赋值 ≠ 拷贝；浅拷贝只复制第一层", "深拷贝的实现：递归 clone、拷贝构造器、序列化、JSON 往返（注意丢失类型）", "不可变对象作为「天然深拷贝」的设计思路", "示例：修改副本后原对象是否受影响的判定表"],
+      "constraints": [], "deliverables": ["三种拷贝说明", "实现方式对比与示例"],
+      "acceptance": ["clone 的局限（浅拷贝、Cloneable 设计问题）讲到", "JSON 往返的类型丢失风险提示", "结论倾向「不可变 + 拷贝构造器」"],
+      "rubric": [ { "dimension": "正确性", "weight": 55, "guidance": "拷贝语义与实现差异准确。" }, { "dimension": "工程规范", "weight": 45, "guidance": "实现选择有建议。" } ]
+    },
+    {
+      "code": "JC-024", "title": "Java 8 Stream：常用操作与性能认知",
+      "category": "java-core", "difficulty": "EASY",
+      "tags": "Stream,Lambda,Java8", "summary": "梳理 Stream 常用操作、与 for 循环的取舍、常见误用。", "estimatedMinutes": 20,
+      "background": "团队代码里 Stream 越用越多，但常见 collect 分组、flatMap、并行流误用。你写一篇使用规范。",
+      "requirements": ["常用操作清单：filter/map/sorted/collect/groupingBy/flatMap/reduce", "惰性求值与一次消费的特性", "并行流的适用与误用（小数据量反而慢、共享状态）", "可读性取舍：复杂链式逻辑是否该拆分"],
+      "constraints": [], "deliverables": ["操作速查", "误用清单", "规范建议"],
+      "acceptance": ["groupingBy 分组示例正确", "并行流误用至少两条", "结论「可读性优先、复杂逻辑拆方法」"],
+      "rubric": [ { "dimension": "正确性", "weight": 50, "guidance": "操作语义准确。" }, { "dimension": "工程规范", "weight": 50, "guidance": "规范可直接采纳。" } ]
+    },
+    {
+      "code": "JC-025", "title": "Optional：优雅地处理可能为 null",
+      "category": "java-core", "difficulty": "EASY",
+      "tags": "Optional,NPE", "summary": "讲清 Optional 的正确用法与反模式，替代层层判空。", "estimatedMinutes": 15,
+      "background": "项目里 null 检查层层嵌套。你写一篇 Optional 规范：正确 API、反模式清单、与项目统一响应的配合。",
+      "requirements": ["正确用法：ofNullable/map/orElse/orElseThrow 链式处理", "反模式：Optional 当字段/参数、get() 裸调用、isPresent+get 组合", "与本项目的关系：Mapper 查询单条返回 null 的包装建议", "Optional 的性能一句话（少量对象分配）"],
+      "constraints": ["结合本项目的查询返回 null 场景"], "deliverables": ["正确用法示例", "反模式清单"],
+      "acceptance": ["orElseThrow 替代显式判空抛异常的示例正确", "明确 Optional 不建议作字段或方法参数", "结论「返回值表达可能缺失，字段用 null + 文档」"],
+      "rubric": [ { "dimension": "正确性", "weight": 50, "guidance": "API 语义准确。" }, { "dimension": "工程规范", "weight": 50, "guidance": "反模式清单实用。" } ]
+    },
+    {
+      "code": "JC-026", "title": "日期时间 API 与时区问题",
+      "category": "java-core", "difficulty": "EASY",
+      "tags": "日期,时区,LocalDateTime", "summary": "讲清 java.time 的核心类型与跨时区存储的团队规范。", "estimatedMinutes": 20,
+      "background": "「时间差 8 小时」是永恒的坑。你写一篇规范：java.time 类型选择、数据库存储约定、时区转换的正确姿势。",
+      "requirements": ["LocalDateTime/Instant/ZonedDateTime 的分工", "Date 与 java.time 的转换（遗留代码兼容）", "存储约定：数据库存 UTC 还是本地时间？两种方案的取舍", "常见坑：SimpleDateFormat 线程不安全、JSON 序列化格式不统一"],
+      "constraints": ["结合本项目 DATETIME 字段与 Jackson 配置举例"], "deliverables": ["类型选择指南", "存储与时区规范", "常见坑清单"],
+      "acceptance": ["SimpleDateFormat 线程安全问题指出（DateTimeFormatter 替代）", "存储约定给出明确结论与理由", "结合本项目 jackson time-zone 配置"],
+      "rubric": [ { "dimension": "正确性", "weight": 50, "guidance": "类型与时区语义准确。" }, { "dimension": "工程规范", "weight": 50, "guidance": "规范结合项目落地。" } ]
+    },
+    {
+      "code": "JC-027", "title": "fail-fast 与 ConcurrentModificationException",
+      "category": "java-core", "difficulty": "MEDIUM",
+      "tags": "集合,并发,异常", "summary": "讲清 fail-fast 机制、触发场景与安全删除方式。", "estimatedMinutes": 20,
+      "background": "遍历 ArrayList 时 remove 元素偶发抛异常——经典的 fail-fast。你写一篇分析：机制、触发条件、正确的删除姿势。",
+      "requirements": ["modCount 与 expectedModCount 的校验机制", "触发场景：遍历中 remove/add（包括增强 for）", "正确做法：Iterator.remove、removeIf、倒序下标删除、CopyOnWriteArrayList", "说明 fail-fast 是「尽力而为」不是并发安全的保证"],
+      "constraints": [], "deliverables": ["机制分析", "正确做法代码"],
+      "acceptance": ["解释 removeIf 内部同样用位标记避免 modCount 问题", "明确单线程也会触发（非并发专属）", "给出各替代方案的适用场景"],
+      "rubric": [ { "dimension": "正确性", "weight": 55, "guidance": "机制与替代方案准确。" }, { "dimension": "工程规范", "weight": 45, "guidance": "代码可直接采用。" } ]
+    },
+    {
+      "code": "JC-028", "title": "Object 通用方法与 clone 的正确态度",
+      "category": "java-core", "difficulty": "MEDIUM",
+      "tags": "Object,equals,clone", "summary": "梳理 Object 十个方法中被高频考察的部分，以及为什么不用 clone。", "estimatedMinutes": 20,
+      "background": "Object 是所有类的根。你写一篇梳理：equals/hashCode/toString 的契约复述、finalize 的废弃、clone 为什么被建议不用。",
+      "requirements": ["equals/hashCode 契约复述（链接 JC-003 不重复展开）", "toString 的规范建议（调试信息脱敏）", "finalize 被废弃的原因（不确定性、性能）与 Cleaner 一句话", "clone 的问题与替代（拷贝构造器/序列化）"],
+      "constraints": [], "deliverables": ["方法清单", "clone 替代方案"],
+      "acceptance": ["finalize 废弃原因讲清", "clone 浅拷贝问题与替代方案给出", "toString 脱敏提醒（呼应日志规范）"],
+      "rubric": [ { "dimension": "正确性", "weight": 55, "guidance": "契约与废弃原因准确。" }, { "dimension": "工程规范", "weight": 45, "guidance": "替代方案明确。" } ]
+    },
+    {
+      "code": "JC-029", "title": "try-with-resources 与异常的性能认知",
+      "category": "java-core", "difficulty": "MEDIUM",
+      "tags": "异常,资源管理", "summary": "讲清 try-with-resources 原理、抑制异常与「异常很慢」的真相。", "estimatedMinutes": 20,
+      "background": "资源关闭的正确姿势与「异常处理很慢」的坊间说法需要一次澄清。你写一篇：TWR 原理、抑制异常、异常慢在栈填充。",
+      "requirements": ["try-with-resources 的语法糖原理（编译生成 close + suppressed）", "抑制异常的获取（getSuppressed）", "「异常慢」的真相：栈填充昂贵，捕获本身便宜；控制流不要用异常", "自定义资源的 AutoCloseable 实现要点"],
+      "constraints": [], "deliverables": ["TWR 说明", "性能认知澄清"],
+      "acceptance": ["编译生成 close 调用与抑制异常讲对", "「不要用异常做流程控制」的结论明确", "给出资源类实现 AutoCloseable 的示例"],
+      "rubric": [ { "dimension": "正确性", "weight": 55, "guidance": "原理与性能认知准确。" }, { "dimension": "工程规范", "weight": 45, "guidance": "示例规范。" } ]
+    },
+    {
+      "code": "JC-030", "title": "原子类与 CAS：AtomicInteger 为什么快",
+      "category": "java-core", "difficulty": "MEDIUM",
+      "tags": "CAS,原子类,并发", "summary": "讲清 CAS 机制、ABA 问题与 LongAdder 的分桶优化。", "estimatedMinutes": 25,
+      "background": "计数场景用 AtomicInteger 还是 synchronized？你写一篇：CAS 原理、ABA 与版本号、LongAdder 为什么在高并发下更快。",
+      "requirements": ["CAS 的硬件支撑（CPU 指令）与自旋语义", "ABA 问题：场景、后果（链表类结构）与 AtomicStampedReference", "AtomicLong 在高竞争下的自旋浪费与 LongAdder 的 Cell 分桶", "选型：低竞争 AtomicInteger、高并发计数 LongAdder、需要复合原子性仍用锁"],
+      "constraints": [], "deliverables": ["CAS 机制说明", "ABA 与 LongAdder 解释", "选型结论"],
+      "acceptance": ["ABA 的具体危害场景讲清", "LongAdder 分桶降低竞争的思路讲对", "选型结论分场景不绝对化"],
+      "rubric": [ { "dimension": "正确性", "weight": 55, "guidance": "CAS、ABA、分桶机制准确。" }, { "dimension": "方案设计", "weight": 45, "guidance": "选型分场景。" } ]
+    },
+    {
+      "code": "JC-031", "title": "CopyOnWriteArrayList：读写分离的极端设计",
+      "category": "java-core", "difficulty": "MEDIUM",
+      "tags": "并发容器,读写分离", "summary": "讲清 COW 的机制、适用场景（监听器列表）与代价。", "estimatedMinutes": 20,
+      "background": "「读多写极少」场景的神器与陷阱。你写一篇：COW 机制、为什么适合监听器列表、弱一致性迭代与内存翻倍的代价。",
+      "requirements": ["机制：每次修改复制整个数组，读无锁", "适用场景判断：读极多、写极少、列表小（监听器/配置快照）", "代价：写时内存翻倍、弱一致迭代（不抛 CME 但可能读到旧数据）", "与 Collections.synchronizedList 的对比"],
+      "constraints": [], "deliverables": ["机制说明", "适用判断", "代价清单"],
+      "acceptance": ["迭代不抛 CME 但可能读到旧值的取舍讲清", "给出「写多场景千万别用」的明确警告", "与 synchronizedList 的锁粒度对比"],
+      "rubric": [ { "dimension": "正确性", "weight": 55, "guidance": "机制与代价准确。" }, { "dimension": "方案设计", "weight": 45, "guidance": "适用边界明确。" } ]
+    },
+    {
+      "code": "JC-032", "title": "CompletableFuture 异步编排",
+      "category": "java-core", "difficulty": "MEDIUM",
+      "tags": "异步,CompletableFuture,并发", "summary": "用「聚合多个接口数据」场景讲清 CompletableFuture 的编排与线程池。", "estimatedMinutes": 30,
+      "background": "详情页要聚合课程、讲师、评价三个服务的数据，串行太慢。你用 CompletableFuture 写并行编排方案：任务拆分、异常处理、超时与默认线程池的坑。",
+      "requirements": ["supplyAsync 并行三个查询 → allOf 等待 → join 汇总", "异常处理：exceptionally/handle 与某个子任务失败的整体策略", "超时控制：orTimeout / completeOnTimeout", "默认 ForkJoinPool.commonPool 的坑与显式传线程池"],
+      "constraints": ["给出完整可编译示例"], "deliverables": ["编排示例代码", "异常与超时处理", "线程池建议"],
+      "acceptance": ["示例代码正确编译", "显式线程池的建议明确", "提到 thenApply 与 thenApplyAsync 的线程差异"],
+      "rubric": [ { "dimension": "正确性", "weight": 50, "guidance": "API 用法与线程语义准确。" }, { "dimension": "方案设计", "weight": 50, "guidance": "场景方案完整（异常/超时/线程池）。" } ]
+    },
+    {
+      "code": "JC-033", "title": "虚拟线程（JDK 21）：它解决什么问题",
+      "category": "java-core", "difficulty": "HARD",
+      "tags": "虚拟线程,JDK21,并发", "summary": "讲清虚拟线程的机制、与线程池的互补关系及使用禁忌。", "estimatedMinutes": 30,
+      "background": "JDK 21 正式发布虚拟线程（JEP 444），是近年 Java 最大变化之一。你写一篇认知文：它是什么、为什么适合 IO 密集、什么场景不要用。",
+      "requirements": ["虚拟线程 = JVM 调度的轻量线程，阻塞时挂载/卸载载体线程", "与平台线程的成本对比（百万级可行）", "适用：IO 密集高并发（调用下游/DB）；不适用：CPU 密集与长时间持锁", "禁忌：synchronized 长块导致 pinning（JDK 21 的已知限制）与 ThreadLocal 滥用"],
+      "constraints": ["以 JDK 21 为准"], "deliverables": ["机制说明", "适用与禁忌清单", "与线程池的关系结论"],
+      "acceptance": ["pinning 问题与 synchronized 的关系讲对", "「虚拟线程不是替代线程池，是替代阻塞等待」的定位清楚", "提到 Executers.newVirtualThreadPerTaskExecutor 用法"],
+      "rubric": [ { "dimension": "正确性", "weight": 55, "guidance": "机制与禁忌准确。" }, { "dimension": "方案设计", "weight": 45, "guidance": "与既有并发体系的定位清晰。" } ]
+    },
+    {
+      "code": "JC-034", "title": "类加载机制与双亲委派",
+      "category": "java-core", "difficulty": "HARD",
+      "tags": "JVM,类加载,面试高频", "summary": "讲清类加载五阶段、三层加载器与双亲委派的意义和打破场景。", "estimatedMinutes": 30,
+      "background": "「双亲委派」是 JVM 面试分水岭题。你写一篇：加载流程、各加载器职责、双亲委派的意义（安全与唯一）、哪些场景打破它。",
+      "requirements": ["加载五阶段：加载→验证→准备→解析→初始化（准备阶段的默认值细节）", "三层加载器：Bootstrap/Extension(Platform)/Application 的职责", "双亲委派流程与意义：避免重复加载、核心类安全", "打破场景：SPI（线程上下文加载器）、热部署、Tomcat 隔离"],
+      "constraints": ["以 JDK 8/17 通用行为为准"], "deliverables": ["加载流程", "双亲委派说明", "打破场景举例"],
+      "acceptance": ["准备阶段「赋默认值、初始化才赋真实值」讲清", "SPI 打破委派的原因（Bootstrap 看不到实现类）", "Tomcat 每个 webapp 独立加载器的隔离动机"],
+      "rubric": [ { "dimension": "正确性", "weight": 60, "guidance": "阶段、委派、打破场景准确。" }, { "dimension": "沟通表达", "weight": 40, "guidance": "能落到真实框架解释。" } ]
+    },
+    {
+      "code": "JC-035", "title": "JVM 内存结构详解", "category": "java-core", "difficulty": "HARD",
+      "tags": "JVM,内存区域,面试高频", "summary": "讲清线程私有/共享区域划分、各区域 OOM 形态与直接内存。", "estimatedMinutes": 30,
+      "background": "「说说 JVM 内存区域」要求讲到每一块放什么、谁会 OOM。你写一篇结构详解：五区域 + 直接内存，并给每块一个 OOM 场景。",
+      "requirements": ["线程私有：程序计数器、虚拟机栈（栈帧结构：局部变量表/操作数栈）、本地方法栈", "线程共享：堆（分代）、方法区/元空间（字符串常量池的位置演进）", "每块区域的 OOM 形态与示例（StackOverflowError vs OutOfMemoryError）", "直接内存：NIO Buffer 与 -XX:MaxDirectMemorySize"],
+      "constraints": ["以 JDK 8/17 为主，标注版本差异"], "deliverables": ["区域结构说明", "各区域 OOM 场景表"],
+      "acceptance": ["字符串常量池在堆中的位置演进（7 后移入堆）讲对", "栈溢出与堆溢出的触发方式区分", "元空间取代永久代的原因点到（类加载器泄漏问题）"],
+      "rubric": [ { "dimension": "正确性", "weight": 60, "guidance": "区域划分与 OOM 形态准确。" }, { "dimension": "沟通表达", "weight": 40, "guidance": "结构化表达，便于记忆。" } ]
+    },
+    {
+      "code": "JC-036", "title": "GC 基础：可达性分析与四种引用",
+      "category": "java-core", "difficulty": "HARD",
+      "tags": "GC,引用类型,JVM", "summary": "讲清垃圾判定的可达性分析、GC Roots 与强软弱虚四种引用。", "estimatedMinutes": 30,
+      "background": "GC 的第一性问题是「谁该回收」。你写一篇：引用计数为什么不用、可达性分析与 GC Roots 枚举、四种引用与典型应用（缓存/ThreadLocal）。",
+      "requirements": ["引用计数的循环引用问题与 JVM 的选择", "可达性分析：GC Roots 类型（栈帧局部变量、静态字段、JNI 等）与 Stop The World 的关系", "四种引用的回收时机与典型应用（软引用缓存、弱引用 ThreadLocal key、虚引用配合 Cleaner）", "分代假说与「朝生夕死」对象的回收路径一句话"],
+      "constraints": [], "deliverables": ["判定机制说明", "四种引用对比表", "与实际框架的关联举例"],
+      "acceptance": ["GC Roots 枚举需要 STW 的原因（一致性快照）讲清", "ThreadLocal key 弱引用与本题呼应", "软引用缓存在内存不足时回收的语义正确"],
+      "rubric": [ { "dimension": "正确性", "weight": 60, "guidance": "判定机制与引用语义准确。" }, { "dimension": "方案设计", "weight": 40, "guidance": "能关联真实组件解释设计动机。" } ]
+    },
+    {
+      "code": "JC-037", "title": "死锁：产生条件、检测与避免",
+      "category": "java-core", "difficulty": "HARD",
+      "tags": "死锁,并发,排查", "summary": "讲清死锁四条件、检测手段（jstack/工具）与代码级避免策略。", "estimatedMinutes": 30,
+      "background": "两把锁交叉获取导致系统卡死是并发经典事故。你写一篇：死锁四条件、一个最小死锁代码、jstack 检测方法、避免策略（顺序加锁/tryLock 超时）。",
+      "requirements": ["死锁四个必要条件与破坏思路", "最小死锁示例（两线程两锁交叉）", "检测：jstack 输出中的 Found one Java-level deadlock、arthas thread -b", "避免：全局锁顺序约定、tryLock 超时回退、缩小锁范围、用并发工具替代显式锁"],
+      "constraints": [], "deliverables": ["四条件与破坏策略", "最小复现代码", "检测与避免清单"],
+      "acceptance": ["jstack 能直接给出死锁报告这一事实讲到", "「按固定顺序加锁」作为最实用规约", "提到活锁与饥饿的区分一句话"],
+      "rubric": [ { "dimension": "正确性", "weight": 55, "guidance": "条件、检测、避免三层准确。" }, { "dimension": "问题定位", "weight": 45, "guidance": "检测手段可操作。" } ]
+    },
+    {
+      "code": "JC-038", "title": "线程生命周期与状态转换",
+      "category": "java-core", "difficulty": "MEDIUM",
+      "tags": "线程,生命周期,并发", "summary": "讲清 Java 线程六状态与常见转换场景（sleep/wait/join/Lock）。", "estimatedMinutes": 20,
+      "background": "「线程有几种状态」看似简单，但 WAITING 与 TIMED_WAITING、BLOCKED 的边界常被答错。你写一篇状态全景。",
+      "requirements": ["六状态枚举：NEW/RUNNABLE/BLOCKED/WAITING/TIMED_WAITING/TERMINATED", "触发转换的 API：synchronized 竞争失败→BLOCKED；wait/join→WAITING；sleep→TIMED_WAITING", "LockSupport.park 与 Lock 队列的状态归属", "常见误答纠正：「运行中」在 Java 里归入 RUNNABLE"],
+      "constraints": [], "deliverables": ["状态转换图", "易错点清单"],
+      "acceptance": ["BLOCKED 与 WAITING 的区别（锁池 vs 等待队列）讲清", "sleep 不释放锁、wait 释放锁", "I/O 阻塞在 Java 层仍显示 RUNNABLE 的说明"],
+      "rubric": [ { "dimension": "正确性", "weight": 60, "guidance": "状态与触发条件准确。" }, { "dimension": "沟通表达", "weight": 40, "guidance": "转换图清晰。" } ]
+    },
+    {
+      "code": "JC-039", "title": "wait/notify 实现生产者消费者",
+      "category": "java-core", "difficulty": "HARD",
+      "tags": "wait,notify,并发,经典题", "summary": "手写生产者消费者：while 判定、notifyAll、并与 BlockingQueue 对比。", "estimatedMinutes": 30,
+      "background": "「用 wait/notify 写生产者消费者」是并发手写题的入门标准。你给出正确实现：解释为什么用 while 不是 if、为什么 notifyAll 更安全，再对比 BlockingQueue 的工程选择。",
+      "requirements": ["基于 synchronized + wait/notify 的有界缓冲实现", "解释 while 循环判定（虚假唤醒与条件复检）", "notify 与 notifyAll 的选择分析", "工程版：ArrayBlockingQueue put/take 一行搞定，说明其内部就是锁 + 条件队列"],
+      "constraints": ["代码必须完整可运行"], "deliverables": ["手写实现", "关键点解释", "工程替代方案"],
+      "acceptance": ["while 复检的原因（唤醒后条件可能已被改变）讲清", "notify 可能唤醒「错误方向」线程的分析", "结论「生产代码用 BlockingQueue」"],
+      "rubric": [ { "dimension": "正确性", "weight": 55, "guidance": "实现正确、关键点无误。" }, { "dimension": "方案设计", "weight": 45, "guidance": "手写与工程方案的关系讲清。" } ]
+    },
+    {
+      "code": "JC-040", "title": "读写锁与 StampedLock 的适用场景",
+      "category": "java-core", "difficulty": "HARD",
+      "tags": "读写锁,并发,进阶", "summary": "讲清 ReadWriteLock 与 StampedLock 乐观读的机制与缓存场景应用。", "estimatedMinutes": 30,
+      "background": "缓存本地表「读极多写偶尔」的并发控制除了 COW 还有读写锁。你写一篇：ReentrantReadWriteLock 机制、锁降级、StampedLock 乐观读与注意事项。",
+      "requirements": ["读写锁语义：读共享写互斥、写饥饿问题", "锁降级（写→读）的正确用法与场景", "StampedLock 乐观读：无锁读 + validate，失败升级", "使用禁忌：StampedLock 不可重入、乐观读中不能调用写操作"],
+      "constraints": [], "deliverables": ["机制对比", "缓存场景示例", "禁忌清单"],
+      "acceptance": ["锁降级示例正确（写锁中获取读锁再放写锁）", "乐观读 validate 失败后的升级流程讲对", "明确「读多写少才值得」的适用判断"],
+      "rubric": [ { "dimension": "正确性", "weight": 55, "guidance": "锁机制与禁忌准确。" }, { "dimension": "方案设计", "weight": 45, "guidance": "场景化示例真实。" } ]
+    },
+    {
+      "code": "JC-041", "title": "happens-before：并发可见性的规则语言",
+      "category": "java-core", "difficulty": "HARD",
+      "tags": "JMM,happens-before,并发", "summary": "用几条核心规则讲清 happens-before，并回答「不写 volatile 什么时候也会可见」。", "estimatedMinutes": 30,
+      "background": "JMM 的进阶题：「两个线程不加 volatile，写就一定不可见吗？」正确答案要看 happens-before 规则。你写一篇：核心规则（程序顺序、锁、volatile、线程 start/join、传递性）与推论。",
+      "requirements": ["happens-before 的定义（可见性与顺序的承诺）", "核心规则逐条举例：程序顺序、监视器锁、volatile、start/join、传递性", "推演：synchronized 块内的写对后续同锁读可见的原因", "常见误区：volatile 只保证可见不保证复合原子"],
+      "constraints": ["不要求覆盖全部规则，核心几条讲透"], "deliverables": ["规则清单与示例", "推演题解答", "误区纠正"],
+      "acceptance": ["传递性组合推理示例正确", "「锁内的写 happens-before 后续同锁的读」能自证", "结论落到工程实践：跨线程共享要么 volatile 要么锁要么并发容器"],
+      "rubric": [ { "dimension": "正确性", "weight": 60, "guidance": "规则语义与推演准确。" }, { "dimension": "沟通表达", "weight": 40, "guidance": "抽象规则讲得可感。" } ]
+    },
+    {
+      "code": "JC-042", "title": "JIT 与逃逸分析：Java 为什么不慢了",
+      "category": "java-core", "difficulty": "HARD",
+      "tags": "JIT,逃逸分析,JVM", "summary": "讲清分层编译、热点检测与逃逸分析的栈上分配/锁消除优化。", "estimatedMinutes": 30,
+      "background": "「Java 慢」是过时印象。你写一篇：JIT 分层编译、方法调用与热点代码的优化路径、逃逸分析带来的栈上分配/标量替换/锁消除。",
+      "requirements": ["解释器与 JIT 的协作（分层编译、C1/C2）", "热点检测：调用计数与回边计数、OSR 一句话", "逃逸分析的三种优化：栈上分配（标量替换）、锁消除、同步省略", "验证手段：-XX:+PrintCompilation / JITWatch 一句话，以及基准测试要用 JMH 的原因"],
+      "constraints": ["不深入编译器内部"], "deliverables": ["分层编译说明", "逃逸分析优化清单", "「为什么必须用 JMH」的解释"],
+      "acceptance": ["标量替换与「对象根本不分配」的机制讲对", "锁消除示例（StringBuffer 局部变量）正确", "明确「手写微基准不可信，用 JMH」"],
+      "rubric": [ { "dimension": "正确性", "weight": 60, "guidance": "编译与优化机制准确。" }, { "dimension": "沟通表达", "weight": 40, "guidance": "纠正过时印象有说服力。" } ]
+    },
+    {
+      "code": "JC-043", "title": "常用 JVM 参数清单与上手",
+      "category": "java-core", "difficulty": "MEDIUM",
+      "tags": "JVM,参数,运维", "summary": "整理一份服务端常用 JVM 参数清单：堆、GC、dump、日志，并说明调参纪律。", "estimatedMinutes": 25,
+      "background": "新人面对 -Xmx -XX: 这堆参数无从下手。你整理一份「够用」的清单：每个参数干什么、什么时候动它，以及调参纪律。",
+      "requirements": ["堆相关：-Xms/-Xmx 设为一致的原因、-Xss", "dump 与日志：HeapDumpOnOutOfMemoryError、GC 日志参数（JDK 9+ 统一 -Xlog:gc*）", "G1 常用：MaxGCPauseMillis 的合理设置", "调参纪律：先测量后调整、一次只改一个、记录基线"],
+      "constraints": ["以 JDK 17 + G1 为准"], "deliverables": ["参数清单表", "调参纪律"],
+      "acceptance": ["Xms=Xmx 避免                        运行期扩容抖动的理由讲清", "GC 日志是调参前提的立场明确", "不鼓励无脑抄网上参数组合"],
+      "rubric": [ { "dimension": "正确性", "weight": 50, "guidance": "参数语义准确。" }, { "dimension": "工程规范", "weight": 50, "guidance": "纪律清单可直接执行。" } ]
+    },
+    {
+      "code": "JC-044", "title": "arthas 常用命令实战",
+      "category": "java-core", "difficulty": "MEDIUM",
+      "tags": "arthas,排查,工具", "summary": "整理 arthas 高频命令清单：看线程、看内存、热更新与排查实战。", "estimatedMinutes": 25,
+      "background": "arthas 是阿里开源的 Java 诊断神器，也是面试「你会哪些线上工具」的加分答案。你整理一份实战清单：每个命令解决什么问题、一个典型使用场景。",
+      "requirements": ["基础连接：attach 与 dashboard", "线程：thread -n 最忙线程、thread -b 死锁定位", "方法观测：watch 观察入参返回值、trace 链路耗时、stack 调用来源", "其他：sc/sm 查类、jad 反编译、ognl 动态执行、profiler 火焰图一句话"],
+      "constraints": ["标注生产使用的权限与风险（只读优先）"], "deliverables": ["命令速查表", "典型场景案例"],
+      "acceptance": ["watch/trace 的表达式示例正确", "强调生产环境谨慎使用与审计", "至少给出「trace 定位慢在哪个下游」的实战案例"],
+      "rubric": [ { "dimension": "正确性", "weight": 50, "guidance": "命令用法准确。" }, { "dimension": "问题定位", "weight": 50, "guidance": "场景化实战可信。" } ]
+    }
+  ]
+}

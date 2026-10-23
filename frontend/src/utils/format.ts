@@ -16,12 +16,14 @@ export const DIFFICULTY_LABELS: Record<string, string> = {
   EASY: '基础',
   MEDIUM: '进阶',
   HARD: '挑战',
+  EXPERT: '企业实战',
 }
 
 export const DIFFICULTY_TYPES: Record<string, string> = {
   EASY: 'success',
-  MEDIUM: 'warning',
-  HARD: 'danger',
+  MEDIUM: 'primary',
+  HARD: 'warning',
+  EXPERT: 'danger',
 }
 
 export const MY_STATUS_LABELS: Record<string, string> = {
@@ -45,6 +47,23 @@ export const CATEGORY_LABELS: Record<string, string> = {
   'java-core': 'Java 核心与并发',
   framework: 'Spring 与框架',
   cache: 'Redis 与缓存',
+  'network-os': '网络与操作系统',
+  mq: '消息队列与异步',
+  distributed: '分布式与微服务',
+  'system-design': '系统设计场景',
+  engineering: '工程素养与工具',
+}
+
+export const FREQUENCY_LABELS: Record<string, string> = {
+  HIGH: '高频',
+  MID: '中频',
+  LOW: '低频',
+}
+
+export const FREQUENCY_TYPES: Record<string, string> = {
+  HIGH: 'danger',
+  MID: 'warning',
+  LOW: 'info',
 }
 
 export const PROVIDER_LABELS: Record<string, string> = {

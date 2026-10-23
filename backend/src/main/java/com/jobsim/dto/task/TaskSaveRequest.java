@@ -25,7 +25,7 @@ public class TaskSaveRequest {
     private String category;
 
     @NotBlank(message = "难度不能为空")
-    @Pattern(regexp = "^(EASY|MEDIUM|HARD)$", message = "难度只能为 EASY / MEDIUM / HARD")
+    @Pattern(regexp = "^(EASY|MEDIUM|HARD|EXPERT)$", message = "难度只能为 EASY / MEDIUM / HARD / EXPERT")
     private String difficulty;
 
     private List<String> tags;

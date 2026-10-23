@@ -92,3 +92,23 @@ CREATE TABLE IF NOT EXISTS ai_call_log (
 );
 CREATE INDEX IF NOT EXISTS idx_log_success ON ai_call_log (success);
 CREATE INDEX IF NOT EXISTS idx_log_created ON ai_call_log (created_at);
+
+CREATE TABLE IF NOT EXISTS interview_question (
+    id         BIGINT       NOT NULL AUTO_INCREMENT,
+    code       VARCHAR(64)  NOT NULL,
+    category   VARCHAR(32)  NOT NULL,
+    title      VARCHAR(300) NOT NULL,
+    frequency  VARCHAR(10)  NOT NULL DEFAULT 'MID',
+    difficulty VARCHAR(16)  NOT NULL DEFAULT 'EASY',
+    tags       VARCHAR(255),
+    one_liner  VARCHAR(500) NOT NULL,
+    plain      TEXT         NOT NULL,
+    points     TEXT         NOT NULL,
+    example    TEXT,
+    follow_ups TEXT,
+    created_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    CONSTRAINT uk_bagu_code UNIQUE (code)
+);
+CREATE INDEX IF NOT EXISTS idx_bagu_category ON interview_question (category);
+CREATE INDEX IF NOT EXISTS idx_bagu_freq ON interview_question (frequency);

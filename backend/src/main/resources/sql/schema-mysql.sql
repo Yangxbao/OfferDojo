@@ -94,3 +94,23 @@ CREATE TABLE IF NOT EXISTS `ai_call_log` (
     KEY `idx_log_success` (`success`),
     KEY `idx_log_created` (`created_at`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT ='AI 调用日志（供后台查看失败记录）';
+
+CREATE TABLE IF NOT EXISTS `interview_question` (
+    `id`         BIGINT       NOT NULL AUTO_INCREMENT COMMENT '主键',
+    `code`       VARCHAR(64)  NOT NULL COMMENT '题目编码，如 BG-JC-001',
+    `category`   VARCHAR(32)  NOT NULL COMMENT '类目编码（与 task.category 同一套）',
+    `title`      VARCHAR(300) NOT NULL COMMENT '问题',
+    `frequency`  VARCHAR(10)  NOT NULL DEFAULT 'MID' COMMENT '考察频率：HIGH / MID / LOW',
+    `difficulty` VARCHAR(16)  NOT NULL DEFAULT 'EASY' COMMENT '难度：EASY / MEDIUM / HARD / EXPERT',
+    `tags`       VARCHAR(255) NULL COMMENT '标签，逗号分隔',
+    `one_liner`  VARCHAR(500) NOT NULL COMMENT '一句话总结（快速背诵）',
+    `plain`      TEXT         NOT NULL COMMENT '大白话解释',
+    `points`     TEXT         NOT NULL COMMENT '背诵要点，JSON 字符串数组',
+    `example`    TEXT         NULL COMMENT '示例（代码或场景）',
+    `follow_ups` TEXT         NULL COMMENT '常见追问，JSON 字符串数组',
+    `created_at` DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_bagu_code` (`code`),
+    KEY `idx_bagu_category` (`category`),
+    KEY `idx_bagu_freq` (`frequency`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT ='八股复习题库';
