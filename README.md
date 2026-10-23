@@ -137,37 +137,40 @@ sequenceDiagram
 
 ## 快速开始
 
-### 方式一：零依赖演示（推荐第一次体验）
+### 方式一：一键脚本（Windows，推荐第一次体验）
 
-不装任何数据库，使用 H2 文件数据库 + 内置演示数据：
+在项目根目录（`jobsim-ai`）下：
 
-```bash
-# 1. 启动后端（需要 JDK 21）
-cd backend
-mvn spring-boot:run -Dspring-boot.run.profiles=demo
-
-# 2. 新开一个终端，启动前端
-cd frontend
-npm install
-npm run dev
+```cmd
+start-backend.cmd      :: 后端：自动探测 JDK 21，默认零依赖演示模式（H2 内嵌库，无需安装数据库）
+start-frontend.cmd     :: 前端：首次运行自动 npm install 并启动开发服务器
 ```
 
 打开 http://localhost:5173 ，用演示账号登录即可（见下表）。
+后端默认跑在 8090；前端若 5173 被占用会自动换端口，以脚本窗口输出的地址为准。
+
+手动等价命令（任何系统通用）：
+
+```bash
+# 后端（需要 JDK 21；JAVA_HOME 未指向 21 时会报 UnsupportedClassVersionError）
+cd backend && mvn spring-boot:run -Dspring-boot.run.profiles=demo
+
+# 前端
+cd frontend && npm install && npm run dev
+```
 
 ### 方式二：MySQL 模式（推荐日常开发）
 
+```cmd
+:: Windows：一条命令启动本机独立 MySQL（3307，不动已有服务）+ MySQL 模式后端
+start-mysql.cmd         :: 首次使用需把脚本里的 MYSQL_BIN 改成你机器的 MySQL bin 目录
+```
+
 ```bash
-# 1. 准备 MySQL 8：用 docker compose（可选）或任意已有实例
+# 任意系统手动方式：先准备 MySQL 8（docker compose up -d 或已有实例），然后：
 cp .env.example .env   # 修改数据库账号密码
-docker compose up -d
-
-# 2. 启动后端（默认 mysql profile；首次启动自动建表 + 写入演示数据）
-cd backend
-mvn spring-boot:run
-
-# 3. 启动前端
-cd frontend
-npm run dev
+cd backend && mvn spring-boot:run     # 默认 mysql profile；首次启动自动建表 + 写入演示数据
+cd frontend && npm install && npm run dev
 ```
 
 数据库连接、JWT 密钥、AI 配置均通过环境变量注入，参见 [.env.example](.env.example)。

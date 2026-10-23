@@ -1,8 +1,43 @@
 # 启动失败排查手册
 
-按"现象 → 原因 → 解决"组织。前四条是本仓库开发过程中真实遇到的坑（见 docs/TESTING.md）。
+按"现象 → 原因 → 解决"组织。前几条是本仓库开发过程中真实遇到的坑（见 docs/TESTING.md）。
 
-## 0. 先做三个检查
+## 0. 最省事的方式：用仓库自带的一键启动脚本
+
+```cmd
+:: 在项目根目录（jobsim-ai）下：
+start-backend.cmd      :: 零依赖演示模式（自动探测 JDK 21，无需配置 JAVA_HOME）
+start-frontend.cmd     :: 前端（首次自动 npm install）
+start-mysql.cmd        :: 可选：启动本机独立 MySQL（3307）并以 MySQL 模式启动后端
+```
+
+脚本只在本机探测 JDK 21（含 `C:\Users\<你>\.jdks\` 下 IDEA 下载的 JDK），不会改你的系统环境变量。
+
+## 0.1 后端报 `UnsupportedClassVersionError: class file version 65.0 ... up to 61.0`
+
+**现象**：`mvn spring-boot:run` 报"加载主类时出现 LinkageError"，提示 class file version 65.0 只支持到 61.0。
+**原因**：65 = Java 21 编译的类，61 = Java 17 运行时。你的 Maven 正在用 JDK 17 跑 JDK 21 编译的代码。
+**解决**：运行 `start-backend.cmd`（自动切到 JDK 21）；或在当前 CMD 窗口临时执行
+`set JAVA_HOME=C:\Users\<你>\.jdks\<某个JDK21目录>` 后再 `mvn spring-boot:run`；
+长期方案是安装 Temurin 21 并把 JAVA_HOME 指过去。
+**对照表**：class file 61=Java 17、65=Java 21。看到 65/61 就一定是 JDK 版本错配。
+
+## 0.2 Windows 批处理三个经典坑（写自己的 .cmd 脚本前必读）
+
+本仓库的启动脚本开发时真实踩过，全部有据可查：
+
+1. **`setlocal` 会连同"当前目录"一起保存，`endlocal` 时一并还原**——
+   如果你在 `setlocal` 之后 `cd`，又在 `endlocal` 之后执行命令，目录会被悄悄还原。
+   表现：Maven 在错误的目录执行，报 `No plugin found for prefix 'spring-boot'`。
+   修法：`endlocal` 之后再 `cd` 一次。
+2. **批处理文件必须是 GBK（ANSI）或纯 ASCII，且必须 CRLF 换行**——
+   UTF-8 中文注释或 LF 换行会让 cmd 解析错乱（出现"不是内部或外部命令"、`&&` 语法错误等）。
+   本仓库脚本保持纯 ASCII + CRLF（`.gitattributes` 强制 `*.cmd eol=crlf`）。
+3. **不要在 Maven 模块目录里放 `.mvn/wrapper/maven-wrapper.properties` 再用系统 Maven**——
+   本机实测（Maven 3.9.4）：该文件存在时 `mvn spring-boot:run` 的插件前缀解析会失败，
+   删除即恢复。因此本仓库没有内置 Maven Wrapper，直接使用系统 Maven。
+
+## 0.3 先做三个检查
 
 ```bash
 # 1. 后端起没起来（默认 8090）
