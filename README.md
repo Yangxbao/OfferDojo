@@ -245,6 +245,8 @@ cd frontend && npm run type-check && npm test && npm run build
 
 ## 安全说明
 
+**关于开发方式**：本项目由本人设计并主导开发，开发过程中使用 AI 辅助编码、测试与文档整理；全部功能均经本人实际运行验证（自动化测试与真实运行截图见上文），关键设计决策与踩坑记录见 docs 目录。
+
 - 密码使用 BCrypt 单向哈希存储；JWT 密钥经环境变量注入，默认值仅供本地开发
 - `.env`、构建产物、本地数据库文件均被 `.gitignore` 忽略；`.env.example` 只含占位符
 - 用户只能访问自己的提交记录；`/api/admin/**` 双重校验（路径规则 + `@PreAuthorize`）
