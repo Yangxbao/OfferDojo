@@ -25,11 +25,12 @@ describe('format 工具函数', () => {
   })
 
   it('类目与评估来源映射完整', () => {
-    expect(Object.keys(CATEGORY_LABELS)).toHaveLength(5)
-    expect(CATEGORY_LABELS['api-design']).toBe('需求分析与 API 设计')
-    expect(PROVIDER_LABELS.MOCK).toBe('本地模拟评估')
-    expect(PROVIDER_LABELS.REMOTE).toBe('AI 模型评估')
-    expect(PROVIDER_LABELS.MOCK_FALLBACK).toContain('降级')
+    expect(Object.keys(CATEGORY_LABELS)).toHaveLength(8);
+    expect(CATEGORY_LABELS['api-design']).toBe('需求分析与 API 设计');
+    expect(CATEGORY_LABELS['java-core']).toBe('Java 核心与并发');
+    expect(PROVIDER_LABELS.MOCK).toBe('本地模拟评估');
+    expect(PROVIDER_LABELS.REMOTE).toBe('AI 模型评估');
+    expect(PROVIDER_LABELS.MOCK_FALLBACK).toContain('降级');
   })
 
   it('分数颜色区分强弱', () => {

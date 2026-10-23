@@ -1,0 +1,845 @@
+{
+  "tasks": [
+    {
+      "code": "JC-001",
+      "title": "讲清 HashMap 在 JDK 8 中的 put 流程",
+      "category": "java-core",
+      "difficulty": "EASY",
+      "tags": "HashMap,集合,面试高频",
+      "summary": "给组内新人写一份 JDK 8 HashMap 的讲解文档：结构、hash 扰动、put 全流程与扩容。",
+      "estimatedMinutes": 30,
+      "background": "团队每周有一次新人技术分享，这周轮到你讲集合框架第一课：HashMap 在 JDK 8 中的内部实现。导师要求先把讲解文档写出来给他过目——重点是按顺序讲清 put 的完整流程，并且能扛住新人的追问。",
+      "requirements": [
+        "讲清数组+链表+红黑树的结构，以及链表转红黑树的条件（链表长度达 8 且数组长度 ≥ 64）与退化阈值 6",
+        "说明 hash 扰动函数做了什么、为什么容量必须保持 2 的幂（(n-1) & hash 定位桶）",
+        "按执行顺序讲清 put 流程：计算 hash → 定位桶 → 空桶直插 / 链表尾插 / 树化 → 超过阈值扩容",
+        "说明默认容量 16、负载因子 0.75、扩容翻倍，以及 JDK 8 扩容时按高位把链表拆成高低两条的优化"
+      ],
+      "constraints": [
+        "只讨论 JDK 8 及以后的实现，不需要对比 JDK 7",
+        "不要求背源码，但可以引用关键方法名（hash、putVal、resize）"
+      ],
+      "deliverables": [
+        "结构说明（文字或图）",
+        "put 流程分步讲解",
+        "预判 3 个新人最可能问的追问及回答要点"
+      ],
+      "acceptance": [
+        "树化的两个条件（8 且 64）与退化阈值 6 完整给出",
+        "解释了扰动是让高位参与运算、减少碰撞",
+        "提到 JDK 8 扩容时高低位拆分、避免整体 rehash 的优化"
+      ],
+      "rubric": [
+        { "dimension": "正确性", "weight": 45, "guidance": "结构、阈值、扰动、扩容等关键事实全部准确，没有想当然的说法。" },
+        { "dimension": "沟通表达", "weight": 30, "guidance": "按 put 的执行顺序组织内容，先结论后细节，新人读得懂。" },
+        { "dimension": "需求理解", "weight": 25, "guidance": "内容面向新人教学：有铺垫、有追问预判，而不是知识点堆砌。" }
+      ],
+      "mockHints": {
+        "keywords": {
+          "正确性": ["红黑树", "链表", "树化", "8", "64", "扰动", "扩容", "0.75", "2的幂", "hash"],
+          "沟通表达": ["流程", "步骤", "首先", "然后", "最后", "总结"],
+          "需求理解": ["新人", "讲解", "分享", "追问"]
+        },
+        "strengths": [
+          { "text": "把树化条件拆成「链表长度 8」和「数组长度 ≥64」两个条件讲全了", "keywords": ["树化", "8", "64"] },
+          { "text": "用 (n-1) & hash 解释了容量保持 2 的幂的原因", "keywords": ["hash", "2的幂"] }
+        ],
+        "problems": [
+          { "dimension": "正确性", "text": "只说「冲突用链表」，没有讲转红黑树的两个条件与退化阈值 6" },
+          { "dimension": "沟通表达", "text": "知识点堆砌成列表，没有按 put 的执行顺序组织，新人难以跟上" }
+        ],
+        "edgeCases": [
+          "key 为 null 时存在哪个桶？（table[0]，hash 按 0 处理）",
+          "两个 key 的 hash 相同时如何区分？（同桶内用 equals 兜底）",
+          "负载因子为什么默认 0.75 而不是 1？（时间与空间的折中）"
+        ],
+        "followUps": [
+          "为什么树化阈值是 8？和泊松分布有什么关系？",
+          "扩容后元素要么留在原位、要么落在「原位置+旧容量」，为什么？",
+          "HashMap 多线程下会有什么问题？JDK 7 和 8 的表现一样吗？"
+        ],
+        "nextTaskCodes": ["JC-006", "JC-003"]
+      }
+    },
+    {
+      "code": "JC-002",
+      "title": "String / StringBuilder / StringBuffer 选型说明",
+      "category": "java-core",
+      "difficulty": "EASY",
+      "tags": "String,字符串,面试高频",
+      "summary": "为一段循环拼接日志的问题代码写选型说明：三者区别、编译器优化边界与改写方案。",
+      "estimatedMinutes": 20,
+      "background": "代码评审时你发现同事在 for 循环里用 String 的 + 拼接日志，学长让你整理一份选型说明贴到团队 Wiki，顺便讲清为什么编译器的优化在循环里会失效。",
+      "requirements": [
+        "三者的本质区别：String 不可变、StringBuilder 可变非线程安全、StringBuffer 线程安全（方法级 synchronized）",
+        "解释编译期会把一次性的 a + b 优化成 StringBuilder，以及为什么循环里这种优化退化（每轮新建）",
+        "给出问题代码与改写代码的对照",
+        "补充字符串常量池与 new String 的区别，一句话即可"
+      ],
+      "constraints": [
+        "结合一段问题代码示例说明",
+        "不要求反汇编字节码，但可以提 javap 的验证思路"
+      ],
+      "deliverables": [
+        "三者对比表",
+        "问题代码与改写代码对照",
+        "一句话选型结论"
+      ],
+      "acceptance": [
+        "指出循环里 + 每轮都会新建 StringBuilder 并复制内容",
+        "StringBuffer 的线程安全解释到方法级 synchronized 的粒度",
+        "提醒字符串比较用 equals 而不是 =="
+      ],
+      "rubric": [
+        { "dimension": "正确性", "weight": 50, "guidance": "不可变性、编译器优化边界、线程安全粒度三个事实都准确。" },
+        { "dimension": "沟通表达", "weight": 30, "guidance": "有对比表和代码对照，结论一句话可执行。" },
+        { "dimension": "工程规范", "weight": 20, "guidance": "结合真实评审场景，给出团队可直接采纳的规范。" }
+      ],
+      "mockHints": {
+        "keywords": {
+          "正确性": ["不可变", "常量池", "StringBuilder", "StringBuffer", "synchronized", "循环", "new", "intern"],
+          "沟通表达": ["对比", "表", "结论", "场景"],
+          "工程规范": ["拼接", "日志", "评审", "改写"]
+        },
+        "strengths": [
+          { "text": "点出编译器只优化单次拼接、循环里每轮新建的退化", "keywords": ["循环", "new"] },
+          { "text": "用不可变性解释了常量池与 hashCode 缓存的关联", "keywords": ["不可变", "常量池"] }
+        ],
+        "problems": [
+          { "dimension": "正确性", "text": "没有说明编译器优化为什么在循环里失效，只给结论" },
+          { "dimension": "工程规范", "text": "缺少问题代码与改写代码的对照，Wiki 读者无法直接照改" }
+        ],
+        "edgeCases": [
+          "两个字面量 a + b 在编译期就合并进常量池，运行时不再拼接",
+          "new String(\"abc\") 创建了几个对象？",
+          "大量拼接时预估容量避免 StringBuilder 反复扩容"
+        ],
+        "followUps": [
+          "String 为什么设计成不可变？与 hashCode 缓存、字符串池有什么关系？",
+          "拼接 10 万次，+ 和 StringBuilder 差多少个量级？你怎么验证？"
+        ],
+        "nextTaskCodes": ["JC-003"]
+      }
+    },
+    {
+      "code": "JC-003",
+      "title": "equals / hashCode 契约与自定义 HashMap key",
+      "category": "java-core",
+      "difficulty": "EASY",
+      "tags": "equals,hashCode,面试高频",
+      "summary": "出一篇 Wiki：正确重写 equals/hashCode 的规则，附「放进去取不出来」的最小复现。",
+      "estimatedMinutes": 25,
+      "background": "同事把自定义类直接当 HashMap 的 key，出现「放进去却取不出来」的线上 bug。团队让你出一篇内部 Wiki：重写规则的契约、不重写 hashCode 的后果演示，以及修复后的代码。",
+      "requirements": [
+        "列出 equals 的约定（自反、对称、传递、一致、非 null）",
+        "结合 HashMap 定位流程解释：equals 相等则 hashCode 必须相等，否则永远找不到桶",
+        "给出「只重写 equals 不重写 hashCode」的最小复现代码与运行结果",
+        "给出修复代码（@Override + Objects.hash），并提醒可变 key 的风险"
+      ],
+      "constraints": [
+        "只用 JDK 标准库，不引第三方工具",
+        "复现代码必须能直接运行并产出明确结果"
+      ],
+      "deliverables": [
+        "规则清单",
+        "最小复现代码与预期输出",
+        "修复后的代码与使用建议"
+      ],
+      "acceptance": [
+        "解释了「hashCode 不等直接落在不同桶，equals 根本不会被调用」",
+        "复现代码可运行且结果明确（put 后 get 返回 null）",
+        "提醒了放入后修改参与 hash 的字段会丢数据"
+      ],
+      "rubric": [
+        { "dimension": "正确性", "weight": 50, "guidance": "契约、定位流程、复现与修复全部技术上站得住。" },
+        { "dimension": "需求理解", "weight": 25, "guidance": "面向「踩过坑的团队 Wiki」：有复现、有修复、有建议。" },
+        { "dimension": "工程规范", "weight": 25, "guidance": "代码规范（@Override、不可变字段）、给出可执行的团队建议。" }
+      ],
+      "mockHints": {
+        "keywords": {
+          "正确性": ["equals", "hashCode", "31", "Objects.hash", "契约", "桶", "定位", "可变"],
+          "需求理解": ["Wiki", "示例", "复现", "团队"],
+          "工程规范": ["重写", "@Override", "不可变", "final", "建议"]
+        },
+        "strengths": [
+          { "text": "解释了 hashCode 不等时 equals 根本不会被调用这一关键机制", "keywords": ["hashCode", "桶", "定位"] },
+          { "text": "提醒了可变对象做 key 的风险并给出 final 修复", "keywords": ["可变", "final"] }
+        ],
+        "problems": [
+          { "dimension": "正确性", "text": "只罗列规则，没有结合 HashMap 定位流程解释为什么" },
+          { "dimension": "需求理解", "text": "缺少可运行的最小复现，读者无法验证你的结论" }
+        ],
+        "edgeCases": [
+          "放入后修改参与 hash 的字段，get 会发生什么",
+          "用 Lombok @Data 的实体直接当 key 有什么隐患（全字段参与、可变性）",
+          "hashCode 冲突时 equals 一定相等吗？反过来呢？"
+        ],
+        "followUps": [
+          "为什么常用的乘数是 31？",
+          "如果 key 是可变的业务单号对象，团队应该怎么规范？"
+        ],
+        "nextTaskCodes": ["JC-001"]
+      }
+    },
+    {
+      "code": "JC-004",
+      "title": "接口默认方法 vs 抽象类：支付方式建模选型",
+      "category": "java-core",
+      "difficulty": "EASY",
+      "tags": "接口,抽象类,设计",
+      "summary": "为支付模块写建模选型说明与骨架代码：接口+默认方法还是抽象类，理由要说透。",
+      "estimatedMinutes": 25,
+      "background": "课程项目的支付模块要支持校园卡、扫码、第三方代充三种方式。组长让你先出建模方案：用接口加默认方法，还是抽象类？理由必须说透，并给出一版能编译的骨架代码。",
+      "requirements": [
+        "列出两者语法差异：多实现、成员变量与状态、构造器",
+        "说明接口默认方法解决了什么演进问题（给接口加能力不破坏已有实现）",
+        "给出建模骨架：PayChannel 接口承担能力定义、公共模板流程放哪里要给出理由",
+        "明确什么时候必须选抽象类（共享可变状态、受保护的公共逻辑）"
+      ],
+      "constraints": [
+        "只出骨架与说明，不实现具体支付逻辑",
+        "结论必须明确，不允许「都可以」式骑墙"
+      ],
+      "deliverables": [
+        "选型结论与理由",
+        "骨架代码",
+        "一条未来扩展的推演（如新增对账能力时两种方案的改动面）"
+      ],
+      "acceptance": [
+        "结论明确且理由覆盖「能力 vs 骨架」的分工",
+        "骨架代码能编译，方法签名完整",
+        "推演了未来加公共字段/公共流程时的改动代价对比"
+      ],
+      "rubric": [
+        { "dimension": "方案设计", "weight": 50, "guidance": "选型有明确立场，理由覆盖演进性与职责分工。" },
+        { "dimension": "正确性", "weight": 30, "guidance": "语法差异（状态、构造器、多实现）表述准确，骨架可编译。" },
+        { "dimension": "沟通表达", "weight": 20, "guidance": "结构清晰，便于在评审会上陈述。" }
+      ],
+      "mockHints": {
+        "keywords": {
+          "方案设计": ["接口", "抽象类", "默认方法", "模板", "多实现", "演进"],
+          "正确性": ["状态", "构造器", "骨架", "编译", "字段"],
+          "沟通表达": ["结论", "理由", "场景", "推演"]
+        },
+        "strengths": [
+          { "text": "用「接口定义能力、抽象类承载公共骨架」明确了分工", "keywords": ["接口", "抽象类", "模板"] },
+          { "text": "推演了未来演进时两种方案的改动面", "keywords": ["演进", "推演"] }
+        ],
+        "problems": [
+          { "dimension": "方案设计", "text": "骑墙结论「都行」，没有结合本场景给出唯一推荐" },
+          { "dimension": "正确性", "text": "忽略了两者的关键语法差异（构造器与状态）" }
+        ],
+        "edgeCases": [
+          "一个类实现两个接口且两者有同名默认方法怎么办？（必须重写消解）",
+          "抽象类实现接口时，默认方法与抽象方法的交互",
+          "未来要加公共字段时，接口方案的改动代价"
+        ],
+        "followUps": [
+          "Java 8 之前为什么不能这样设计？默认方法引入的动机？",
+          "模板方法模式和组合的取舍？"
+        ],
+        "nextTaskCodes": ["JC-005"]
+      }
+    },
+    {
+      "code": "JC-005",
+      "title": "团队异常规范：受检/非受检取舍与统一处理",
+      "category": "java-core",
+      "difficulty": "EASY",
+      "tags": "异常,规范",
+      "summary": "为项目设计异常分层约定：受检/非受检的取舍、统一业务异常与全局处理器。",
+      "estimatedMinutes": 25,
+      "background": "课程项目里到处是 try-catch，而且异常打印后就吞掉继续跑。组长要求你定一份团队异常规范：什么情况用受检异常、什么情况抛非受检、全局怎么兜底，并附上反例整改。",
+      "requirements": [
+        "说明受检与非受检的语义差异与取舍（调用方能否合理恢复）",
+        "给出项目分层约定：DAO / Service / Controller 各层谁抛、谁转、谁兜底",
+        "设计统一业务异常类 + 全局异常处理器的方案（@RestControllerAdvice 思路即可）",
+        "给出「吞异常」与「打印后继续跑」的反例及整改代码"
+      ],
+      "constraints": [
+        "以 Spring Boot 环境为背景",
+        "规范要能直接贴进团队 Wiki 执行"
+      ],
+      "deliverables": [
+        "异常规范清单",
+        "反例代码与整改代码对照",
+        "全局处理器的流程说明"
+      ],
+      "acceptance": [
+        "结论明确：业务异常统一用 RuntimeException 子类，并给出理由",
+        "指出 printStackTrace 后继续跑掩盖故障的危害",
+        "提到受检异常在事务方法里默认不回滚的坑"
+      ],
+      "rubric": [
+        { "dimension": "正确性", "weight": 40, "guidance": "受检/非受检语义、事务与受检异常等事实准确。" },
+        { "dimension": "方案设计", "weight": 35, "guidance": "分层约定与全局处理器方案完整可落地。" },
+        { "dimension": "工程规范", "weight": 25, "guidance": "反例典型、整改到位，规范可直接执行。" }
+      ],
+      "mockHints": {
+        "keywords": {
+          "正确性": ["受检", "非受检", "RuntimeException", "Exception", "吞", "printStackTrace"],
+          "方案设计": ["统一", "全局", "分层", "处理器", "约定"],
+          "工程规范": ["日志", "反例", "规范", "整改", "事务"]
+        },
+        "strengths": [
+          { "text": "用「调用方能否恢复」作为受检/非受检的判断标准", "keywords": ["受检", "恢复"] },
+          { "text": "指出事务方法抛受检异常默认不回滚的坑", "keywords": ["事务", "回滚"] }
+        ],
+        "problems": [
+          { "dimension": "方案设计", "text": "规范停留在口号（如「不要吞异常」），没有落到分层与代码约定" },
+          { "dimension": "工程规范", "text": "反例不够典型，读者无法对照自查" }
+        ],
+        "edgeCases": [
+          "finally 里 return 会吞掉 try 中的异常",
+          "异常信息里拼接用户输入的日志安全问题",
+          "catch (Exception e) 后再 throw 的包装与信息丢失"
+        ],
+        "followUps": [
+          "Error 和 Exception 的边界？OutOfMemoryError 应该 catch 吗？",
+          "全局处理器里怎么区分「用户输入错误」和「系统故障」？"
+        ],
+        "nextTaskCodes": ["JC-002", "RF-002"]
+      }
+    },
+    {
+      "code": "JC-006",
+      "title": "ConcurrentHashMap 演进与 null 键值问题",
+      "category": "java-core",
+      "difficulty": "MEDIUM",
+      "tags": "ConcurrentHashMap,并发,面试高频",
+      "summary": "写一篇 ConcurrentHashMap 1.7→1.8 演进说明，并论证为什么不允许 null key/value。",
+      "estimatedMinutes": 35,
+      "background": "团队要把遗留代码里手写的分段锁 Map 换成 ConcurrentHashMap，同时新人总问「为什么它不允许 null」。你负责输出一份技术说明，既要讲演进，也要把 null 的问题论证清楚。",
+      "requirements": [
+        "对比 1.7 分段锁结构与 1.8 的 CAS + synchronized 桶首节点方案",
+        "讲清 1.8 put 的关键并发点：CAS 写空桶、锁住首节点、helpTransfer 协助扩容",
+        "用「二义性」论证 value 不允许 null：get 返回 null 时无法区分「不存在」与「值就是 null」",
+        "给出替代方案：先 containsKey 再取、或用哨兵值/Optional 包装"
+      ],
+      "constraints": [
+        "面向 JDK 8+，不必逐行读源码，但要点名关键方法（putVal、transfer）",
+        "替代方案要给出可直接使用的代码形态"
+      ],
+      "deliverables": [
+        "两个版本的演进对比",
+        "put 并发关键点说明",
+        "null 问题的论证与替代方案代码"
+      ],
+      "acceptance": [
+        "讲清 1.8 锁粒度从「段」细化到「桶首节点」的意义",
+        "null 论证包含 get 返回 null 的二义性场景而非只背结论",
+        "替代方案可直接落地（含示例代码）"
+      ],
+      "rubric": [
+        { "dimension": "正确性", "weight": 45, "guidance": "演进事实、并发关键点、null 论证全部准确。" },
+        { "dimension": "问题定位", "weight": 25, "guidance": "null 问题是「论证」而非「背诵」，二义性场景讲得清。" },
+        { "dimension": "方案设计", "weight": 30, "guidance": "替代方案落地、升级建议可执行。" }
+      ],
+      "mockHints": {
+        "keywords": {
+          "正确性": ["分段锁", "CAS", "synchronized", "桶", "首节点", "helpTransfer", "扩容", "二义性", "containsKey"],
+          "方案设计": ["演进", "对比", "替代", "Optional", "哨兵"],
+          "问题定位": ["null", "区分", "原因", "论证"]
+        },
+        "strengths": [
+          { "text": "锁粒度从段细化到桶首节点的演进讲清了", "keywords": ["分段锁", "首节点"] },
+          { "text": "用 get 返回 null 的二义性论证了 null 禁令", "keywords": ["二义性", "containsKey"] }
+        ],
+        "problems": [
+          { "dimension": "正确性", "text": "只背「不允许 null」，没有二义性论证" },
+          { "dimension": "方案设计", "text": "替代方案停留在口头（如「用 containsKey」），没有代码形态" }
+        ],
+        "edgeCases": [
+          "size() 为什么不直接返回一个 size 变量（baseCount + CounterCell 分散计数）",
+          "复合操作 check-then-act 仍不是原子的，要用 computeIfAbsent 等",
+          "迭代器的弱一致性是什么含义"
+        ],
+        "followUps": [
+          "size() 在高并发下怎么做到弱一致且不太慢？",
+          "computeIfAbsent 的映射函数里再操作同一个 map 会怎样？"
+        ],
+        "nextTaskCodes": ["JC-001", "JC-007"]
+      }
+    },
+    {
+      "code": "JC-007",
+      "title": "图片压缩服务的线程池参数设计",
+      "category": "java-core",
+      "difficulty": "MEDIUM",
+      "tags": "线程池,并发,面试高频",
+      "summary": "为批量图片压缩设计线程池：参数估算、拒绝策略与生命周期，并论证为什么禁用 Executors。",
+      "estimatedMinutes": 35,
+      "background": "社团相册服务要做批量压缩：上传高峰单机每秒约 50 张、单张压缩约 80ms、机器 8 核。组长让你出线程池设计稿，并解释开发手册为什么禁止用 Executors 的快捷方法创建线程池。",
+      "requirements": [
+        "给出核心线程数的估算过程（CPU 密集型的 N+1 或压测修正），而不是只给结论",
+        "说明队列选择与有界队列的必要性，给出队列长度的思考依据",
+        "四种拒绝策略逐一说明副作用，并给出本场景选择",
+        "指出 newFixedThreadPool 与 newCachedThreadPool 各自的风险；补充优雅关闭与监控指标"
+      ],
+      "constraints": [
+        "必须展示估算过程与假设",
+        "参数要有「上线后怎么验证」的方法"
+      ],
+      "deliverables": [
+        "参数表与估算过程",
+        "风险清单（Executors 各快捷方法的问题）",
+        "优雅关闭方案与监控指标"
+      ],
+      "acceptance": [
+        "估算过程可见（如 8 核 CPU 密集 → 核心数 8~9，队列有界如 200 并说明依据）",
+        "指出 newFixedThreadPool 的无界队列堆积 OOM 与 newCachedThreadPool 的线程数失控",
+        "拒绝策略分析了副作用（如 CallerRuns 拖慢提交线程的连锁反应）"
+      ],
+      "rubric": [
+        { "dimension": "方案设计", "weight": 45, "guidance": "参数有估算、有验证方法，拒绝策略有取舍。" },
+        { "dimension": "正确性", "weight": 35, "guidance": "Executors 风险、生命周期与监控表述准确。" },
+        { "dimension": "工程规范", "weight": 20, "guidance": "线程命名、监控指标等工程细节到位。" }
+      ],
+      "mockHints": {
+        "keywords": {
+          "方案设计": ["核心线程", "队列", "有界", "拒绝策略", "CallerRuns", "参数", "压测"],
+          "正确性": ["Executors", "newFixedThreadPool", "newCachedThreadPool", "OOM", "无界", "失控"],
+          "工程规范": ["关闭", "shutdown", "监控", "命名", "线程工厂"]
+        },
+        "strengths": [
+          { "text": "给出了可见的估算过程而非拍脑袋数字", "keywords": ["估算", "核心线程"] },
+          { "text": "对 CallerRuns 的连锁副作用有分析", "keywords": ["CallerRuns", "副作用"] }
+        ],
+        "problems": [
+          { "dimension": "方案设计", "text": "只给参数不解释依据，评审无法验证" },
+          { "dimension": "正确性", "text": "Executors 的风险只说「不推荐」，没说具体故障模式" }
+        ],
+        "edgeCases": [
+          "CallerRunsPolicy 占住 Tomcat 工作线程的连锁反应",
+          "任务里再向同一线程池提交任务的死锁风险",
+          "shutdown → awaitTermination → shutdownNow 的优雅关闭次序"
+        ],
+        "followUps": [
+          "IO 密集型怎么估核心数？为什么有 N*2 的经验值还要压测？",
+          "线程池参数能在线调整吗？怎么实现？"
+        ],
+        "nextTaskCodes": ["JC-013", "JC-014"]
+      }
+    },
+    {
+      "code": "JC-008",
+      "title": "ThreadLocal 内存泄漏分析与使用规范",
+      "category": "java-core",
+      "difficulty": "MEDIUM",
+      "tags": "ThreadLocal,内存,面试高频",
+      "summary": "分析 ThreadLocal 在线程池下的泄漏链路，并输出团队使用规范。",
+      "estimatedMinutes": 30,
+      "background": "网关过滤器里用 ThreadLocal 透传用户上下文，压测后老年代缓慢上涨。你负责写分析报告：泄漏链路是什么、为什么 Entry 的 key 设计成弱引用、团队正确的使用规范是什么。",
+      "requirements": [
+        "讲清 Thread → ThreadLocalMap → Entry 的结构，以及 key 弱引用、value 强引用的组合",
+        "推演泄漏链路：线程池线程长存 + 未调用 remove → value 一直可达",
+        "论证「弱引用是补救不是根治」：清理发生在 get/set 概率性触发时，不调用 remove 仍可能滞留",
+        "给出使用规范：try/finally remove、static final 修饰 ThreadLocal、避免放大对象"
+      ],
+      "constraints": [
+        "必须结合线程池场景说明为什么「线程不死，泄漏不暴露」",
+        "规范要能贴进团队 Wiki 直接执行"
+      ],
+      "deliverables": [
+        "结构与泄漏链路说明",
+        "团队使用规范清单",
+        "一行规范的整改代码示例（filter 场景）"
+      ],
+      "acceptance": [
+        "讲清 key 弱引用后 value 仍需手动 remove 的原因（stale entry 清理是概率性触发）",
+        "规范包含 try/finally 模式的示例代码",
+        "提到线程池下 InheritableThreadLocal 失效的延伸问题"
+      ],
+      "rubric": [
+        { "dimension": "问题定位", "weight": 45, "guidance": "泄漏链路推演完整，从结构到现象因果清晰。" },
+        { "dimension": "正确性", "weight": 35, "guidance": "弱引用、清理时机、线程池行为等事实准确。" },
+        { "dimension": "沟通表达", "weight": 20, "guidance": "像一份可执行的团队报告：链路+规范+示例。" }
+      ],
+      "mockHints": {
+        "keywords": {
+          "问题定位": ["泄漏", "弱引用", "Entry", "value", "线程池", "remove", "老年代", "上涨"],
+          "正确性": ["ThreadLocalMap", "清理", "stale", "static", "final", "try", "finally"],
+          "沟通表达": ["链路", "规范", "报告", "示例"]
+        },
+        "strengths": [
+          { "text": "讲清了弱引用是补救、remove 才是根治的关系", "keywords": ["弱引用", "remove"] },
+          { "text": "规范落到 try/finally 与 static final 的可直接执行写法", "keywords": ["try", "finally", "static", "final"] }
+        ],
+        "problems": [
+          { "dimension": "问题定位", "text": "只说「会有内存泄漏」，链路推演不完整" },
+          { "dimension": "正确性", "text": "误以为弱引用会让 value 自动回收（实际 value 是强引用）" }
+        ],
+        "edgeCases": [
+          "为什么 key 设计成弱引用而不是强引用（帮 GC 后尽早标记 stale entry）",
+          "ThreadLocalMap 用开放地址法而不是链表法解决冲突",
+          "线程池异步化后上下文传递失败，TransmittableThreadLocal 的作用"
+        ],
+        "followUps": [
+          "调用 set 相同的值也会触发清理吗？清理的触发点有哪些？",
+          "网关改为异步链路后，用户上下文应该怎么传？"
+        ],
+        "nextTaskCodes": ["JC-009", "JC-007"]
+      }
+    },
+    {
+      "code": "JC-009",
+      "title": "volatile 与双重检查锁单例（DCL）",
+      "category": "java-core",
+      "difficulty": "MEDIUM",
+      "tags": "volatile,单例,JMM,面试高频",
+      "summary": "手写教学级 DCL 单例：两次判空各自的作用、volatile 防重排的那一次，以及枚举替代。",
+      "estimatedMinutes": 30,
+      "background": "DCL 单例是面试经典题，也常被用作团队新人的「手卡题」。导师让你写一版教学级实现：每一行都要能解释为什么，重点讲清 volatile 防止指令重排的那一次出场。",
+      "requirements": [
+        "两次判空的作用分开讲：外层省锁竞争、内层防止重复创建",
+        "讲清 volatile 的两个语义（可见性、禁止重排），以及不加 volatile 时「分配→初始化→赋引用」重排导致的半成品对象风险",
+        "补充私有构造器的反射/序列化逃逸问题与简单防法",
+        "给出枚举单例替代版并说明其防反射、防序列化的天然优势"
+      ],
+      "constraints": [
+        "使用 JDK 17 语法，不使用 Lombok",
+        "代码必须完整可编译"
+      ],
+      "deliverables": [
+        "DCL 完整代码与逐行注释",
+        "不加 volatile 的问题时序说明",
+        "枚举替代版与适用场景"
+      ],
+      "acceptance": [
+        "volatile 防止「分配→初始化→引用赋值」重排的讲解正确",
+        "两次判空的理由分开、不混为一谈",
+        "枚举方案的天然安全性点到（JVM 保证实例唯一）"
+      ],
+      "rubric": [
+        { "dimension": "正确性", "weight": 50, "guidance": "JMM 语义、重排风险、两次判空的理由全部准确。" },
+        { "dimension": "问题定位", "weight": 25, "guidance": "能指出常见错误版本的错在哪一行。" },
+        { "dimension": "沟通表达", "weight": 25, "guidance": "教学级注释与结构，适合直接当分享材料。" }
+      ],
+      "mockHints": {
+        "keywords": {
+          "正确性": ["volatile", "DCL", "两次判空", "重排", "半成品", "可见性", "枚举", "构造器"],
+          "问题定位": ["为什么", "原因", "风险", "反射"],
+          "沟通表达": ["注释", "逐行", "教学", "结构"]
+        },
+        "strengths": [
+          { "text": "把不加 volatile 时的重排时序画了出来", "keywords": ["重排", "时序"] },
+          { "text": "枚举方案防反射、防序列化的天然优势点到", "keywords": ["枚举", "反射"] }
+        ],
+        "problems": [
+          { "dimension": "正确性", "text": "volatile 只讲了可见性，漏掉禁止重排这一关键语义" },
+          { "dimension": "沟通表达", "text": "两次判空的理由混在一起讲，教学价值打折" }
+        ],
+        "edgeCases": [
+          "不加 volatile 时其他线程可能拿到「已分配、未初始化」的引用",
+          "synchronized 保证互斥，但第一次判空是无锁读，读到的可能是半成品",
+          "克隆与序列化对单例的破坏"
+        ],
+        "followUps": [
+          "volatile 能替代 synchronized 吗？什么场景可以？",
+          "枚举单例为什么天然防反射？（JVM 层禁止反射创建枚举实例）"
+        ],
+        "nextTaskCodes": ["JC-006", "JC-012"]
+      }
+    },
+    {
+      "code": "JC-010",
+      "title": "一次 OutOfMemoryError 的排查复盘报告",
+      "category": "java-core",
+      "difficulty": "MEDIUM",
+      "tags": "JVM,OOM,排查",
+      "summary": "推演一次堆 OOM 的完整排查：工具链、证据链、修复与预防，输出复盘报告。",
+      "estimatedMinutes": 40,
+      "background": "学习平台的文件预览服务在凌晨批量任务时 OOM 崩溃，日志只有 java.lang.OutOfMemoryError: Java heap space 一行。运行环境 -Xmx2g。你按运维提供的信息推演一次完整排查，输出复盘报告。",
+      "requirements": [
+        "先给 OOM 类型分类（堆/元空间/栈/直接内存）与本例的定位思路",
+        "给出工具链与顺序：-XX:+HeapDumpOnOutOfMemoryError、jmap、MAT 支配树",
+        "列出常见根因并结合场景排序：一次性加载大结果集、无界本地缓存、ThreadLocal 滞留、大对象导出",
+        "修复方案要包含代码级措施（分页/流式/上限），并给预防性监控建议"
+      ],
+      "constraints": [
+        "环境信息可合理假设，但必须明确标注假设",
+        "报告采用「现象 → 证据 → 结论 → 修复」结构"
+      ],
+      "deliverables": [
+        "排查步骤时间线",
+        "根因分析与证据链",
+        "修复清单与预防措施"
+      ],
+      "acceptance": [
+        "先提「配置 HeapDumpOnOutOfMemoryError」再谈复现，顺序正确",
+        "证据链具体（如 MAT 支配树显示某个 List 占堆 80%）",
+        "修复包含流式/分批/上限等代码级措施，而不是只加大内存"
+      ],
+      "rubric": [
+        { "dimension": "问题定位", "weight": 45, "guidance": "排查顺序合理，证据链具体可复现。" },
+        { "dimension": "正确性", "weight": 30, "guidance": "OOM 分类、工具用法、修复手段准确。" },
+        { "dimension": "沟通表达", "weight": 25, "guidance": "报告结构清晰，可直接用于团队复盘。" }
+      ],
+      "mockHints": {
+        "keywords": {
+          "问题定位": ["OOM", "heap", "HeapDump", "jmap", "MAT", "支配树", "排查", "复现"],
+          "正确性": ["分页", "流式", "上限", "缓存", "大对象", "元空间", "直接内存"],
+          "沟通表达": ["报告", "时间线", "现象", "证据", "结论"]
+        },
+        "strengths": [
+          { "text": "用支配树给出了具体的证据链（哪类对象占多少）", "keywords": ["MAT", "支配树", "证据"] },
+          { "text": "修复方案落到代码级措施而非加大内存", "keywords": ["分页", "流式", "上限"] }
+        ],
+        "problems": [
+          { "dimension": "问题定位", "text": "没有先落 HeapDump 配置，排查路径不可复现" },
+          { "dimension": "正确性", "text": "修复只提「加内存」，掩盖问题而非解决" }
+        ],
+        "edgeCases": [
+          "OOM 发生时 dump 可能失败或非常慢，要有心理预期",
+          "「加内存续命」掩盖问题的风险",
+          "元空间 OOM 与动态类生成（CGLIB/Groovy）的关联"
+        ],
+        "followUps": [
+          "怎么区分堆 OOM 和元空间 OOM？",
+          "堆外内存泄漏怎么排查？"
+        ],
+        "nextTaskCodes": ["JC-011", "TS-005"]
+      }
+    },
+    {
+      "code": "JC-011",
+      "title": "从 JDK 8 + CMS 迁移到 JDK 17：GC 选型评审",
+      "category": "java-core",
+      "difficulty": "MEDIUM",
+      "tags": "JVM,GC,G1,面试高频",
+      "summary": "写选型评审文档：JDK 17 下为什么默认 G1、要不要上 ZGC、参数与验证怎么做。",
+      "estimatedMinutes": 35,
+      "background": "团队一个 4C8G 的服务计划从 JDK 8 + CMS 迁移到 JDK 17。导师让你出 GC 选型评审：为什么 JDK 17 默认是 G1、CMS 去哪了、什么情况才考虑 ZGC，并给出上线验证方法。",
+      "requirements": [
+        "CMS 与 G1 的基本原理对比（分代收集 vs Region 化、并发标记、停顿目标）",
+        "说明 CMS 被移除的原因（内存碎片、并发模式失败、维护成本）",
+        "给出 G1 的关键参数与合理取值思路（MaxGCPauseMillis 等，不要拍脑袋）",
+        "说明什么场景才值得换 ZGC，以及代价（吞吐、内存 overhead）；给出迁移验证方法与指标"
+      ],
+      "constraints": [
+        "以 JDK 17 为基准讨论",
+        "推荐要结合 4C8G 的堆规模，不能只谈理论"
+      ],
+      "deliverables": [
+        "原理对比表",
+        "本服务的推荐配置",
+        "上线验证指标清单（停顿、吞吐、并发失败次数等）"
+      ],
+      "acceptance": [
+        "指出 CMS 在 JDK 9 弃用、JDK 14 移除",
+        "推荐默认 G1 并给出合理的停顿目标（如 100~200ms），而非一步到位调激进参数",
+        "验证方案含 GC 日志指标与观察期，而非「跑几天没挂就行」"
+      ],
+      "rubric": [
+        { "dimension": "方案设计", "weight": 40, "guidance": "选型有立场、有边界，参数有依据。" },
+        { "dimension": "正确性", "weight": 40, "guidance": "CMS 移除原因、G1 机制、ZGC 代价等事实准确。" },
+        { "dimension": "工程规范", "weight": 20, "guidance": "验证方法与指标可执行，符合「先观察再调优」。" }
+      ],
+      "mockHints": {
+        "keywords": {
+          "方案设计": ["G1", "CMS", "ZGC", "选型", "Region", "停顿", "目标", "参数"],
+          "正确性": ["移除", "碎片", "并发失败", "MaxGCPauseMillis", "默认", "吞吐", "停顿"],
+          "工程规范": ["日志", "验证", "指标", "压测", "观察"]
+        },
+        "strengths": [
+          { "text": "推荐先「默认 G1 + 观察」再调优，符合迁移工程实践", "keywords": ["默认", "观察"] },
+          { "text": "对 ZGC 的适用边界与代价有清醒认知", "keywords": ["ZGC", "吞吐", "边界"] }
+        ],
+        "problems": [
+          { "dimension": "正确性", "text": "没有说明 CMS 已在 JDK 14 移除，前提就错了" },
+          { "dimension": "方案设计", "text": "参数拍脑袋（如直接把停顿目标设 10ms），没有依据" }
+        ],
+        "edgeCases": [
+          "G1 日志出现 to-space exhausted / 并发模式失败意味着什么",
+          "大对象 Humongous Region 对停顿的影响",
+          "小堆上 G1 未必优于 Parallel GC 的取舍"
+        ],
+        "followUps": [
+          "什么信号说明该从 G1 换成 ZGC？",
+          "迁移到 G1 后还建议显式设置 -Xmn 吗？为什么？"
+        ],
+        "nextTaskCodes": ["JC-010"]
+      }
+    },
+    {
+      "code": "JC-012",
+      "title": "synchronized 锁升级与扣库存场景的锁选型",
+      "category": "java-core",
+      "difficulty": "MEDIUM",
+      "tags": "synchronized,锁,并发,面试高频",
+      "summary": "讲清 synchronized 锁升级路径（含 JDK 15 偏向锁废弃），并给秒杀扣减场景做锁选型。",
+      "estimatedMinutes": 35,
+      "background": "新人培训第二课。导师要求：先讲 synchronized 的锁升级路径（注意 JDK 15 后偏向锁默认废弃），再回答「高并发扣库存为什么很多团队直接用数据库原子操作而不是 JVM 锁」。",
+      "requirements": [
+        "讲清对象头 Mark Word 与四种状态：无锁 / 偏向 / 轻量级 / 重量级，及升级触发条件",
+        "说明自旋的代价与自适应自旋的含义",
+        "说明偏向锁被废弃的原因（JEP 374：撤销成本高、现代场景收益低）",
+        "给出结论：扣库存优先数据库原子更新或 Redis 原子操作，JVM 锁只在单机内有效，并给出伪代码"
+      ],
+      "constraints": [
+        "必须标注 JDK 版本差异（偏向锁相关）",
+        "结论要覆盖「多实例部署」这一前提"
+      ],
+      "deliverables": [
+        "锁状态转换说明",
+        "选型结论与理由",
+        "扣库存的伪代码"
+      ],
+      "acceptance": [
+        "提到 JDK 15 默认禁用偏向锁（JEP 374）",
+        "结论不迷信「ReentrantLock 一定比 synchronized 快」",
+        "指出 JVM 锁跨实例无效这一前提，方案落到数据库/Redis 原子操作"
+      ],
+      "rubric": [
+        { "dimension": "正确性", "weight": 45, "guidance": "锁升级路径、JEP 事实、锁语义准确。" },
+        { "dimension": "方案设计", "weight": 35, "guidance": "选型结合部署形态，结论落到可执行方案。" },
+        { "dimension": "沟通表达", "weight": 20, "guidance": "教学顺序清晰，适合新人培训。" }
+      ],
+      "mockHints": {
+        "keywords": {
+          "正确性": ["偏向锁", "轻量级", "重量级", "自旋", "Mark", "升级", "JEP", "废弃", "CAS"],
+          "方案设计": ["ReentrantLock", "公平", "中断", "条件", "选型", "原子", "单机"],
+          "沟通表达": ["路径", "场景", "结论", "转换"]
+        },
+        "strengths": [
+          { "text": "提到 JDK 15 偏向锁废弃及原因", "keywords": ["偏向锁", "JEP", "废弃"] },
+          { "text": "结论按「单机 vs 多实例」分层，落到数据库原子操作", "keywords": ["原子", "单机", "数据库"] }
+        ],
+        "problems": [
+          { "dimension": "正确性", "text": "锁升级路径有事实错误（如认为升级可逆）" },
+          { "dimension": "方案设计", "text": "推荐 JVM 锁却没讨论多实例部署的前提" }
+        ],
+        "edgeCases": [
+          "锁升级是不可逆的（偏向 → 轻量级 → 重量级）",
+          "自适应自旋的含义与好处",
+          "wait/notify 与 Lock/Condition 的对应关系"
+        ],
+        "followUps": [
+          "读写锁 ReadWriteLock 适合什么缓存场景？",
+          "StampedLock 的乐观读是什么？"
+        ],
+        "nextTaskCodes": ["JC-007", "TS-006"]
+      }
+    },
+    {
+      "code": "JC-013",
+      "title": "AQS 原理讲解 + 手写不可重入锁",
+      "category": "java-core",
+      "difficulty": "HARD",
+      "tags": "AQS,并发,源码",
+      "summary": "讲清 AQS 的 state/队列/park 机制，并推演手写一个不可重入互斥锁的实现骨架。",
+      "estimatedMinutes": 45,
+      "background": "能讲清 AQS 是并发面试走向深水区的标志。导师让你在组内做一次 AQS 原理分享，并现场推演：如果手写一个「只允许一个线程进入、不可重入」的锁，基于 AQS 该怎么写。",
+      "requirements": [
+        "讲清 state 的语义与 CAS 修改、CLH 变体的双向等待队列与节点状态（如 SIGNAL）",
+        "讲清独占获取的模板流程：acquire → tryAcquire 失败 → 入队 → park，唤醒由前驱释放时触发",
+        "说明共享模式与独占模式的区别（读写锁、信号量的基础）",
+        "手写锁骨架：state 0/1、tryAcquire 用 CAS、tryRelease 置 0 并唤醒后继，说明与 ReentrantLock 的差异（无可重入分支）"
+      ],
+      "constraints": [
+        "代码允许伪代码，但 state / 队列 / park 的关系必须准确",
+        "分享结构要能撑住 30 分钟的讲解"
+      ],
+      "deliverables": [
+        "原理讲解材料",
+        "手写锁骨架代码",
+        "并发正确性的测试思路（如多线程计数校验）"
+      ],
+      "acceptance": [
+        "讲清「失败入队 + 前驱唤醒」而不是自旋忙等",
+        "手写锁明确没有可重入分支，并说明与 ReentrantLock 的差异",
+        "提到 Condition 等待队列与同步队列的关系"
+      ],
+      "rubric": [
+        { "dimension": "正确性", "weight": 45, "guidance": "AQS 机制、模板流程、手写骨架全部准确。" },
+        { "dimension": "方案设计", "weight": 35, "guidance": "手写方案的边界（无重入）与测试思路完整。" },
+        { "dimension": "沟通表达", "weight": 20, "guidance": "分享结构适合 30 分钟讲解，层层递进。" }
+      ],
+      "mockHints": {
+        "keywords": {
+          "正确性": ["AQS", "state", "CAS", "CLH", "队列", "park", "unpark", "SIGNAL", "独占", "共享"],
+          "方案设计": ["手写", "骨架", "模板", "可重入", "区别"],
+          "沟通表达": ["分享", "流程", "结构", "讲解"]
+        },
+        "strengths": [
+          { "text": "强调失败入队后 park 等待、由前驱唤醒的机制", "keywords": ["队列", "park", "唤醒"] },
+          { "text": "手写锁与 ReentrantLock 的差异（无可重入）讲清了", "keywords": ["手写", "可重入", "区别"] }
+        ],
+        "problems": [
+          { "dimension": "正确性", "text": "把 AQS 讲成自旋忙等，或队列状态讲错" },
+          { "dimension": "方案设计", "text": "手写骨架缺少释放时唤醒后继的关键步骤" }
+        ],
+        "edgeCases": [
+          "acquireInterruptibly 与普通 acquire 在中断处理上的区别",
+          "为什么唤醒只挑后继第一个有效节点",
+          "共享模式的传播唤醒（读锁批量放行）"
+        ],
+        "followUps": [
+          "CountDownLatch 与 Semaphore 是不是共享模式的两种用法？怎么论证？",
+          "公平锁与非公平锁在 acquire 里的唯一区别是什么？"
+        ],
+        "nextTaskCodes": ["JC-007", "JC-012"]
+      }
+    },
+    {
+      "code": "JC-014",
+      "title": "线上 CPU 100% 排查实战",
+      "category": "java-core",
+      "difficulty": "HARD",
+      "tags": "排查,jstack,实战,面试高频",
+      "summary": "按 top → 定位线程 → jstack 的链路输出一次 CPU 100% 的排查报告与命令序列。",
+      "estimatedMinutes": 45,
+      "background": "经典面试题的实战版：某实例 CPU 打满、接口全慢。你推演完整的排查流程，输出一份可直接复制执行的命令序列与复盘报告（如果能在本机/容器复现一次更好）。",
+      "requirements": [
+        "定位进程：top / top -Hp <pid> 找到最耗 CPU 的线程",
+        "线程 id 转 16 进制（printf %x），在 jstack 输出里用 nid 定位线程栈",
+        "根因分类与栈特征：死循环、频繁 GC（要先看 GC 日志排除）、锁竞争、正则回溯、序列化热点",
+        "给出修复与验证闭环，以及预防手段（CPU 告警、arthas / async-profiler）"
+      ],
+      "constraints": [
+        "假设 Linux 环境，命令要可直接复制执行",
+        "报告要有「证据」（线程栈片段）而不只是结论"
+      ],
+      "deliverables": [
+        "排查命令序列清单",
+        "根因分类与对应栈特征",
+        "复盘报告模板"
+      ],
+      "acceptance": [
+        "top -Hp → printf %x → jstack nid 的链路完整无跳步",
+        "先排除「频繁 GC 也会打满 CPU」这一常见误判",
+        "报告含真实感的线程栈证据片段"
+      ],
+      "rubric": [
+        { "dimension": "问题定位", "weight": 50, "guidance": "链路完整无跳步，先排除误判再定根因。" },
+        { "dimension": "沟通表达", "weight": 30, "guidance": "命令可直接复制，报告有证据有结论。" },
+        { "dimension": "正确性", "weight": 20, "guidance": "根因分类与栈特征对应准确。" }
+      ],
+      "mockHints": {
+        "keywords": {
+          "问题定位": ["top", "-Hp", "jstack", "nid", "16", "线程", "CPU", "GC", "死循环", "栈"],
+          "沟通表达": ["报告", "命令", "序列", "证据", "模板"],
+          "正确性": ["正则", "回溯", "锁竞争", "arthas", "profiler", "告警"]
+        },
+        "strengths": [
+          { "text": "先看 GC 日志排除「GC 打满」这一常见误判", "keywords": ["GC", "排除"] },
+          { "text": "命令序列完整：top -Hp → printf %x → jstack 定位 nid", "keywords": ["top", "jstack", "nid"] }
+        ],
+        "problems": [
+          { "dimension": "问题定位", "text": "跳步：直接说「看线程栈」没有给出从进程到线程的定位过程" },
+          { "dimension": "沟通表达", "text": "只有结论没有证据，报告不可复核" }
+        ],
+        "edgeCases": [
+          "多个线程同时高的分桶思路（按栈归组）",
+          "容器内 top 显示宿主机 CPU 数据的误导与容器化替代工具",
+          "JIT 编译线程短暂占用高的尖峰不必紧张"
+        ],
+        "followUps": [
+          "arthas 的 dashboard / thread 命令怎么更快定位？",
+          "如果栈里是大量 WAITING 的 Tomcat 线程，说明什么？"
+        ],
+        "nextTaskCodes": ["JC-010", "TS-002"]
+      }
+    }
+  ]
+}

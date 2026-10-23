@@ -111,4 +111,4 @@ curl -I https://repo.maven.apache.org/maven2/
 
 ## 10. 首次启动演示数据没出现
 
-`DemoDataInitializer` 只在**对应表为空**时写入。如果你之前启动过（产生过数据），不会再重复写入。想重置：清空数据库（或删除 demo 模式下的 `backend/data/` 目录）后重启。
+`DemoDataInitializer` 对演示账号只在**用户表为空**时写入；对内置任务是**按任务编码增量播种**——题库文件（`demo/demo-tasks*.json`）里新增的题目会在重启时自动补进已有库，已存在的任务不会被改动或重复插入。想彻底重置：清空数据库（或删除 demo 模式下的 `backend/data/` 目录）后重启。

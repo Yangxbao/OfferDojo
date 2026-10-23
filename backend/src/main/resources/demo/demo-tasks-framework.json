@@ -1,0 +1,784 @@
+{
+  "tasks": [
+    {
+      "code": "FW-001",
+      "title": "@Autowired vs @Resource 与构造器注入整改",
+      "category": "framework",
+      "difficulty": "EASY",
+      "tags": "Spring,依赖注入,代码评审",
+      "summary": "说明两种注入注解的区别与三种注入方式的取舍，并把字段注入整改为构造器注入。",
+      "estimatedMinutes": 20,
+      "background": "代码评审时学长在大家的 PR 里统一留了同一句评论：「请把字段注入改成构造器注入，并说明理由」。你负责把这一课整理成团队的注入规范。",
+      "requirements": [
+        "说明 @Autowired（Spring，默认 byType）与 @Resource（JSR-250，默认 byName）的区别",
+        "对比字段注入 / Setter 注入 / 构造器注入的取舍",
+        "给出构造器注入被推荐的理由：不可变（final）、必需依赖显式、脱离容器可单测、循环依赖尽早暴露",
+        "补充同类型多 Bean 时的处理：@Primary 与 @Qualifier"
+      ],
+      "constraints": [
+        "以 Spring Boot 3.x 环境为准",
+        "整改要给出可直接使用的代码"
+      ],
+      "deliverables": [
+        "注入方式对比说明",
+        "整改前后的代码对照",
+        "一句话团队规范"
+      ],
+      "acceptance": [
+        "说明 @Resource 先按名称再按类型匹配",
+        "构造器注入支持 final 字段且便于纯单测讲到",
+        "多实现场景给出 @Qualifier / @Primary 的用法"
+      ],
+      "rubric": [
+        { "dimension": "正确性", "weight": 45, "guidance": "两种注解的来源与匹配策略、三种方式取舍准确。" },
+        { "dimension": "工程规范", "weight": 35, "guidance": "整改代码规范，规范可直接执行。" },
+        { "dimension": "沟通表达", "weight": 20, "guidance": "评审回复式的结构，理由前置。" }
+      ],
+      "mockHints": {
+        "keywords": {
+          "正确性": ["@Autowired", "@Resource", "byType", "byName", "构造器", "final", "@Qualifier", "@Primary"],
+          "工程规范": ["字段注入", "整改", "单测", "规范", "评审"],
+          "沟通表达": ["对比", "理由", "结论", "规范"]
+        },
+        "strengths": [
+          { "text": "点出构造器注入让循环依赖在启动期暴露，是好事", "keywords": ["构造器", "循环依赖"] },
+          { "text": "区分了两个注解的来源与匹配策略", "keywords": ["@Autowired", "@Resource", "byName"] }
+        ],
+        "problems": [
+          { "dimension": "正确性", "text": "只说「构造器注入好」，没有给出可检验的理由" },
+          { "dimension": "工程规范", "text": "缺少整改后的代码示例，规范无法落地" }
+        ],
+        "edgeCases": [
+          "同类型多个 Bean 注入报错的两种解法（@Primary / @Qualifier / byName）",
+          "@Autowired(required = false) 的适用场景",
+          "构造器注入下循环依赖直接启动失败，为什么反而是优点"
+        ],
+        "followUps": [
+          "ObjectProvider 能解决什么问题？",
+          "Spring 官方为什么推荐构造器注入？"
+        ],
+        "nextTaskCodes": ["FW-002"]
+      }
+    },
+    {
+      "code": "FW-002",
+      "title": "单例 Bean 依赖原型 Bean 的问题与三种解法",
+      "category": "framework",
+      "difficulty": "EASY",
+      "tags": "Bean,作用域,Spring",
+      "summary": "复现「单例注入原型只拿到一份」的问题，并对比三种解法。",
+      "estimatedMinutes": 25,
+      "background": "通知服务的单例 Bean 注入了一个原型 Bean（期望每次发送都新建），上线后发现每次拿到的都是同一个实例。你负责复现问题、讲清原因，并给出三种解法供团队选择。",
+      "requirements": [
+        "一句话说明五种常用作用域（singleton / prototype / request / session / application）",
+        "复现问题：单例创建时注入一次原型，之后永远复用同一实例",
+        "对比三种解法：@Lookup 方法注入、ObjectProvider.getObject()、scoped-proxy 代理",
+        "提醒原型 Bean 的销毁回调不受容器管理的细节"
+      ],
+      "constraints": [
+        "解法要给出可运行的代码片段",
+        "给出团队选型建议"
+      ],
+      "deliverables": [
+        "问题复现代码与输出",
+        "三种解法的代码与对比",
+        "选型建议"
+      ],
+      "acceptance": [
+        "解释「注入发生在单例创建时，只有一次」这一根本原因",
+        "至少正确给出 ObjectProvider 与 @Lookup 两种解法",
+        "提醒 scoped-proxy 是通过代理每次转发到新实例"
+      ],
+      "rubric": [
+        { "dimension": "正确性", "weight": 50, "guidance": "作用域语义、问题根因、解法机制准确。" },
+        { "dimension": "方案设计", "weight": 30, "guidance": "三种解法对比清晰，有选型建议。" },
+        { "dimension": "沟通表达", "weight": 20, "guidance": "复现到修复的结构完整。" }
+      ],
+      "mockHints": {
+        "keywords": {
+          "正确性": ["单例", "原型", "作用域", "注入一次", "ObjectProvider", "@Lookup", "代理", "销毁"],
+          "方案设计": ["解法", "对比", "选型", "scoped-proxy", "代理"],
+          "沟通表达": ["复现", "示例", "说明", "建议"]
+        },
+        "strengths": [
+          { "text": "用「注入只有一次」点透问题根因", "keywords": ["注入一次", "单例"] },
+          { "text": "三种解法都有代码且给出选型建议", "keywords": ["ObjectProvider", "@Lookup", "选型"] }
+        ],
+        "problems": [
+          { "dimension": "正确性", "text": "把问题归因于「Bean 没有正确创建」，根因理解错位" },
+          { "dimension": "方案设计", "text": "只给一种解法且没有对比，说服力不足" }
+        ],
+        "edgeCases": [
+          "request / session 作用域在非 Web 线程访问会报错",
+          "scoped-proxy 的代理方式（CGLIB 子类代理）",
+          "原型 Bean 持有资源时的释放策略（销毁回调不自动执行）"
+        ],
+        "followUps": [
+          "Spring 为什么默认单例？无状态假设是什么？",
+          "ObjectProvider 与 @Lazy 注入的区别？"
+        ],
+        "nextTaskCodes": ["FW-004"]
+      }
+    },
+    {
+      "code": "FW-003",
+      "title": "MyBatis #{} 与 ${}：原理、注入示例与安全修复",
+      "category": "framework",
+      "difficulty": "EASY",
+      "tags": "MyBatis,SQL注入,安全",
+      "summary": "讲清两种占位符的原理差异，演示注入风险，并给出动态排序的安全修复。",
+      "estimatedMinutes": 20,
+      "background": "代码评审发现排序字段用了 ${sort} 直接拼接用户参数。你负责写一篇安全说明：原理、攻击演示（仅用于防御教学）、以及白名单修复方案。",
+      "requirements": [
+        "讲清 #{} 走 PreparedStatement 预编译占位符，${} 是原样字符串拼接",
+        "用演示性的攻击输入说明风险（如排序字段传 price;-- 之类改变语义的输入）",
+        "给出动态排序的安全修复：白名单映射（排序键 → 列名）",
+        "补充 like 模糊查询与 in 批量查询的正确写法"
+      ],
+      "constraints": [
+        "攻击示例仅用于防御教学，不提供真实攻击工具",
+        "以 MyBatis + MySQL 为背景"
+      ],
+      "deliverables": [
+        "原理说明",
+        "风险演示与解释",
+        "白名单修复代码"
+      ],
+      "acceptance": [
+        "指出 ${} 无法被预编译保护这一本质",
+        "修复使用映射表而不是继续拼接",
+        "给出 like 的正确写法（CONCAT + #{}）"
+      ],
+      "rubric": [
+        { "dimension": "正确性", "weight": 50, "guidance": "预编译原理、占位符行为、注入路径准确。" },
+        { "dimension": "工程规范", "weight": 30, "guidance": "修复方案可落地，覆盖 like / in 等常见场景。" },
+        { "dimension": "问题定位", "weight": 20, "guidance": "能从评审场景出发指出风险点。" }
+      ],
+      "mockHints": {
+        "keywords": {
+          "正确性": ["预编译", "占位", "${}", "注入", "拼接", "白名单", "concat"],
+          "工程规范": ["评审", "修复", "规范", "like"],
+          "问题定位": ["风险", "示例", "原因", "排序"]
+        },
+        "strengths": [
+          { "text": "从预编译机制解释了 ${} 为什么无法被保护", "keywords": ["预编译", "拼接"] },
+          { "text": "修复采用白名单映射而非继续拼接", "keywords": ["白名单", "修复"] }
+        ],
+        "problems": [
+          { "dimension": "正确性", "text": "只说「有注入风险」，没讲预编译的本质区别" },
+          { "dimension": "工程规范", "text": "修复方案把排序键继续拼进 SQL，等于没修" }
+        ],
+        "edgeCases": [
+          "动态表名的合法场景与额外限制（表名来自内部配置而非用户）",
+          "like '%#{kw}%' 写法错误的原因与正确写法",
+          "foreach 拼接 in 列表的正确姿势"
+        ],
+        "followUps": [
+          "#{} 在 order by 场景为什么天生不适用？",
+          "MyBatis-Plus 的 QueryWrapper 是怎么规避注入的？"
+        ],
+        "nextTaskCodes": ["TS-002"]
+      }
+    },
+    {
+      "code": "FW-004",
+      "title": "Spring Bean 生命周期全流程与扩展点",
+      "category": "framework",
+      "difficulty": "MEDIUM",
+      "tags": "Bean,生命周期,面试高频",
+      "summary": "写出 Bean 从实例化到销毁的全流程、每个阶段的扩展点与初始化顺序结论。",
+      "estimatedMinutes": 35,
+      "background": "组内准备做一次 Spring 基础串讲，分给你的题目是 Bean 生命周期。要求把流程讲全，并把「我们团队自定义扩展时该挂在哪一步」讲明白。",
+      "requirements": [
+        "完整流程：实例化 → 属性填充 → Aware 回调 → BeanPostProcessor 前置 → 初始化（@PostConstruct → afterPropertiesSet → init-method）→ BeanPostProcessor 后置（AOP 代理在此生成）→ 使用 → 销毁（@PreDestroy → destroy → destroy-method）",
+        "每个阶段给出一个扩展点举例与用途",
+        "给出初始化三种方式的执行顺序结论",
+        "说明 BeanFactoryPostProcessor 与 BeanPostProcessor 的层级区别（容器级 vs Bean 级）"
+      ],
+      "constraints": [
+        "以 Spring Boot 3.x 为准",
+        "流程允许用列表或图表达"
+      ],
+      "deliverables": [
+        "生命周期流程清单或图",
+        "扩展点表格",
+        "初始化顺序结论与验证方法"
+      ],
+      "acceptance": [
+        "AOP 代理在 BeanPostProcessor 后置阶段生成这一关系讲对",
+        "初始化顺序结论正确且给出验证思路",
+        "提到 BeanFactoryPostProcessor 作用在容器早期、比 BPP 更早"
+      ],
+      "rubric": [
+        { "dimension": "正确性", "weight": 50, "guidance": "流程完整、顺序准确、扩展点定位正确。" },
+        { "dimension": "方案设计", "weight": 30, "guidance": "扩展点用途讲解贴合实际开发。" },
+        { "dimension": "沟通表达", "weight": 20, "guidance": "流程化表达，适合串讲材料。" }
+      ],
+      "mockHints": {
+        "keywords": {
+          "正确性": ["实例化", "属性", "Aware", "BeanPostProcessor", "@PostConstruct", "afterPropertiesSet", "init-method", "@PreDestroy", "代理"],
+          "方案设计": ["扩展点", "流程", "生命周期", "容器", "挂载"],
+          "沟通表达": ["顺序", "图", "清单", "结论"]
+        },
+        "strengths": [
+          { "text": "把 AOP 代理生成定位到 BPP 后置阶段", "keywords": ["BeanPostProcessor", "代理"] },
+          { "text": "三种初始化方式的顺序结论明确", "keywords": ["@PostConstruct", "afterPropertiesSet", "init-method"] }
+        ],
+        "problems": [
+          { "dimension": "正确性", "text": "流程漏掉 Aware 回调或销毁阶段" },
+          { "dimension": "方案设计", "text": "只背流程，没有讲团队扩展应该挂在哪一步" }
+        ],
+        "edgeCases": [
+          "BPP 处理所有 Bean 带来的性能与顺序问题",
+          "@PostConstruct 定义在父类时的执行时机",
+          "循环依赖发生在属性填充阶段的原因"
+        ],
+        "followUps": [
+          "AOP 代理为什么要在初始化之后生成？（保证目标方法完整）",
+          "BeanFactoryPostProcessor 和 BeanPostProcessor 一字之差差在哪？"
+        ],
+        "nextTaskCodes": ["FW-005", "FW-007"]
+      }
+    },
+    {
+      "code": "FW-005",
+      "title": "循环依赖与三级缓存",
+      "category": "framework",
+      "difficulty": "MEDIUM",
+      "tags": "循环依赖,三级缓存,面试高频",
+      "summary": "推演 Spring 如何用三级缓存解决 Setter 循环依赖，并列出无解场景与重构建议。",
+      "estimatedMinutes": 40,
+      "background": "面试高频题的团队内训版。你负责讲清三级缓存各自存什么、为什么要 ObjectFactory，以及哪些循环依赖 Spring 也救不了。",
+      "requirements": [
+        "三级缓存分别存什么：成品单例、提前曝光的半成品、能产出早期引用的 ObjectFactory",
+        "推演 A 与 B 互相注入的完整时序",
+        "论证为什么需要 ObjectFactory 而不是直接放半成品（AOP 代理只生成一次的保证）",
+        "列出无解场景：构造器注入、prototype、@Async 代理等，并给出重构建议"
+      ],
+      "constraints": [
+        "以 Spring Boot 3.x 为准（2.6 起默认禁止循环依赖，需显式开启才可用 Setter 循环依赖）",
+        "时序推演必须逐步"
+      ],
+      "deliverables": [
+        "三级缓存说明",
+        "A 与 B 的时序推演",
+        "无解场景清单与团队重构建议"
+      ],
+      "acceptance": [
+        "「提前曝光 + ObjectFactory 保证代理只创建一次」的机制讲对",
+        "构造器注入无解的原因讲清（实例尚未创建，无从提前曝光）",
+        "团队建议是优先重构而非开启允许开关"
+      ],
+      "rubric": [
+        { "dimension": "正确性", "weight": 50, "guidance": "三级缓存职责、时序、代理保证机制准确。" },
+        { "dimension": "问题定位", "weight": 25, "guidance": "无解场景的原因分析到位。" },
+        { "dimension": "方案设计", "weight": 25, "guidance": "重构建议优先于开关配置，立场正确。" }
+      ],
+      "mockHints": {
+        "keywords": {
+          "正确性": ["三级缓存", "earlySingletonObjects", "singletonFactories", "半成品", "代理", "构造器", "prototype", "@Async", "禁止"],
+          "问题定位": ["循环依赖", "报错", "原因", "场景"],
+          "方案设计": ["重构", "拆分", "结构", "开启", "allow"]
+        },
+        "strengths": [
+          { "text": "ObjectFactory 保证代理只创建一次的机制讲对了", "keywords": ["singletonFactories", "代理"] },
+          { "text": "把「默认禁止循环依赖」这一版本事实讲清", "keywords": ["禁止", "默认"] }
+        ],
+        "problems": [
+          { "dimension": "正确性", "text": "三级缓存的职责张冠李戴（如把工厂缓存说成存成品）" },
+          { "dimension": "方案设计", "text": "第一反应是打开允许开关而不是重构" }
+        ],
+        "edgeCases": [
+          "只有两级缓存行不行？为什么要 ObjectFactory",
+          "@Async 造成的循环依赖为什么三级缓存也救不了（代理在别的后置处理器生成）",
+          "开启 allowCircularReferences 后评审应关注什么"
+        ],
+        "followUps": [
+          "Spring Boot 2.6 为什么默认禁止循环依赖？",
+          "A 和 B 都需要代理时，三级缓存如何保证只代理一次？"
+        ],
+        "nextTaskCodes": ["FW-004", "FW-010"]
+      }
+    },
+    {
+      "code": "FW-006",
+      "title": "事务传播行为场景设计：下单主流程与旁路操作",
+      "category": "framework",
+      "difficulty": "MEDIUM",
+      "tags": "事务,传播行为,面试高频",
+      "summary": "为「下单 + 操作日志/通知」逐场景选择传播行为，并讲清 rollback-only 的坑。",
+      "estimatedMinutes": 35,
+      "background": "下单主流程里要记录操作日志、发送通知，这些旁路操作失败不应影响下单。组长让你出一份传播行为方案：每个场景选什么、为什么，以及已知的坑。",
+      "requirements": [
+        "说明 REQUIRED / REQUIRES_NEW / NESTED / SUPPORTS 的语义",
+        "场景一：下单事务里记录操作日志，日志失败不影响下单——选型与理由",
+        "场景二：外层无事务、内层方法声明 REQUIRES_NEW 的行为",
+        "讲清异常被 catch 后事务被标记 rollback-only 导致 UnexpectedRollbackException 的坑；补充 NESTED 的保存点语义"
+      ],
+      "constraints": [
+        "以 Spring 声明式事务为准",
+        "每个场景给结论 + 理由，不允许只罗列概念"
+      ],
+      "deliverables": [
+        "传播行为语义表",
+        "逐场景结论与理由",
+        "坑位清单"
+      ],
+      "acceptance": [
+        "日志场景给出 REQUIRES_NEW 或「移出事务异步执行」两种方案并比较",
+        "rollback-only 导致外层意外回滚的机制讲对",
+        "NESTED 说明保存点与数据库支持的限制"
+      ],
+      "rubric": [
+        { "dimension": "正确性", "weight": 50, "guidance": "传播语义、rollback-only 机制、保存点行为准确。" },
+        { "dimension": "方案设计", "weight": 30, "guidance": "场景化选型有理由，考虑连接占用等现实约束。" },
+        { "dimension": "沟通表达", "weight": 20, "guidance": "表格化表达，便于评审。" }
+      ],
+      "mockHints": {
+        "keywords": {
+          "正确性": ["REQUIRED", "REQUIRES_NEW", "NESTED", "SUPPORTS", "传播", "保存点", "rollback-only", "UnexpectedRollbackException"],
+          "方案设计": ["场景", "取舍", "异步", "日志", "结论"],
+          "沟通表达": ["表格", "推演", "清单", "坑"]
+        },
+        "strengths": [
+          { "text": "日志场景比较了 REQUIRES_NEW 与事务外异步两种方案", "keywords": ["REQUIRES_NEW", "异步", "日志"] },
+          { "text": "rollback-only 引发的意外回滚机制讲对", "keywords": ["rollback-only", "UnexpectedRollbackException"] }
+        ],
+        "problems": [
+          { "dimension": "正确性", "text": "传播行为语义张冠李戴" },
+          { "dimension": "方案设计", "text": "场景题不回答场景，只背概念" }
+        ],
+        "edgeCases": [
+          "REQUIRES_NEW 挂起外层事务时的连接占用问题（连接池耗尽风险）",
+          "同类自调用导致传播行为不生效",
+          "NESTED 在不支持保存点的数据库/驱动上的退化"
+        ],
+        "followUps": [
+          "事务里要发 MQ，应该放在哪一步？（事务提交后再发）",
+          "两个 REQUIRES_NEW 方法互相调用会发生什么？"
+        ],
+        "nextTaskCodes": ["TS-004", "FW-010"]
+      }
+    },
+    {
+      "code": "FW-007",
+      "title": "AOP 原理、失效场景与限流组件设计",
+      "category": "framework",
+      "difficulty": "MEDIUM",
+      "tags": "AOP,动态代理,设计",
+      "summary": "讲清 JDK/CGLIB 代理与 AOP 失效清单，并设计一个「注解 + 切面」的限流组件。",
+      "estimatedMinutes": 35,
+      "background": "组里要做一个接口限流组件：自定义 @RateLimit 注解 + 切面实现。你先出方案评审稿：顺带把 AOP 的原理与失效场景讲清，避免组件上线后「为什么没生效」的连环问题。",
+      "requirements": [
+        "讲清 JDK 动态代理与 CGLIB 的机制与选择逻辑（Spring Boot 默认 CGLIB）",
+        "说明切面执行顺序（@Order）与 @Around 的前后控制",
+        "列出失效场景：自调用、private / final 方法、异常被吞、非 Bean 对象，并给复现思路",
+        "组件设计：注解属性（限流键、阈值、时间窗）、切面 Around 实现、限流器抽象（本地/可替换 Redis 实现）"
+      ],
+      "constraints": [
+        "组件给出关键代码骨架",
+        "限流键设计要防碰撞且可排查"
+      ],
+      "deliverables": [
+        "原理与失效清单",
+        "组件设计骨架",
+        "上线后「未生效」问题的排查清单"
+      ],
+      "acceptance": [
+        "自调用不走代理是最常见原因，讲到 AopContext 暴露的取舍",
+        "限流键包含方法签名与参数摘要",
+        "限流器抽象接口便于本地实现与 Redis 实现替换"
+      ],
+      "rubric": [
+        { "dimension": "正确性", "weight": 45, "guidance": "代理机制、失效场景、切面语义准确。" },
+        { "dimension": "方案设计", "weight": 35, "guidance": "组件抽象合理，扩展点明确。" },
+        { "dimension": "工程规范", "weight": 20, "guidance": "排查清单与测试思路齐全。" }
+      ],
+      "mockHints": {
+        "keywords": {
+          "正确性": ["JDK", "CGLIB", "代理", "自调用", "private", "final", "失效", "@Order", "Around"],
+          "方案设计": ["注解", "切面", "限流", "key", "抽象", "组件"],
+          "工程规范": ["复用", "规范", "骨架", "测试", "排查"]
+        },
+        "strengths": [
+          { "text": "把自调用失效列为一号坑并给出暴露代理的取舍", "keywords": ["自调用", "代理"] },
+          { "text": "限流器抽象为接口，便于本地与 Redis 双实现", "keywords": ["限流", "抽象", "接口"] }
+        ],
+        "problems": [
+          { "dimension": "正确性", "text": "失效场景漏掉 private / final 方法" },
+          { "dimension": "方案设计", "text": "限流键只用方法名，多实例参数不同时无法区分" }
+        ],
+        "edgeCases": [
+          "切面抛异常对事务回滚的影响（异常穿透）",
+          "注解标注在接口上时元数据获取的问题",
+          "同一方法多个切面的执行顺序控制"
+        ],
+        "followUps": [
+          "Spring Boot 2.x 起默认 proxyTargetClass = true 的原因？",
+          "怎么让内部调用也走切面？注入自身代理有什么取舍？"
+        ],
+        "nextTaskCodes": ["TS-004", "FW-010"]
+      }
+    },
+    {
+      "code": "FW-008",
+      "title": "Spring Boot 自动装配原理与自定义 Starter",
+      "category": "framework",
+      "difficulty": "MEDIUM",
+      "tags": "SpringBoot,自动装配,starter",
+      "summary": "讲清从 @SpringBootApplication 到自动配置类的链路，并给出写一个 Starter 的完整思路。",
+      "estimatedMinutes": 35,
+      "background": "团队要沉淀一个内部工具 Starter。你先写一份原理说明：自动装配怎么发生、条件注解怎么过滤、2.7 前后的注册方式差异，然后给出 Starter 的模块结构骨架。",
+      "requirements": [
+        "讲清三个注解的分工：@SpringBootConfiguration / @EnableAutoConfiguration / @ComponentScan",
+        "讲清自动装配机制：AutoConfiguration.imports 列表 + ImportSelector 导入 + 条件注解过滤",
+        "说明 @ConditionalOnClass / @ConditionalOnMissingBean 等条件注解的作用与顺序敏感性",
+        "给出 Starter 的双模块结构（autoconfigure + starter）与 2.7 前后的注册差异（spring.factories → imports 文件）"
+      ],
+      "constraints": [
+        "以 Spring Boot 3.x 的 AutoConfiguration.imports 为主",
+        "Starter 给出文件清单与关键代码即可"
+      ],
+      "deliverables": [
+        "自动装配链路说明",
+        "条件注解说明与顺序陷阱",
+        "自定义 Starter 的结构与代码骨架"
+      ],
+      "acceptance": [
+        "讲对 2.7 的迁移：META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports",
+        "@ConditionalOnMissingBean 让用户配置优先的机制讲清",
+        "Starter 命名规范（xxx-spring-boot-starter）与双模块结构正确"
+      ],
+      "rubric": [
+        { "dimension": "正确性", "weight": 50, "guidance": "注解链路、加载机制、注册方式演进准确。" },
+        { "dimension": "方案设计", "weight": 30, "guidance": "Starter 结构合理，条件注解使用正确。" },
+        { "dimension": "沟通表达", "weight": 20, "guidance": "链路化表达，便于内训。" }
+      ],
+      "mockHints": {
+        "keywords": {
+          "正确性": ["@EnableAutoConfiguration", "AutoConfiguration.imports", "spring.factories", "@Conditional", "OnMissingBean", "OnClass", "ImportSelector"],
+          "方案设计": ["starter", "自动配置", "模块", "结构", "注册"],
+          "沟通表达": ["链路", "迁移", "说明", "示例"]
+        },
+        "strengths": [
+          { "text": "讲对了 2.7 前后注册文件的迁移", "keywords": ["spring.factories", "AutoConfiguration.imports"] },
+          { "text": "OnMissingBean 让用户 Bean 优先的机制讲清", "keywords": ["OnMissingBean", "优先"] }
+        ],
+        "problems": [
+          { "dimension": "正确性", "text": "还在用过时的 spring.factories 注册方式（对 Boot 3 不生效）" },
+          { "dimension": "方案设计", "text": "Starter 把业务逻辑和配置耦合在单模块，结构不合理" }
+        ],
+        "edgeCases": [
+          "@ConditionalOnBean 的评估顺序陷阱（依赖配置类先后）",
+          "用户自定义 Bean 覆盖自动配置的原理",
+          "@ConfigurationProperties 属性绑定与 @EnableConfigurationProperties 的配合"
+        ],
+        "followUps": [
+          "自动配置类为什么都要加 @ConditionalOnMissingBean？不加会怎样？",
+          "怎么排查某个自动配置为什么没生效？（条件评估报告）"
+        ],
+        "nextTaskCodes": ["FW-004", "FW-012"]
+      }
+    },
+    {
+      "code": "FW-009",
+      "title": "接口幂等设计：四种方案的矩阵与推荐",
+      "category": "framework",
+      "difficulty": "MEDIUM",
+      "tags": "幂等,设计,面试高频",
+      "summary": "为支付回调与下单接口给出至少四种幂等方案的对比矩阵与组合建议。",
+      "estimatedMinutes": 40,
+      "background": "面试高频题的落地版：支付回调会重试、用户会连点、网络会重发。组长要一份幂等方案矩阵：每种方案的适用场景、失效条件、实现成本，以及我们项目的推荐组合。",
+      "requirements": [
+        "定义幂等，并列出哪些接口必须幂等（回调、下单、扣款、重试链路）",
+        "方案矩阵：数据库唯一索引 + DuplicateKey 处理、防重 token（先取后验）、状态机条件更新、分布式锁",
+        "明确「前端防抖只是体验优化，不是幂等保证」",
+        "给出推荐组合：回调类用「唯一索引兜底 + 状态机流转」，并说明理由"
+      ],
+      "constraints": [
+        "每个方案要回答「它失效了会怎样」",
+        "方案落到 SQL 或伪代码形态"
+      ],
+      "deliverables": [
+        "方案对比矩阵",
+        "推荐组合与理由",
+        "边界场景清单"
+      ],
+      "acceptance": [
+        "唯一索引作为最终防线（与并发重复提交题呼应）",
+        "状态机方案给出条件更新的 SQL 形态（WHERE status = 预期值）",
+        "明确防抖不解决幂等问题"
+      ],
+      "rubric": [
+        { "dimension": "方案设计", "weight": 45, "guidance": "方案矩阵完整、组合有取舍、落到可执行形态。" },
+        { "dimension": "正确性", "weight": 40, "guidance": "各方案的失效条件与原子性分析正确。" },
+        { "dimension": "工程规范", "weight": 15, "guidance": "边界场景与监控建议到位。" }
+      ],
+      "mockHints": {
+        "keywords": {
+          "方案设计": ["幂等", "token", "唯一索引", "状态机", "分布式锁", "组合", "方案"],
+          "正确性": ["防抖", "防线", "WHERE", "约束", "失效", "重复提交", "回调"],
+          "工程规范": ["对比", "推荐", "表格", "边界"]
+        },
+        "strengths": [
+          { "text": "明确前端防抖不是幂等保证，唯一索引才是最终防线", "keywords": ["防抖", "唯一索引", "防线"] },
+          { "text": "状态机方案落到条件更新 SQL", "keywords": ["状态机", "WHERE"] }
+        ],
+        "problems": [
+          { "dimension": "方案设计", "text": "只列方案名，没有适用场景与失效条件" },
+          { "dimension": "正确性", "text": "把先查后改当作幂等实现（并发下失效）" }
+        ],
+        "edgeCases": [
+          "token 方案的校验必须原子（Lua / SETNX），并设置过期时间",
+          "支付回调重试风暴下的幂等实现",
+          "幂等键由谁生成（客户端生成 vs 服务端派生）的取舍"
+        ],
+        "followUps": [
+          "幂等和防重是一回事吗？区别在哪？",
+          "接口超时但实际成功，客户端重试后怎么返回一致的结果？"
+        ],
+        "nextTaskCodes": ["TS-006", "RD-005"]
+      }
+    },
+    {
+      "code": "FW-010",
+      "title": "@Transactional 失效全景清单（附复现与修复）",
+      "category": "framework",
+      "difficulty": "HARD",
+      "tags": "事务,失效,面试高频",
+      "summary": "系统整理至少 7 种事务失效场景：每种给出现象、根因、最小复现与修复。",
+      "estimatedMinutes": 45,
+      "background": "「说说事务失效的场景」是 Spring 面试的必考题。你的任务是把它做成团队规约：不止罗列，每种场景要有最小复现、一句话根因和修复方式，最终形成 Code Review 检查项。",
+      "requirements": [
+        "至少覆盖 7 种：自调用、方法非 public、final/static 方法、异常被 catch、抛受检异常默认不回滚、多线程调用、传播行为误配（如 NOT_SUPPORTED）、存储引擎不支持事务",
+        "每种场景给出：现象、一句话根因、修复方式（代码片段）",
+        "说明 rollbackFor = Exception.class 的适用与滥用风险",
+        "输出可执行的 Code Review 检查项"
+      ],
+      "constraints": [
+        "复现用代码片段表达即可，不要求可运行的完整工程",
+        "根因要落到「代理与异常检测机制」层面"
+      ],
+      "deliverables": [
+        "失效场景清单表",
+        "每种场景的复现与修复",
+        "团队 Code Review 检查项"
+      ],
+      "acceptance": [
+        "覆盖不少于 7 种且每条有一句话根因",
+        "自调用场景解释「this 调用绕过代理」",
+        "rollbackFor 的提醒：不是所有场景都无脑全量回滚"
+      ],
+      "rubric": [
+        { "dimension": "正确性", "weight": 50, "guidance": "场景、根因、修复三层都准确。" },
+        { "dimension": "问题定位", "weight": 30, "guidance": "复现思路清晰，能指导他人自测。" },
+        { "dimension": "工程规范", "weight": 20, "guidance": "规约可执行，能进评审清单。" }
+      ],
+      "mockHints": {
+        "keywords": {
+          "正确性": ["自调用", "private", "final", "catch", "受检", "rollbackFor", "多线程", "传播", "失效"],
+          "问题定位": ["复现", "根因", "现象", "排查"],
+          "工程规范": ["规约", "检查", "评审", "清单"]
+        },
+        "strengths": [
+          { "text": "根因统一落到「代理与异常检测」机制层面", "keywords": ["代理", "根因"] },
+          { "text": "规约可以进 Code Review 清单", "keywords": ["规约", "评审"] }
+        ],
+        "problems": [
+          { "dimension": "正确性", "text": "场景少凑数或根因停留在现象层" },
+          { "dimension": "工程规范", "text": "没有形成可执行的检查项" }
+        ],
+        "edgeCases": [
+          "同类 this 调用为什么绕过代理",
+          "事务方法里新开线程修改数据与回滚的关系（线程外修改不回滚）",
+          "嵌套事务 catch 异常后 rollback-only 的连锁效应"
+        ],
+        "followUps": [
+          "TransactionTemplate 在什么场景比注解更合适？",
+          "怎么用集成测试系统性防住事务失效？（断言回滚后的数据状态）"
+        ],
+        "nextTaskCodes": ["TS-004", "FW-006"]
+      }
+    },
+    {
+      "code": "FW-011",
+      "title": "Spring MVC 一次请求的完整旅程",
+      "category": "framework",
+      "difficulty": "HARD",
+      "tags": "SpringMVC,请求流程,面试高频",
+      "summary": "从 DispatcherServlet 视角讲清一次请求全流程，并落地两个定制点。",
+      "estimatedMinutes": 45,
+      "background": "面试题「说说一次请求在 Spring MVC 里的旅程」很多人答不全。你负责产出一份内训材料：流程讲全，并落地两个我们项目真实用到的定制点（全局异常、当前用户参数解析）。",
+      "requirements": [
+        "完整流程：DispatcherServlet → HandlerMapping（含拦截器 preHandle）→ HandlerAdapter → 参数解析（HandlerMethodArgumentResolver）→ 业务执行 → 返回值处理（HandlerMethodReturnValueHandler）→ 消息转换/视图渲染 → afterCompletion",
+        "说明过滤器与拦截器的区别（层次、时机、能否拿到 Handler）",
+        "定制点一：@RestControllerAdvice 全局异常处理的注册与生效范围",
+        "定制点二：自定义 HandlerMethodArgumentResolver 实现「@CurrentUser 注入登录用户」，给出注册到 WebMvcConfigurer 的代码"
+      ],
+      "constraints": [
+        "流程顺序必须准确",
+        "定制点要结合本项目（统一响应结构）背景"
+      ],
+      "deliverables": [
+        "请求流程说明",
+        "两个定制点的代码骨架",
+        "过滤器 / 拦截器 / AOP 的对比表"
+      ],
+      "acceptance": [
+        "异常发生时 afterCompletion 仍会执行（对已成功的拦截器）讲对",
+        "ArgumentResolver 注册方式正确（实现 WebMvcConfigurer.addArgumentResolvers）",
+        "三者对比有时间维度（过滤器在 Servlet 之前、拦截器在映射之后、AOP 在 Bean 方法层）"
+      ],
+      "rubric": [
+        { "dimension": "正确性", "weight": 50, "guidance": "流程组件与顺序准确，定制点机制正确。" },
+        { "dimension": "方案设计", "weight": 30, "guidance": "定制点贴合项目实际，代码骨架可落地。" },
+        { "dimension": "沟通表达", "weight": 20, "guidance": "「旅程」式叙述 + 对比表，内训效果好。" }
+      ],
+      "mockHints": {
+        "keywords": {
+          "正确性": ["DispatcherServlet", "HandlerMapping", "HandlerAdapter", "ArgumentResolver", "ReturnValue", "拦截器", "过滤器", "preHandle", "afterCompletion"],
+          "方案设计": ["定制", "全局异常", "当前用户", "注册", "骨架"],
+          "沟通表达": ["流程", "对比", "表格", "旅程"]
+        },
+        "strengths": [
+          { "text": "异常路径下拦截器 afterCompletion 的行为讲对了", "keywords": ["afterCompletion", "异常"] },
+          { "text": "自定义参数解析器与项目统一响应结合", "keywords": ["ArgumentResolver", "当前用户"] }
+        ],
+        "problems": [
+          { "dimension": "正确性", "text": "把过滤器与拦截器的时机说反" },
+          { "dimension": "方案设计", "text": "定制点只是罗列概念，没有结合本项目落地" }
+        ],
+        "edgeCases": [
+          "拦截器 preHandle 返回 false 时 afterCompletion 只对已完成的拦截器执行",
+          "@ControllerAdvice 的范围控制（basePackages / assignableTypes）",
+          "异步请求（DeferredResult）下拦截器行为的差异"
+        ],
+        "followUps": [
+          "在过滤器里修改响应体为什么容易踩坑？",
+          "全局异常处理器怎么和统一响应结构（ApiResponse）配合？"
+        ],
+        "nextTaskCodes": ["FW-004", "FW-008"]
+      }
+    },
+    {
+      "code": "FW-012",
+      "title": "读写分离与动态数据源方案设计",
+      "category": "framework",
+      "difficulty": "HARD",
+      "tags": "读写分离,数据源,架构",
+      "summary": "设计基于 AbstractRoutingDataSource 的读写分离方案，并指出与事务结合的关键坑。",
+      "estimatedMinutes": 45,
+      "background": "读多写少的课程平台要做读写分离。你出方案评审稿：动态数据源的实现、与 Spring 事务结合的坑、以及「什么时候该直接上中间件」的建议。",
+      "requirements": [
+        "方案结构：主从数据源、基于 ThreadLocal 的路由上下文、切面按注解/方法名切换",
+        "读库负载均衡与故障转移的思路（轮询、摘除）",
+        "关键坑：事务开启后连接已绑定，事务内切换数据源不生效；给出强制读主、事务外切换等规约",
+        "与 ShardingSphere 类中间件的对比与选择建议"
+      ],
+      "constraints": [
+        "给出路由与切面的关键代码骨架",
+        "坑位必须有规避措施"
+      ],
+      "deliverables": [
+        "架构与流程说明",
+        "关键代码骨架",
+        "坑位与团队规约清单"
+      ],
+      "acceptance": [
+        "「事务内路由不生效」的机制讲对并给出规约",
+        "提到 ThreadLocal 上下文在请求结束后的清理",
+        "对比现成中间件给出适用边界（规模小自研、规模大上中间件）"
+      ],
+      "rubric": [
+        { "dimension": "方案设计", "weight": 45, "guidance": "结构完整，边界清晰，有规模判断。" },
+        { "dimension": "正确性", "weight": 40, "guidance": "事务绑定、上下文清理等关键机制正确。" },
+        { "dimension": "工程规范", "weight": 15, "guidance": "规约清单可执行。" }
+      ],
+      "mockHints": {
+        "keywords": {
+          "方案设计": ["读写分离", "路由", "AbstractRoutingDataSource", "切面", "主从", "负载", "中间件"],
+          "正确性": ["ThreadLocal", "事务", "失效", "强制", "主库", "清理"],
+          "工程规范": ["规约", "清单", "对比", "选择"]
+        },
+        "strengths": [
+          { "text": "事务内切换失效的机制与规约讲对了", "keywords": ["事务", "失效", "规约"] },
+          { "text": "给出自研与中间件的适用边界", "keywords": ["中间件", "边界"] }
+        ],
+        "problems": [
+          { "dimension": "正确性", "text": "方案没有讨论事务与连接绑定的关键坑" },
+          { "dimension": "方案设计", "text": "盲目推荐自研，未评估维护成本" }
+        ],
+        "edgeCases": [
+          "写后立即读的一致性窗口（复制延迟）如何缓解",
+          "多数据源下的 @Primary 与多个事务管理器的配置",
+          "嵌套切换时路由上下文需要栈式管理"
+        ],
+        "followUps": [
+          "复制延迟导致读不到刚写的数据，产品侧怎么缓解？",
+          "什么数据规模之前不值得自研读写分离？"
+        ],
+        "nextTaskCodes": ["FW-008", "DB-002"]
+      }
+    },
+    {
+      "code": "FW-013",
+      "title": "用 BeanPostProcessor 实现方法计时组件",
+      "category": "framework",
+      "difficulty": "HARD",
+      "tags": "BeanPostProcessor,扩展点,实战",
+      "summary": "实现「扫描 @Timed 注解并生成计时代理」的组件，并论证它与 AOP 方案的取舍。",
+      "estimatedMinutes": 45,
+      "background": "内训进阶题：面试官常追问「BPP 到底能干什么」。你的任务是实现一个真实组件——扫描 @Timed 注解的 Bean 并生成计时代理——同时诚实回答「这个场景到底该不该用 BPP」。",
+      "requirements": [
+        "讲清 BPP 的调用时机（初始化前后）与职责边界",
+        "实现：扫描 Bean 方法上的 @Timed → 生成代理（按是否有接口选择 JDK/CGLIB）→ 方法耗时记录到注册中心",
+        "论证与 AOP 切面方案的对比：能力、成本、可读性",
+        "指出风险：过早创建代理可能破坏依赖注入与生命周期（Spring 的 AOP 代理在特定 BPP 中生成的原因）"
+      ],
+      "constraints": [
+        "给出可编译的组件骨架",
+        "结论要克制：说明什么场景不值得用 BPP"
+      ],
+      "deliverables": [
+        "组件代码骨架",
+        "与 AOP 方案的对比结论",
+        "踩坑清单"
+      ],
+      "acceptance": [
+        "BPP 返回代理对象替换原 Bean 的机制讲对",
+        "指出过早代理的风险与 Spring 自身 AOP 的处理位置",
+        "给出「日常业务优先用 AOP，BPP 留给框架级扩展」的克制结论"
+      ],
+      "rubric": [
+        { "dimension": "正确性", "weight": 45, "guidance": "BPP 机制、代理替换、时机风险准确。" },
+        { "dimension": "方案设计", "weight": 35, "guidance": "组件可用、对比有结论、结论克制。" },
+        { "dimension": "沟通表达", "weight": 20, "guidance": "踩坑清单实用，适合内训。" }
+      ],
+      "mockHints": {
+        "keywords": {
+          "正确性": ["BeanPostProcessor", "代理", "扫描", "注解", "时机", "过早", "替换", "JDK", "CGLIB"],
+          "方案设计": ["组件", "对比", "AOP", "取舍", "骨架"],
+          "沟通表达": ["清单", "结论", "说明", "坑"]
+        },
+        "strengths": [
+          { "text": "指出 BPP 过早代理破坏依赖注入的风险", "keywords": ["过早", "代理", "依赖"] },
+          { "text": "结论克制：业务场景优先 AOP", "keywords": ["AOP", "取舍", "克制"] }
+        ],
+        "problems": [
+          { "dimension": "正确性", "text": "BPP 返回的对象没有真正替换容器中的 Bean" },
+          { "dimension": "方案设计", "text": "为用 BPP 而用 BPP，忽略维护成本" }
+        ],
+        "edgeCases": [
+          "BPP 抛异常会阻断整个容器启动",
+          "与 @PostConstruct 的先后关系影响注解元数据读取时机",
+          "循环依赖场景下提前代理与 BPP 的交互"
+        ],
+        "followUps": [
+          "Spring 内部有哪些功能是 BPP 实现的？举两个例子。",
+          "为什么说「不到万不得已不要自己写 BPP」？"
+        ],
+        "nextTaskCodes": ["FW-004", "FW-007"]
+      }
+    }
+  ]
+}

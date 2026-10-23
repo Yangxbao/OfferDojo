@@ -42,6 +42,9 @@ export const CATEGORY_LABELS: Record<string, string> = {
   troubleshooting: '问题排查',
   testing: '测试与质量',
   refactoring: '代码设计与重构',
+  'java-core': 'Java 核心与并发',
+  framework: 'Spring 与框架',
+  cache: 'Redis 与缓存',
 }
 
 export const PROVIDER_LABELS: Record<string, string> = {

@@ -1,6 +1,6 @@
 # 数据库设计
 
-共 5 张表。建表脚本：`backend/src/main/resources/sql/schema-mysql.sql`（MySQL）与 `schema-h2.sql`（H2 兼容，结构一致），全部 `CREATE TABLE IF NOT EXISTS`，可重复执行。演示数据由 `DemoDataInitializer` 在表为空时写入。
+共 5 张表。建表脚本：`backend/src/main/resources/sql/schema-mysql.sql`（MySQL）与 `schema-h2.sql`（H2 兼容，结构一致），全部 `CREATE TABLE IF NOT EXISTS`，可重复执行。演示账号由 `DemoDataInitializer` 在用户表为空时写入；内置任务（52 个，题库文件 `demo/demo-tasks*.json`）按编码增量播种——编码已存在则跳过，题库扩充后重启即自动补齐。
 
 ## ER 图
 
