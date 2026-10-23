@@ -1,0 +1,31 @@
+# JobSim AI 本地 MySQL（可选）。
+# 使用方式：
+#   1. cp .env.example .env 并按需修改密码
+#   2. docker compose up -d
+# 不使用 Docker 时，也可以直接使用一个已有的 MySQL 8 实例，
+# 或用 H2 演示模式零依赖启动：见 README「快速开始」。
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: jobsim-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-jobsim}
+      MYSQL_USER: ${MYSQL_USERNAME:-jobsim}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-jobsim123}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root123}
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - jobsim-mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  jobsim-mysql-data:

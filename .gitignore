@@ -1,0 +1,37 @@
+# ---------- 构建产物 ----------
+target/
+build/
+dist/
+node_modules/
+coverage/
+*.class
+
+# ---------- 环境变量与密钥（绝不提交） ----------
+.env
+.env.local
+.env.*.local
+!.env.example
+*.pem
+*.key
+*.p12
+
+# ---------- 本地数据库 / 运行时数据 ----------
+backend/data/
+data/
+*.mv.db
+*.trace.db
+*.lock.db
+*.h2.db
+
+# ---------- 日志 ----------
+logs/
+*.log
+
+# ---------- IDE / 编辑器 ----------
+.idea/
+*.iml
+.vscode/
+
+# ---------- 操作系统 ----------
+.DS_Store
+Thumbs.db
