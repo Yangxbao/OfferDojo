@@ -35,10 +35,11 @@ if not exist pom.xml (
 )
 
 rem Pre-check: port 8090 already listening means another backend instance is running.
-netstat -ano | findstr /C:":8090 " | findstr /C:"LISTENING" >nul
-if not errorlevel 1 (
+set "BUSY_PID="
+for /f "tokens=5" %%p in ('netstat -ano ^| findstr /C:":8090 " ^| findstr /C:"LISTENING"') do set "BUSY_PID=%%p"
+if defined BUSY_PID (
     echo [ERROR] Port 8090 is already in use. Another backend instance is probably running.
-    echo         Close that window first, then start again.
+    echo         Kill it with:  taskkill /F /PID %BUSY_PID%
     echo         ^(tip: the demo H2 database file can only be held by one process.^)
     pause
     exit /b 1
