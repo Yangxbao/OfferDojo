@@ -284,6 +284,15 @@ export interface LearningResourceVO {
   rightsBasis: string | null
   adminNote: string | null
   inMyPlan: boolean
+  categoryTags: string[]
+  language: string | null
+  difficultyLevel: string | null
+  starsCount: number | null
+  forksCount: number | null
+  qualityScore: number | null
+  qualityLevel: string | null
+  featured: boolean
+  reviewNote: string | null
 }
 
 /** 学习路线节点关联的资要摘要 */

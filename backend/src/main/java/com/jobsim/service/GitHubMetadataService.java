@@ -49,27 +49,39 @@ public class GitHubMetadataService {
         result.put("repoPath", repoPath);
 
         long start = System.currentTimeMillis();
-        HttpRequest request = HttpRequest.newBuilder(URI.create("https://api.github.com/repos/" + repoPath))
+        HttpRequest.Builder builder = HttpRequest.newBuilder(URI.create("https://api.github.com/repos/" + repoPath))
                 .timeout(Duration.ofSeconds(properties.getGithubTimeoutSeconds()))
-                .header("Accept", "application/vnd.github+json")
-                .header("Authorization", properties.githubAuthHeader())
-                .GET()
-                .build();
+                .header("Accept", "application/vnd.github+json");
+        // 无 Token 时不发送 Authorization 头（匿名可访问公开仓库元数据，60 次/时）
+        String authHeader = properties.githubAuthHeader();
+        if (authHeader != null) {
+            builder.header("Authorization", authHeader);
+        }
+        HttpRequest request = builder.GET().build();
         try {
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             result.put("durationMs", System.currentTimeMillis() - start);
             if (response.statusCode() == 404) {
                 result.put("success", false);
+                result.put("errorType", "NOT_FOUND");
                 result.put("message", "仓库不可访问（404）：可能已删除、转私有或链接错误");
                 return result;
             }
-            if (response.statusCode() == 403) {
+            if (response.statusCode() == 401) {
                 result.put("success", false);
-                result.put("message", "GitHub API 限流或被拒绝（403），请稍后重试或配置 GITHUB_TOKEN");
+                result.put("errorType", "BAD_CREDENTIALS");
+                result.put("message", "GitHub Token 无效（401）。请检查后端 GITHUB_TOKEN 配置；匿名访问无需 Token");
+                return result;
+            }
+            if (response.statusCode() == 403 || response.statusCode() == 429) {
+                result.put("success", false);
+                result.put("errorType", "RATE_LIMIT");
+                result.put("message", "GitHub API 限流（" + response.statusCode() + "），请稍后重试或配置 GITHUB_TOKEN");
                 return result;
             }
             if (response.statusCode() != 200) {
                 result.put("success", false);
+                result.put("errorType", "HTTP_ERROR");
                 result.put("message", "GitHub API 返回 HTTP " + response.statusCode());
                 return result;
             }

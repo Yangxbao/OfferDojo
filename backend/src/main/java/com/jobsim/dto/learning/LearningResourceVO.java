@@ -29,6 +29,15 @@ public record LearningResourceVO(
         boolean shareAlike,
         String rightsBasis,
         String adminNote,
+        String categoryTags,
+        String language,
+        String difficultyLevel,
+        Long starsCount,
+        Long forksCount,
+        Integer qualityScore,
+        String qualityLevel,
+        boolean featured,
+        String reviewNote,
         /** 当前用户是否已加入学习计划（未登录场景恒为 false） */
         boolean inMyPlan
 ) {

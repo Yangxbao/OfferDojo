@@ -64,24 +64,44 @@ public class GitHubSearchService {
         result.put("categoryKey", categoryKey);
         result.put("sortBasis", "按 GitHub Search API 返回的 Star 数降序（检索条件：" + query + "）");
 
-        HttpRequest request = HttpRequest.newBuilder(URI.create(
+        HttpRequest.Builder builder = HttpRequest.newBuilder(URI.create(
                         "https://api.github.com/search/repositories?q=" + encode(query)
                                 + "&sort=stars&order=desc&per_page=" + Math.min(limit, 30)))
                 .timeout(Duration.ofSeconds(properties.getGithubTimeoutSeconds()))
-                .header("Accept", "application/vnd.github+json")
-                .header("Authorization", properties.githubAuthHeader())
-                .GET()
-                .build();
+                .header("Accept", "application/vnd.github+json");
+        // 无 Token 时完全不发送 Authorization 头（匿名访问 60 次/时）；
+        // 发送 "Bearer "（空凭据）会被 GitHub 判 Bad Credentials → 401
+        String authHeader = properties.githubAuthHeader();
+        if (authHeader != null) {
+            builder.header("Authorization", authHeader);
+        }
+        HttpRequest request = builder.GET().build();
         try {
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            if (response.statusCode() == 403 || response.statusCode() == 429) {
+            // 错误分类：401=凭据无效（Token 配错）；403/429=限流；其余为服务端错误
+            if (response.statusCode() == 401) {
                 result.put("success", false);
-                result.put("message", "GitHub API 限流（" + response.statusCode() + "），请稍后重试或配置 GITHUB_TOKEN；浏览已登记资源不受影响");
+                result.put("errorType", "BAD_CREDENTIALS");
+                result.put("message", "GitHub Token 无效或格式错误（HTTP 401）。请检查后端 GITHUB_TOKEN 环境变量（注意前后空格），匿名访问无需 Token");
+                return result;
+            }
+            if (response.statusCode() == 403 || response.statusCode() == 429) {
+                // 区分主限额耗尽与次级限流，透出重试时间线索（不暴露任何凭据）
+                String reset = response.headers().firstValue("X-RateLimit-Reset").orElse(null);
+                String retryAfter = response.headers().firstValue("Retry-After").orElse(null);
+                result.put("success", false);
+                result.put("errorType", "RATE_LIMIT");
+                result.put("rateLimitReset", reset);
+                result.put("retryAfterSeconds", retryAfter);
+                result.put("message", "GitHub API 限流（HTTP " + response.statusCode()
+                        + (retryAfter != null ? "，建议 " + retryAfter + " 秒后重试" : "")
+                        + "）。已登记的本地资源不受影响；配置 GITHUB_TOKEN 可提升限额");
                 return result;
             }
             if (response.statusCode() != 200) {
                 result.put("success", false);
-                result.put("message", "GitHub API 返回 HTTP " + response.statusCode());
+                result.put("errorType", "HTTP_ERROR");
+                result.put("message", "GitHub API 返回 HTTP " + response.statusCode() + "（目标：api.github.com/search/repositories）");
                 return result;
             }
             JsonNode root = JsonUtils.MAPPER.readTree(response.body());
@@ -106,10 +126,21 @@ public class GitHubSearchService {
             result.put("items", items);
             result.put("totalCount", root.path("total_count").asInt());
             return result;
+        } catch (java.net.http.HttpTimeoutException e) {
+            result.put("success", false);
+            result.put("errorType", "TIMEOUT");
+            result.put("message", "GitHub API 请求超时（" + properties.getGithubTimeoutSeconds() + "s），请稍后重试；本地资源浏览不受影响");
+            return result;
+        } catch (java.net.ConnectException | java.net.UnknownHostException e) {
+            result.put("success", false);
+            result.put("errorType", "CONNECT_FAILED");
+            result.put("message", "无法连接 GitHub（" + e.getClass().getSimpleName() + "），请检查网络；本地资源浏览不受影响");
+            return result;
         } catch (Exception e) {
             log.warn("GitHub 搜索失败: {}", e.getMessage());
             result.put("success", false);
-            result.put("message", "GitHub API 调用失败（网络/超时），请查看已登记的本地资源");
+            result.put("errorType", "UNKNOWN");
+            result.put("message", "GitHub API 调用失败（" + e.getClass().getSimpleName() + "），请查看已登记的本地资源");
             return result;
         }
     }

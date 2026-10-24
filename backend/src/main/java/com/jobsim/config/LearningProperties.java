@@ -20,10 +20,19 @@ public class LearningProperties {
     /** GitHub API 超时（秒） */
     private int githubTimeoutSeconds = 15;
 
-    /** 组装 Authorization 头：未配置 Token 时返回空 Map 等价的匿名头 */
+    /** 是否配置了有效 Token（仅判断非空白，不打印内容） */
+    public boolean hasToken() {
+        return githubToken != null && !githubToken.isBlank();
+    }
+
+    /**
+     * 组装 Authorization 头值。
+     * 关键约定：未配置 Token 时返回 null——调用方必须因此「完全不发送」该头，
+     * 而不是发送 "Bearer "（空凭据会被 GitHub 判为 Bad Credentials 返回 401；
+     * 这正是 /github-top 页面 401 的真实根因）。
+     * 匿名访问公开仓库元数据不需要 Token（限额 60 次/时，配置 Token 提升到 5000 次/时）。
+     */
     public String githubAuthHeader() {
-        return githubToken == null || githubToken.isBlank()
-                ? "Bearer "
-                : "Bearer " + githubToken;
+        return hasToken() ? "Bearer " + githubToken.trim() : null;
     }
 }

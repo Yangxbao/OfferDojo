@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -29,22 +30,53 @@ public class LearningResourceService {
     private final LearningResourceMapper resourceMapper;
     private final LearningPlanMapper planMapper;
 
-    /** 用户侧分页：keyword 搜标题/描述；只返回非 OFFLINE */
+    /** 用户侧分页：多维筛选 + 后端排序（精选优先/Star/质量分/收录/推送/核验时间） */
     public PageResult<LearningResourceVO> page(String track, String sourceType, String licenseStatus,
-                                               String verifiedStatus, String keyword, Long page, Long size) {
+                                               String verifiedStatus, String keyword,
+                                               String qualityLevel, String language,
+                                               Long minStars, Long maxStars, Boolean featuredOnly,
+                                               String orderBy, Long page, Long size) {
         var wrapper = Wrappers.<LearningResource>lambdaQuery()
                 .ne(LearningResource::getVerifiedStatus, LearningResource.STATUS_OFFLINE)
                 .eq(StringUtils.hasText(track), LearningResource::getTrack, track)
                 .eq(StringUtils.hasText(sourceType), LearningResource::getSourceType, sourceType)
                 .eq(StringUtils.hasText(licenseStatus), LearningResource::getLicenseStatus, licenseStatus)
                 .eq(StringUtils.hasText(verifiedStatus), LearningResource::getVerifiedStatus, verifiedStatus)
+                .eq(StringUtils.hasText(qualityLevel), LearningResource::getQualityLevel, qualityLevel)
+                .eq(StringUtils.hasText(language), LearningResource::getLanguage, language)
+                .ge(minStars != null, LearningResource::getStarsCount, minStars == null ? 0 : minStars)
+                .le(maxStars != null, LearningResource::getStarsCount, maxStars == null ? 0 : maxStars)
+                .eq(Boolean.TRUE.equals(featuredOnly), LearningResource::getFeatured, true)
                 .and(StringUtils.hasText(keyword),
                         w -> w.like(LearningResource::getTitle, keyword)
-                                .or().like(LearningResource::getDescription, keyword))
-                .orderByAsc(LearningResource::getTrack)
-                .orderByAsc(LearningResource::getCode);
+                                .or().like(LearningResource::getDescription, keyword)
+                                .or().like(LearningResource::getCategoryTags, keyword));
+        // 排序白名单（防注入）：featured 精选优先(默认) / stars / quality / recent 平台收录
+        // / pushed GitHub 推送 / verified 最近核验
+        switch (orderBy == null ? "featured" : orderBy) {
+            case "stars" -> wrapper.orderByDesc(LearningResource::getStarsCount);
+            case "quality" -> wrapper.orderByDesc(LearningResource::getQualityScore);
+            case "recent" -> wrapper.orderByDesc(LearningResource::getCreatedAt);
+            case "pushed" -> wrapper.orderByDesc(LearningResource::getGithubPushedAt);
+            case "verified" -> wrapper.orderByDesc(LearningResource::getVerifiedAt);
+            default -> wrapper.orderByDesc(LearningResource::getFeatured)
+                    .orderByDesc(LearningResource::getQualityScore);
+        }
+        wrapper.orderByAsc(LearningResource::getId);
         IPage<LearningResource> result = resourceMapper.selectPage(PageUtils.of(page, size), wrapper);
         return PageResult.map(result, r -> toVO(r, null));
+    }
+
+    /** 质量等级统计（前端筛选栏徽标） */
+    public Map<String, Long> qualityStats() {
+        Map<String, Long> stats = new java.util.LinkedHashMap<>();
+        for (var row : resourceMapper.selectList(Wrappers.<LearningResource>lambdaQuery()
+                .select(LearningResource::getQualityLevel)
+                .ne(LearningResource::getVerifiedStatus, LearningResource.STATUS_OFFLINE))) {
+            String level = row.getQualityLevel() == null ? "PENDING_EVAL" : row.getQualityLevel();
+            stats.merge(level, 1L, Long::sum);
+        }
+        return stats;
     }
 
     public LearningResourceVO detail(Long userId, Long id) {
@@ -82,6 +114,10 @@ public class LearningResourceService {
                 Boolean.TRUE.equals(r.getAttributionRequired()),
                 Boolean.TRUE.equals(r.getShareAlike()),
                 r.getRightsBasis(), r.getAdminNote(),
+                r.getCategoryTags(), r.getLanguage(), r.getDifficultyLevel(),
+                r.getStarsCount(), r.getForksCount(),
+                r.getQualityScore(), r.getQualityLevel(),
+                Boolean.TRUE.equals(r.getFeatured()), r.getReviewNote(),
                 Boolean.TRUE.equals(inMyPlan));
     }
 

@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -172,6 +173,59 @@ public class LearningAdminController {
         resource.setVerifiedAt(LocalDateTime.now());
         resourceMapper.updateById(resource);
         return ApiResponse.ok(resourceService.toVO(resource, null));
+    }
+
+    @Operation(summary = "质量评审：填写质量分/等级/精选/评审说明（100 分制，须有依据）")
+    @PutMapping("/{id}/quality")
+    public ApiResponse<LearningResourceVO> reviewQuality(@PathVariable Long id,
+                                                         @RequestBody QualityReviewRequest request) {
+        LearningResource resource = resourceMapper.selectById(id);
+        if (resource == null) {
+            return ApiResponse.fail(404, "资源不存在");
+        }
+        if (request.getQualityScore() != null
+                && (request.getQualityScore() < 0 || request.getQualityScore() > 100)) {
+            return ApiResponse.fail(400, "质量分须在 0-100 之间");
+        }
+        if (request.getQualityScore() != null) resource.setQualityScore(request.getQualityScore());
+        if (request.getQualityLevel() != null) {
+            if (!List.of("FEATURED", "RECOMMENDED", "NORMAL", "PENDING_EVAL", "OFFLINE")
+                    .contains(request.getQualityLevel())) {
+                return ApiResponse.fail(400, "质量等级不合法");
+            }
+            resource.setQualityLevel(request.getQualityLevel());
+        }
+        if (request.getFeatured() != null) {
+            // 精选硬约束：未核验许可证/无质量分的资源不得进入精选
+            if (request.getFeatured() && (resource.getQualityScore() == null
+                    || "UNKNOWN".equals(resource.getLicenseStatus()) && resource.getQualityScore() < 80)) {
+                return ApiResponse.fail(400, "精选要求：已有质量评分且许可证不明者需 ≥80 分（官方文档特例）");
+            }
+            resource.setFeatured(request.getFeatured());
+        }
+        if (request.getReviewNote() != null) resource.setReviewNote(request.getReviewNote());
+        resource.setVerifiedAt(LocalDateTime.now());
+        if ("OFFLINE".equals(request.getQualityLevel())) {
+            resource.setVerifiedStatus(LearningResource.STATUS_OFFLINE);
+        }
+        resourceMapper.updateById(resource);
+        return ApiResponse.ok(resourceService.toVO(resource, null));
+    }
+
+    public static class QualityReviewRequest {
+        private Integer qualityScore;
+        private String qualityLevel;
+        private Boolean featured;
+        private String reviewNote;
+
+        public Integer getQualityScore() { return qualityScore; }
+        public void setQualityScore(Integer v) { this.qualityScore = v; }
+        public String getQualityLevel() { return qualityLevel; }
+        public void setQualityLevel(String v) { this.qualityLevel = v; }
+        public Boolean getFeatured() { return featured; }
+        public void setFeatured(Boolean v) { this.featured = v; }
+        public String getReviewNote() { return reviewNote; }
+        public void setReviewNote(String v) { this.reviewNote = v; }
     }
 
     @Operation(summary = "删除资源（仅限误登记的清理；核验记录随之移除）")

@@ -10,13 +10,9 @@ const total = ref(0)
 const inPlan = ref<Set<string>>(new Set())
 
 const query = reactive({
-  track: '',
-  sourceType: '',
-  licenseStatus: '',
-  verifiedStatus: '',
-  keyword: '',
-  page: 1,
-  size: 12,
+  track: '', sourceType: '', licenseStatus: '', verifiedStatus: '',
+  qualityLevel: '', keyword: '', orderBy: 'featured', minStars: '' as string,
+  page: 1, size: 12,
 })
 
 const detail = ref<LearningResourceVO | null>(null)
@@ -50,7 +46,10 @@ async function load() {
       sourceType: query.sourceType || undefined,
       licenseStatus: query.licenseStatus || undefined,
       verifiedStatus: query.verifiedStatus || undefined,
+      qualityLevel: query.qualityLevel || undefined,
       keyword: query.keyword || undefined,
+      orderBy: query.orderBy,
+      minStars: query.minStars ? Number(query.minStars) : undefined,
       page: query.page,
       size: query.size,
     })
@@ -85,7 +84,7 @@ async function addToPlan(item: LearningResourceVO) {
 }
 
 function resetFilters() {
-  Object.assign(query, { track: '', sourceType: '', licenseStatus: '', verifiedStatus: '', keyword: '', page: 1 })
+  Object.assign(query, { track: '', sourceType: '', licenseStatus: '', verifiedStatus: '', qualityLevel: '', keyword: '', orderBy: 'featured', minStars: '', page: 1 })
   load()
 }
 
@@ -121,6 +120,25 @@ onMounted(async () => {
           <el-option v-for="(label, code) in STATUS_LABELS" :key="code" :label="label" :value="code" />
         </el-select>
         <el-input v-model="query.keyword" placeholder="搜索标题 / 简介" clearable style="width: 200px" @change="query.page = 1; load()" />
+        <el-select v-model="query.qualityLevel" placeholder="质量等级" clearable style="width:120px" @change="query.page = 1; load()">
+          <el-option label="✨ 精选" value="FEATURED" />
+          <el-option label="推荐" value="RECOMMENDED" />
+          <el-option label="普通" value="NORMAL" />
+          <el-option label="待评估" value="PENDING_EVAL" />
+        </el-select>
+        <el-select v-model="query.minStars" placeholder="Star 下限" clearable style="width:120px" @change="query.page = 1; load()">
+          <el-option label="≥ 1000" value="1000" />
+          <el-option label="≥ 100" value="100" />
+          <el-option label="≥ 10" value="10" />
+        </el-select>
+        <el-select v-model="query.orderBy" style="width:140px" @change="query.page = 1; load()">
+          <el-option label="精选优先" value="featured" />
+          <el-option label="Star 降序" value="stars" />
+          <el-option label="质量分降序" value="quality" />
+          <el-option label="最新收录" value="recent" />
+          <el-option label="最近推送" value="pushed" />
+          <el-option label="最近核验" value="verified" />
+        </el-select>
         <el-button text @click="resetFilters">重置</el-button>
         <span class="card-sub" style="margin-left: auto">共 {{ total }} 个资源</span>
       </div>
@@ -137,6 +155,11 @@ onMounted(async () => {
             {{ item.licenseSpdx ?? LICENSE_LABELS[item.licenseStatus] ?? '许可未知' }}
           </el-tag>
           <el-tag size="small" type="info" effect="plain">{{ TYPE_LABELS[item.sourceType] ?? item.sourceType }}</el-tag>
+          <el-tag v-if="item.qualityLevel === 'FEATURED'" size="small" type="warning" effect="dark">✨ 精选</el-tag>
+          <el-tag v-else-if="item.qualityLevel === 'RECOMMENDED'" size="small" type="success" effect="light">推荐</el-tag>
+          <el-tag v-else-if="item.qualityLevel === 'NORMAL'" size="small" type="info" effect="light">普通</el-tag>
+          <el-tag v-else-if="item.qualityLevel === 'PENDING_EVAL'" size="small" effect="plain">待评估</el-tag>
+          <span v-if="item.starsCount != null" class="card-sub" style="font-size:12px">⭐{{ item.starsCount.toLocaleString() }}</span>
         </div>
         <h3 style="font-size: 14px; margin: 0 0 6px; line-height: 1.5">{{ item.title }}</h3>
         <p class="card-sub" style="margin: 0 0 10px; line-height: 1.6; font-size: 12.5px">{{ item.description }}</p>

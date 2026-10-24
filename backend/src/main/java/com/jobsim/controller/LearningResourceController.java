@@ -31,10 +31,23 @@ public class LearningResourceController {
             @RequestParam(required = false) String licenseStatus,
             @RequestParam(required = false) String verifiedStatus,
             @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String qualityLevel,
+            @RequestParam(required = false) String language,
+            @RequestParam(required = false) Long minStars,
+            @RequestParam(required = false) Long maxStars,
+            @RequestParam(required = false) Boolean featuredOnly,
+            @RequestParam(required = false, defaultValue = "featured") String orderBy,
             @RequestParam(required = false) Long page,
             @RequestParam(required = false) Long size) {
         return ApiResponse.ok(resourceService.page(track, sourceType, licenseStatus,
-                verifiedStatus, keyword, page, size));
+                verifiedStatus, keyword, qualityLevel, language, minStars, maxStars,
+                featuredOnly, orderBy, page, size));
+    }
+
+    @Operation(summary = "质量等级统计")
+    @GetMapping("/quality-stats")
+    public ApiResponse<java.util.Map<String, Long>> qualityStats() {
+        return ApiResponse.ok(resourceService.qualityStats());
     }
 
     @Operation(summary = "资源详情（含核验证据与使用权限）")

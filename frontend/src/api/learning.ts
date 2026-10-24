@@ -7,7 +7,11 @@ export const learningApi = {
     sourceType?: string
     licenseStatus?: string
     verifiedStatus?: string
+    qualityLevel?: string
     keyword?: string
+    orderBy?: string
+    minStars?: number
+    featuredOnly?: boolean
     page?: number
     size?: number
   }) => request<PageResult<LearningResourceVO>>({ url: '/learning/resources', method: 'get', params }),
