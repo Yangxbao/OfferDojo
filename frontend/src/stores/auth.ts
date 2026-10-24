@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia'
 import { authApi } from '@/api'
 import { clearToken, getToken, setToken } from '@/api/http'
-import { isStaticDemo } from '@/static/demoApi'
 import type { UserVO } from '@/api/types'
 
 const USER_KEY = 'jobsim.user'
@@ -22,11 +21,8 @@ function loadStoredUser(): UserVO | null {
  */
 export const useAuthStore = defineStore('auth', {
   state: () => ({
-    // 静态演示模式：本地演示身份（明确不是服务器认证）
-    token: isStaticDemo() ? 'static-demo' : getToken(),
-    user: isStaticDemo()
-      ? { id: 0, username: 'static-demo', nickname: '静态演示用户', role: 'USER' as const }
-      : loadStoredUser(),
+    token: getToken(),
+    user: loadStoredUser(),
   }),
   getters: {
     isLoggedIn: (state) => !!state.token,
@@ -57,7 +53,6 @@ export const useAuthStore = defineStore('auth', {
       localStorage.setItem(USER_KEY, JSON.stringify(user))
     },
     logout() {
-      if (isStaticDemo()) return // 演示模式保持演示身份
       this.token = null
       this.user = null
       clearToken()

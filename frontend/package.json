@@ -9,8 +9,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "type-check": "vue-tsc --noEmit",
-    "test": "vitest run",
-    "build:static-demo": "node ../scripts/build-static-demo.mjs"
+    "test": "vitest run"
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.0",

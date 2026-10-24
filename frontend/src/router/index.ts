@@ -1,7 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useAuthStore } from '@/stores/auth'
-import { isStaticDemo } from '@/static/demoApi'
 import AppLayout from '@/components/AppLayout.vue'
 
 const router = createRouter({
@@ -45,16 +44,6 @@ const router = createRouter({
 })
 
 router.beforeEach((to) => {
-  // 静态演示模式：所有页面可浏览（演示身份），管理页仍不可进（无真实鉴权）
-  if (isStaticDemo()) {
-    if (to.meta.requiresAdmin) {
-      ElMessage.warning('静态演示模式不开放管理功能（需真实鉴权）')
-      return { name: 'dashboard' }
-    }
-    if (to.name === 'login' || to.name === 'register') return { name: 'dashboard' }
-    document.title = to.meta.title ? `${to.meta.title} · OfferDojo（静态演示）` : 'OfferDojo'
-    return true
-  }
   const auth = useAuthStore()
   if (!to.meta.public && !auth.isLoggedIn) {
     return { name: 'login', query: { redirect: to.fullPath } }
