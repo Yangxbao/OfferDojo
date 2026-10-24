@@ -4,6 +4,7 @@ import { useRoute } from 'vue-router'
 import { submissionApi } from '@/api'
 import type { SubmissionDetailVO } from '@/api/types'
 import EvaluationReport from '@/components/EvaluationReport.vue'
+import FollowupDialog from '@/components/FollowupDialog.vue'
 import { formatDateTime } from '@/utils/format'
 
 const route = useRoute()
@@ -39,7 +40,12 @@ onMounted(async () => {
         </el-col>
         <el-col :xs="24" :md="14">
           <template v-if="detail.evaluation">
-            <EvaluationReport :evaluation="detail.evaluation" />
+            <EvaluationReport :evaluation="detail.evaluation" :task-title="detail.taskTitle" />
+            <FollowupDialog
+              :evaluation-id="detail.evaluation.id"
+              :follow-ups="detail.evaluation.followUps"
+              style="margin-top: 16px"
+            />
           </template>
           <div v-else class="card">
             <el-empty description="这份记录还没有评估报告（可能是草稿）" />

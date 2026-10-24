@@ -71,6 +71,8 @@ CREATE TABLE IF NOT EXISTS task_evaluation (
     provider         VARCHAR(20)   NOT NULL,
     model            VARCHAR(100),
     notice           VARCHAR(500),
+    prompt_version   VARCHAR(20),
+    raw_response     TEXT,
     created_at       DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
     CONSTRAINT uk_eval_submission UNIQUE (submission_id)
@@ -112,3 +114,19 @@ CREATE TABLE IF NOT EXISTS interview_question (
 );
 CREATE INDEX IF NOT EXISTS idx_bagu_category ON interview_question (category);
 CREATE INDEX IF NOT EXISTS idx_bagu_freq ON interview_question (frequency);
+
+
+CREATE TABLE IF NOT EXISTS followup_dialog (
+    id            BIGINT       NOT NULL AUTO_INCREMENT,
+    evaluation_id BIGINT       NOT NULL,
+    user_id       BIGINT       NOT NULL,
+    question      VARCHAR(500) NOT NULL,
+    answer        TEXT         NOT NULL,
+    score         DECIMAL(4,1) NOT NULL,
+    feedback      TEXT         NOT NULL,
+    provider      VARCHAR(20)  NOT NULL DEFAULT 'MOCK',
+    notice        VARCHAR(300),
+    created_at    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id)
+);
+CREATE INDEX IF NOT EXISTS idx_fd_eval ON followup_dialog (evaluation_id);

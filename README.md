@@ -1,6 +1,6 @@
-# JobSim AI · 面向大学生的 AI 岗位实战模拟平台
+# OfferDojo · 面向大学生的 AI 岗位实战模拟平台
 
-[![CI](https://github.com/Yangxbao/jobsim-ai/actions/workflows/ci.yml/badge.svg)](https://github.com/Yangxbao/jobsim-ai/actions/workflows/ci.yml)
+[![CI](https://github.com/Yangxbao/OfferDojo/actions/workflows/ci.yml/badge.svg)](https://github.com/Yangxbao/OfferDojo/actions/workflows/ci.yml)
 ![Java](https://img.shields.io/badge/Java-21-orange)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.x-6DB33F)
 ![Vue](https://img.shields.io/badge/Vue-3.5-4FC08D)
@@ -10,7 +10,7 @@
 
 一个帮助大学生提前熟悉真实工作场景的实战模拟平台：选择岗位模拟任务 → 提交解决方案 → AI 按预设评分标准给出**结构化评估**（分维度得分、正确做法、问题、边界情况、改进建议、技术追问、下一步任务推荐）→ 沉淀个人能力画像。**没有配置任何 AI API Key 时也能完整跑通全部流程**（内置模拟评估）。
 
-> **English**: JobSim AI is a full-stack learning platform for college students: practice realistic Java backend job tasks, submit solutions, and get structured AI feedback (per-dimension scores, strengths, problems, edge cases, suggestions, follow-up questions). Works fully offline with a built-in mock evaluator; optionally connects to any OpenAI-compatible API.
+> **English**: OfferDojo is a full-stack learning platform for college students: practice realistic Java backend job tasks, submit solutions, and get structured AI feedback (per-dimension scores, strengths, problems, edge cases, suggestions, follow-up questions). Works fully offline with a built-in mock evaluator; optionally connects to any OpenAI-compatible API.
 
 ---
 
@@ -141,7 +141,7 @@ sequenceDiagram
 
 ### 方式一：一键脚本（Windows，推荐第一次体验）
 
-在项目根目录（`jobsim-ai`）下：
+在项目根目录（`OfferDojo`）下：
 
 ```cmd
 start-backend.cmd      :: 后端：自动探测 JDK 21，默认零依赖演示模式（H2 内嵌库，无需安装数据库）
@@ -195,7 +195,7 @@ cd frontend && npm install && npm run dev
 ## 目录结构
 
 ```
-jobsim-ai/
+OfferDojo/
 ├── backend/                    # Spring Boot 后端
 │   └── src/main/java/com/jobsim/
 │       ├── common/             # 统一响应、异常、错误码

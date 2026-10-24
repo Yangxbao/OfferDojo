@@ -1,6 +1,7 @@
 package com.jobsim.service.ai;
 
 import com.jobsim.dto.task.RubricItem;
+import com.jobsim.util.JsonUtils;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -69,7 +70,7 @@ public class MockAiProvider implements AiProvider {
         }
 
         // ---- 2. 结构化反馈 ----
-        List<String> strengths = pickStrengths(hints, dims, lower);
+        List<String> strengths = pickStrengths(hints, dims, lower, answer);
         List<String> problems = pickProblems(hints, dims);
         List<String> edgeCases = hints == null || hints.edgeCases() == null
                 ? GENERIC_EDGE_CASES : hints.edgeCases().stream().limit(3).toList();
@@ -79,7 +80,13 @@ public class MockAiProvider implements AiProvider {
         List<String> nextTaskCodes = hints == null || hints.nextTaskCodes() == null
                 ? List.of() : hints.nextTaskCodes();
 
-        return new EvaluationResult(dims, strengths, problems, edgeCases, suggestions, followUps, nextTaskCodes);
+        // ---- 3. 评分明细（可追溯：存入 raw_response 供复盘） ----
+        String rawText = JsonUtils.toJson(Map.of(
+                "provider", NAME,
+                "dimensionScores", dims,
+                "matchedKeywordNote", "分数由「要点覆盖率」驱动：各维度关键词命中率 + 篇幅调整"));
+
+        return new EvaluationResult(dims, strengths, problems, edgeCases, suggestions, followUps, nextTaskCodes, rawText);
     }
 
     private List<String> keywordsFor(MockHints hints, String dimension) {
@@ -99,15 +106,24 @@ public class MockAiProvider implements AiProvider {
         return "证据不足（命中要点 %d/%d），参考评分指引：%s".formatted(matched, total, firstSentence(guidance));
     }
 
-    private List<String> pickStrengths(MockHints hints, List<EvaluationResult.DimensionScore> dims, String lower) {
+    private List<String> pickStrengths(MockHints hints, List<EvaluationResult.DimensionScore> dims, String lower,
+                                       String answer) {
         List<String> result = new ArrayList<>();
         if (hints != null && hints.strengths() != null) {
             for (MockHints.StrengthHint hint : hints.strengths()) {
-                if (hint.keywords() == null || hint.keywords().isEmpty()
-                        || hint.keywords().stream().anyMatch(k -> lower.contains(k.toLowerCase()))) {
+                String hitKeyword = hint.keywords() == null || hint.keywords().isEmpty() ? null
+                        : hint.keywords().stream().filter(k -> lower.contains(k.toLowerCase())).findFirst().orElse(null);
+                if (hint.keywords() == null || hint.keywords().isEmpty() || hitKeyword != null) {
                     result.add(hint.text());
+                    // 引用答案原文作为佐证，让模拟评估更可信、更有针对性
+                    if (hitKeyword != null) {
+                        String quote = findSentenceContaining(answer, hitKeyword);
+                        if (quote != null) {
+                            result.add("你的原句：「" + quote + "」——这一点切中了" + hint.text() + "的相关要点");
+                        }
+                    }
                 }
-                if (result.size() >= 3) {
+                if (result.size() >= 4) {
                     break;
                 }
             }
@@ -118,6 +134,20 @@ public class MockAiProvider implements AiProvider {
             result.add("在「%s」维度提供了较多有效信息（%.1f 分）".formatted(best.dimension(), best.score()));
         }
         return result;
+    }
+
+    /** 找到答案中第一个包含关键词的句子（用作原句引用），找不到返回 null */
+    private String findSentenceContaining(String answer, String keyword) {
+        if (answer == null || answer.isBlank()) {
+            return null;
+        }
+        for (String sentence : answer.split("[。！？\\n]")) {
+            String trimmed = sentence.trim();
+            if (trimmed.contains(keyword)) {
+                return trimmed.length() > 80 ? trimmed.substring(0, 80) + "…" : trimmed;
+            }
+        }
+        return null;
     }
 
     private List<String> pickProblems(MockHints hints, List<EvaluationResult.DimensionScore> dims) {
@@ -178,5 +208,61 @@ public class MockAiProvider implements AiProvider {
             }
         }
         return text.length() > 50 ? text.substring(0, 50) : text;
+    }
+
+    /**
+     * 追问模拟面试（Mock 实现）：用「问题的字符二元组在回答中的命中率」做确定性评分，
+     * 不依赖任何外部服务，且同一回答得分恒定，便于学习与回归。
+     */
+    @Override
+    public FollowupFeedback followUp(FollowupContext ctx) {
+        String question = ctx.question() == null ? "" : ctx.question();
+        String answer = ctx.userAnswer() == null ? "" : ctx.userAnswer();
+        String lower = answer.toLowerCase();
+
+        // 问题拆成字符二元组（过滤标点），衡量回答对问题的覆盖程度
+        String clean = question.replaceAll("[，。！？、：；（）()？?,.\\s]", "");
+        List<String> bigrams = new ArrayList<>();
+        for (int i = 0; i + 2 <= clean.length(); i += 2) {
+            bigrams.add(clean.substring(i, Math.min(i + 2, clean.length())));
+        }
+        if (bigrams.isEmpty() && !clean.isEmpty()) {
+            bigrams.add(clean);
+        }
+        long hit = bigrams.stream().filter(lower::contains).count();
+        double coverage = bigrams.isEmpty() ? 0 : (double) hit / bigrams.size();
+
+        double score = 3 + coverage * 5;
+        if (answer.length() >= 150) {
+            score += 1;
+        }
+        if (answer.length() < 40) {
+            score -= 0.5;
+        }
+        score = Math.round(Math.min(10, Math.max(3, score)) * 10) / 10.0;
+
+        String comment;
+        if (score >= 8) {
+            comment = "回答覆盖了追问的关键点（要点命中 %d/%d），有理有据".formatted(hit, bigrams.size());
+        } else if (score >= 5.5) {
+            comment = "回答部分覆盖了追问的关键点（要点命中 %d/%d），建议补充具体的机制解释或示例".formatted(hit, bigrams.size());
+        } else {
+            comment = "回答与追问的关联较弱（要点命中 %d/%d），建议先正面回应问题，再展开细节".formatted(hit, bigrams.size());
+        }
+
+        int variant = question.length() % 3;
+        String suggestion = switch (variant) {
+            case 0 -> "尝试用「结论 → 原因 → 例子」三段式重新组织这个回答。";
+            case 1 -> "想一想这个追问和你最初答案里的哪部分对应，把它们串起来讲。";
+            default -> "如果面试官继续追问「为什么」，你的回答还能再往下支撑一层吗？";
+        };
+
+        String rawText = JsonUtils.toJson(Map.of(
+                "provider", NAME,
+                "questionCoverage", coverage,
+                "hit", hit,
+                "total", bigrams.size()));
+
+        return new FollowupFeedback(score, comment, suggestion, rawText);
     }
 }

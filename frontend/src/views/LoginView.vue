@@ -48,7 +48,7 @@ async function submit() {
     <div class="auth-card card">
       <div class="auth-brand">
         <div class="brand-logo">J</div>
-        <h1 class="auth-title">JobSim AI</h1>
+        <h1 class="auth-title">OfferDojo</h1>
         <p class="auth-sub">面向大学生的 AI 岗位实战模拟平台</p>
       </div>
 

@@ -50,7 +50,7 @@ router.beforeEach((to) => {
   if (auth.isLoggedIn && (to.name === 'login' || to.name === 'register')) {
     return { name: 'dashboard' }
   }
-  document.title = to.meta.title ? `${to.meta.title} · JobSim AI` : 'JobSim AI'
+  document.title = to.meta.title ? `${to.meta.title} · OfferDojo` : 'OfferDojo'
   return true
 })
 

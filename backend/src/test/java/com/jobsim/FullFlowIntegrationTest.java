@@ -38,6 +38,7 @@ class FullFlowIntegrationTest {
     private static Long firstTaskId;
     private static Long draftId;
     private static Long submissionId;
+    private static Long evaluationId;
 
     private HttpHeaders authHeaders(String token, boolean json) {
         HttpHeaders headers = new HttpHeaders();
@@ -160,6 +161,7 @@ class FullFlowIntegrationTest {
         assertThat(evaluation.path("dimensionScores").size()).isGreaterThan(0);
         assertThat(evaluation.path("strengths").size()).isGreaterThan(0);
         assertThat(evaluation.path("nextTasks").size()).isGreaterThan(0);
+        evaluationId = evaluation.path("id").asLong();
     }
 
     @Test
@@ -224,5 +226,80 @@ class FullFlowIntegrationTest {
         ResponseEntity<String> bad = rest.postForEntity("/api/auth/login",
                 new HttpEntity<>(Map.of("username", "admin", "password", "wrong-password"), headers), String.class);
         assertThat(body(bad.getBody()).path("code").asInt()).isEqualTo(400);
+    }
+
+    @Test
+    @Order(9)
+    @DisplayName("学习路线图与八股复习区可用")
+    void roadmapAndBagu() {
+        ResponseEntity<String> roadmap = rest.exchange("/api/roadmap", HttpMethod.GET,
+                new HttpEntity<>(authHeaders(userToken, false)), String.class);
+        JsonNode stages = body(roadmap.getBody()).path("data");
+        assertThat(stages.size()).isGreaterThanOrEqualTo(10);
+        assertThat(stages.get(0).path("tasks").size()).isGreaterThan(0);
+        // 路线图任务带当前用户进度
+        assertThat(stages.get(0).path("tasks").get(0).has("myStatus")).isTrue();
+
+        ResponseEntity<String> bagu = rest.exchange("/api/bagu/questions?size=50", HttpMethod.GET,
+                new HttpEntity<>(authHeaders(userToken, false)), String.class);
+        JsonNode baguBody = body(bagu.getBody());
+        assertThat(baguBody.path("data").path("total").asLong()).isGreaterThanOrEqualTo(70);
+        assertThat(baguBody.path("data").path("list").get(0).path("oneLiner").asText()).isNotBlank();
+
+        ResponseEntity<String> cats = rest.exchange("/api/bagu/categories", HttpMethod.GET,
+                new HttpEntity<>(authHeaders(userToken, false)), String.class);
+        assertThat(body(cats.getBody()).path("data").size()).isGreaterThan(0);
+
+        // 高频筛选
+        ResponseEntity<String> high = rest.exchange("/api/bagu/questions?frequency=HIGH&size=1", HttpMethod.GET,
+                new HttpEntity<>(authHeaders(userToken, false)), String.class);
+        assertThat(body(high.getBody()).path("data").path("total").asLong()).isGreaterThan(10);
+    }
+
+    @Test
+    @Order(10)
+    @DisplayName("追问模拟面试：回答追问获得反馈并沉淀对话")
+    void followupDialog() {
+        assertThat(evaluationId).isPositive();
+        var headers = authHeaders(userToken, true);
+        // 从评估报告里取一个追问来回答（没有追问就用兜底问题）
+        ResponseEntity<String> detail = rest.exchange("/api/my/submissions/" + submissionId, HttpMethod.GET,
+                new HttpEntity<>(authHeaders(userToken, false)), String.class);
+        JsonNode followUps = body(detail.getBody()).path("data").path("evaluation").path("followUps");
+        String question = followUps.size() > 0 ? followUps.get(0).asText() : "为什么这么做？";
+
+        ResponseEntity<String> answer = rest.exchange("/api/my/evaluations/" + evaluationId + "/dialog",
+                HttpMethod.POST,
+                new HttpEntity<>(Map.of("question", question, "content",
+                        "因为服务端时间是唯一可信的时间源，客户端时间可以被篡改，" +
+                        "所以签到截止判断必须用服务端时间，并在接口层做边界校验。"), headers), String.class);
+        JsonNode answerBody = body(answer.getBody());
+        assertThat(answerBody.get("code").asInt()).isZero();
+        assertThat(answerBody.path("data").path("score").asDouble()).isStrictlyBetween(0.0, 10.0);
+        assertThat(answerBody.path("data").path("feedback").asText()).isNotBlank();
+
+        // 对话记录沉淀
+        ResponseEntity<String> list = rest.exchange("/api/my/evaluations/" + evaluationId + "/dialog",
+                HttpMethod.GET, new HttpEntity<>(authHeaders(userToken, false)), String.class);
+        assertThat(body(list.getBody()).path("data").size()).isEqualTo(1);
+    }
+
+    @Test
+    @Order(11)
+    @DisplayName("简历素材与 JD 反向匹配")
+    void careerFeatures() {
+        ResponseEntity<String> resume = rest.exchange("/api/my/resume-material", HttpMethod.GET,
+                new HttpEntity<>(authHeaders(userToken, false)), String.class);
+        JsonNode resumeBody = body(resume.getBody());
+        assertThat(resumeBody.get("code").asInt()).isZero();
+        assertThat(resumeBody.path("data").path("markdown").asText()).contains("简历素材草稿");
+        assertThat(resumeBody.path("data").path("completedTasks").asLong()).isGreaterThanOrEqualTo(1);
+
+        ResponseEntity<String> match = rest.exchange("/api/jd/match", HttpMethod.POST,
+                new HttpEntity<>(Map.of("text", "岗位要求：熟悉 MySQL 索引优化与事务，了解 Redis 缓存，"
+                        + "掌握 Spring Boot，有高并发经验"), authHeaders(userToken, true)), String.class);
+        JsonNode matchBody = body(match.getBody());
+        assertThat(matchBody.get("code").asInt()).isZero();
+        assertThat(matchBody.path("data").path("totalTaskHits").asLong()).isGreaterThanOrEqualTo(1);
     }
 }

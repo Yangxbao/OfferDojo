@@ -35,6 +35,8 @@ onMounted(async () => {
       <p>
         从零基础到企业实战的分阶段练习路径：先学知识、再做任务、达成里程碑。
         <template v-if="!loading"> 你已完成路线全程的 <strong>{{ overallProgress }}%</strong>。</template>
+        <br />
+        <span class="card-sub">进度口径：任务「已提交且完成评估」才计入完成，仅保存草稿不计入。</span>
       </p>
     </div>
 
@@ -82,7 +84,16 @@ onMounted(async () => {
               </el-tag>
               <span class="task-title">{{ task.title }}</span>
               <span class="card-sub">约 {{ task.estimatedMinutes }} 分钟</span>
-              <el-tag size="small" :type="MY_STATUS_TYPES[task.myStatus]" effect="light">
+              <el-tooltip
+                v-if="task.myStatus === 'DRAFTING'"
+                content="草稿尚未提交，不计入阶段进度；提交并完成评估后才算完成"
+                placement="top"
+              >
+                <el-tag size="small" :type="MY_STATUS_TYPES[task.myStatus]" effect="light">
+                  {{ MY_STATUS_LABELS[task.myStatus] }}
+                </el-tag>
+              </el-tooltip>
+              <el-tag v-else size="small" :type="MY_STATUS_TYPES[task.myStatus]" effect="light">
                 {{ MY_STATUS_LABELS[task.myStatus] }}
               </el-tag>
               <el-tag v-if="task.myBestScore != null" size="small" type="success" effect="plain">

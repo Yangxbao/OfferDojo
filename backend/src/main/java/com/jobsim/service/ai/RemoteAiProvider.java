@@ -74,7 +74,79 @@ public class RemoteAiProvider implements AiProvider {
                     "模型服务返回 HTTP " + response.statusCode());
         }
 
-        return parseResult(extractContent(response.body()), ctx);
+        String content = extractContent(response.body());
+        EvaluationResult result = parseResult(content, ctx);
+        // 保留模型原文用于追溯（存入 raw_response，用户质疑评分时可复盘）
+        return new EvaluationResult(result.dimensionScores(), result.strengths(), result.problems(),
+                result.edgeCases(), result.suggestions(), result.followUps(), result.nextTaskCodes(), content);
+    }
+
+    /** 追问模拟面试：结合任务上下文与历史对话评估用户的回答，要求 JSON 输出 */
+    @Override
+    public FollowupFeedback followUp(FollowupContext ctx) {
+        StringBuilder user = new StringBuilder();
+        user.append("【任务】").append(ctx.taskTitle()).append("\n");
+        user.append("【候选人的原始答案摘要】\n").append(ctx.originalAnswerExcerpt()).append("\n");
+        if (ctx.history() != null && !ctx.history().isEmpty()) {
+            user.append("【之前的追问对话】\n");
+            for (FollowupContext.HistoryItem h : ctx.history()) {
+                user.append("问：").append(h.question()).append("\n答：").append(h.answer())
+                        .append("\n导师反馈：").append(h.feedback()).append("\n");
+            }
+        }
+        user.append("【本轮追问】").append(ctx.question()).append("\n");
+        user.append("【候选人的回答】\n").append(ctx.userAnswer()).append("\n\n");
+        user.append("""
+                请作为严格的 Java 后端技术导师评估这个回答，只输出 JSON：
+                {"score":0到10的数字,"comment":"一两句点评：说清对在哪、缺在哪","suggestion":"下一步建议"}
+                """);
+
+        var body = JsonUtils.MAPPER.createObjectNode();
+        body.put("model", props.getModel());
+        body.put("temperature", 0.2);
+        if (props.isJsonMode()) {
+            body.putObject("response_format").put("type", "json_object");
+        }
+        var messages = body.putArray("messages");
+        messages.addObject().put("role", "system").put("content",
+                "你是一名严格的 Java 后端技术导师，正在对候选人做追问式模拟面试。输出必须是合法 JSON。");
+        messages.addObject().put("role", "user").put("content", user.toString());
+
+        HttpRequest request = HttpRequest.newBuilder(URI.create(props.getBaseUrl() + "/chat/completions"))
+                .timeout(Duration.ofSeconds(props.getTimeoutSeconds()))
+                .header("Content-Type", "application/json")
+                .header("Authorization", "Bearer " + props.getApiKey())
+                .POST(HttpRequest.BodyPublishers.ofString(JsonUtils.toJson(body)))
+                .build();
+
+        HttpResponse<String> response;
+        try {
+            response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        } catch (java.net.http.HttpTimeoutException e) {
+            throw new AiServiceException(AiServiceException.TIMEOUT,
+                    "调用模型超时（>%ds），请稍后重试".formatted(props.getTimeoutSeconds()));
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new AiServiceException(AiServiceException.UNKNOWN, "请求被中断");
+        } catch (IOException e) {
+            throw new AiServiceException(AiServiceException.HTTP_ERROR, "网络错误，无法连接模型服务");
+        }
+        if (response.statusCode() < 200 || response.statusCode() >= 300) {
+            throw new AiServiceException(AiServiceException.HTTP_ERROR,
+                    "模型服务返回 HTTP " + response.statusCode());
+        }
+        String content = extractContent(response.body());
+        JsonNode root;
+        try {
+            root = JsonUtils.readTree(stripFences(content));
+        } catch (Exception e) {
+            throw new AiServiceException(AiServiceException.PARSE_ERROR, "模型输出不是合法 JSON");
+        }
+        double score = Math.min(10, Math.max(0, root.path("score").asDouble(5.0)));
+        return new FollowupFeedback(Math.round(score * 10) / 10.0,
+                root.path("comment").asText(""),
+                root.path("suggestion").asText(""),
+                content);
     }
 
     private String buildRequestBody(EvaluationContext ctx) {
@@ -163,7 +235,8 @@ public class RemoteAiProvider implements AiProvider {
                 readStrings(root, "follow_up_questions"),
                 readStrings(root, "next_task_codes").stream()
                         .filter(ctx.allTaskCodes()::contains)
-                        .toList());
+                        .toList(),
+                content);
     }
 
     private JsonNode findDimension(JsonNode scoreNodes, String dimension) {

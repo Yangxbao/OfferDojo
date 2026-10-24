@@ -17,6 +17,7 @@ import type {
   UserVO,
   BaguVO,
   RoadmapStageVO,
+  FollowupDialogVO,
 } from './types'
 
 export const authApi = {
@@ -67,6 +68,32 @@ export const baguApi = {
 
 export const roadmapApi = {
   get: () => request<RoadmapStageVO[]>({ url: '/roadmap', method: 'get' }),
+}
+
+export const followupApi = {
+  list: (evaluationId: number) =>
+    request<FollowupDialogVO[]>({ url: `/my/evaluations/${evaluationId}/dialog`, method: 'get' }),
+  answer: (evaluationId: number, question: string, content: string) =>
+    request<FollowupDialogVO>({
+      url: `/my/evaluations/${evaluationId}/dialog`,
+      method: 'post',
+      data: { question, content },
+    }),
+}
+
+export const careerApi = {
+  resumeMaterial: () =>
+    request<{ markdown: string; completedTasks: number; publishedTasks: number }>({
+      url: '/my/resume-material',
+      method: 'get',
+    }),
+  matchJd: (text: string) =>
+    request<{
+      tasks: { task: TaskVO; score: number; matched: string[] }[]
+      bagu: { id: number; title: string; categoryLabel: string; score: number; matched: string[] }[]
+      totalTaskHits: number
+      totalBaguHits: number
+    }>({ url: '/jd/match', method: 'post', data: { text } }),
 }
 
 export const adminApi = {

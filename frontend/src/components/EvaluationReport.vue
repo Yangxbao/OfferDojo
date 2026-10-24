@@ -1,8 +1,16 @@
 <script setup lang="ts">
 import type { EvaluationVO } from '@/api/types'
 import { formatDateTime, PROVIDER_LABELS, scoreColor } from '@/utils/format'
+import { downloadReportMarkdown } from '@/utils/exportReport'
+import { ElMessage } from 'element-plus'
 
-defineProps<{ evaluation: EvaluationVO }>()
+const props = defineProps<{ evaluation: EvaluationVO; taskTitle?: string }>()
+
+function exportReport() {
+  if (!props.taskTitle) return
+  downloadReportMarkdown(props.taskTitle, props.evaluation)
+  ElMessage.success('Markdown 报告已下载')
+}
 </script>
 
 <template>
@@ -29,6 +37,16 @@ defineProps<{ evaluation: EvaluationVO }>()
           </el-tag>
           <span v-if="evaluation.model" class="card-sub" style="margin-left: 8px">{{ evaluation.model }}</span>
           <span class="card-sub" style="margin-left: 8px">{{ formatDateTime(evaluation.createdAt) }}</span>
+          <el-button
+            v-if="taskTitle"
+            size="small"
+            type="primary"
+            text
+            style="margin-left: 8px"
+            @click="exportReport"
+          >
+            导出 Markdown
+          </el-button>
         </div>
         <el-alert
           type="warning"

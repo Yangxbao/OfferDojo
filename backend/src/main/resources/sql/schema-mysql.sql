@@ -73,6 +73,8 @@ CREATE TABLE IF NOT EXISTS `task_evaluation` (
     `provider`           VARCHAR(20)   NOT NULL COMMENT '评估来源：MOCK / REMOTE / MOCK_FALLBACK',
     `model`              VARCHAR(100)  NULL COMMENT '远程模型名（REMOTE 时记录）',
     `notice`             VARCHAR(500)  NULL COMMENT '提示信息，例如降级说明',
+    `prompt_version`     VARCHAR(20)   NULL COMMENT '评估提示词版本，用于追溯与迭代对比',
+    `raw_response`       MEDIUMTEXT    NULL COMMENT '评估原始返回（Mock 为评分明细 JSON，Remote 为模型原文）',
     `created_at`         DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_eval_submission` (`submission_id`),
@@ -114,3 +116,19 @@ CREATE TABLE IF NOT EXISTS `interview_question` (
     KEY `idx_bagu_category` (`category`),
     KEY `idx_bagu_freq` (`frequency`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT ='八股复习题库';
+
+
+CREATE TABLE IF NOT EXISTS `followup_dialog` (
+    `id`            BIGINT       NOT NULL AUTO_INCREMENT COMMENT '主键',
+    `evaluation_id` BIGINT       NOT NULL COMMENT '关联评估 id',
+    `user_id`       BIGINT       NOT NULL COMMENT '用户 id',
+    `question`      VARCHAR(500) NOT NULL COMMENT '追问问题',
+    `answer`        TEXT         NOT NULL COMMENT '用户回答',
+    `score`         DECIMAL(4,1) NOT NULL COMMENT '回答得分（0.0-10.0）',
+    `feedback`      TEXT         NOT NULL COMMENT '评估反馈',
+    `provider`      VARCHAR(20)  NOT NULL DEFAULT 'MOCK' COMMENT '来源：MOCK / REMOTE / MOCK_FALLBACK',
+    `notice`        VARCHAR(300) NULL COMMENT '降级等提示信息',
+    `created_at`    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    PRIMARY KEY (`id`),
+    KEY `idx_fd_eval` (`evaluation_id`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT ='追问模拟面试对话表';

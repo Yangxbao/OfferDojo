@@ -8,6 +8,7 @@ import java.util.List;
  *
  * @param dimensionScores 各维度得分（score 0-10）
  * @param nextTaskCodes   建议下一步练习的任务编码（服务层会校验合法性）
+ * @param rawText         原始返回：Remote 为模型原文（可追溯），Mock 为评分明细 JSON
  */
 public record EvaluationResult(
         List<DimensionScore> dimensionScores,
@@ -16,7 +17,8 @@ public record EvaluationResult(
         List<String> edgeCases,
         List<String> suggestions,
         List<String> followUps,
-        List<String> nextTaskCodes
+        List<String> nextTaskCodes,
+        String rawText
 ) {
 
     public record DimensionScore(String dimension, double score, int weight, String comment) {

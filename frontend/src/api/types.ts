@@ -242,3 +242,16 @@ export interface RoadmapStageVO {
   }[]
   milestone: string
 }
+
+/** 追问模拟面试对话记录 */
+export interface FollowupDialogVO {
+  id: number
+  evaluationId: number
+  question: string
+  answer: string
+  score: number
+  feedback: string
+  provider: string
+  notice: string | null
+  createdAt: string
+}

@@ -48,7 +48,7 @@ const currentGroupTitle = computed(() => CATEGORY_LABELS[route.params.category a
       <div class="brand">
         <div class="brand-logo">J</div>
         <div class="brand-name">
-          JobSim AI
+          OfferDojo
           <small>AI 岗位实战模拟</small>
         </div>
       </div>
@@ -97,7 +97,7 @@ const currentGroupTitle = computed(() => CATEGORY_LABELS[route.params.category a
       <div class="brand" style="padding-left: 0">
         <div class="brand-logo">J</div>
         <div class="brand-name" style="color: var(--jobsim-text)">
-          JobSim AI
+          OfferDojo
           <small style="color: var(--jobsim-text-secondary)">AI 岗位实战模拟</small>
         </div>
       </div>

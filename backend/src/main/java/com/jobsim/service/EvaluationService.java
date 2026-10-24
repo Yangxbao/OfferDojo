@@ -41,6 +41,9 @@ public class EvaluationService {
     public static final String PROVIDER_MOCK = "MOCK";
     public static final String PROVIDER_FALLBACK = "MOCK_FALLBACK";
 
+    /** 评估提示词版本：prompt 或评分逻辑变更时递增，配合 raw_response 做追溯与 A/B 对比 */
+    public static final String PROMPT_VERSION = "v1";
+
     private final AiProvider aiProvider;
     private final MockAiProvider mockProvider;
     private final EvaluationMapper evaluationMapper;
@@ -97,6 +100,8 @@ public class EvaluationService {
         evaluation.setProvider(provider);
         evaluation.setModel(model);
         evaluation.setNotice(notice);
+        evaluation.setPromptVersion(PROMPT_VERSION);
+        evaluation.setRawResponse(result.rawText());
         evaluationMapper.insert(evaluation);
         return evaluation;
     }

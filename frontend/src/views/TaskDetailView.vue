@@ -5,6 +5,7 @@ import { ElMessage } from 'element-plus'
 import { taskApi } from '@/api'
 import type { SubmissionDetailVO, TaskDetailVO } from '@/api/types'
 import EvaluationReport from '@/components/EvaluationReport.vue'
+import FollowupDialog from '@/components/FollowupDialog.vue'
 import { DIFFICULTY_LABELS, DIFFICULTY_TYPES, formatDateTime, fromNow, MY_STATUS_LABELS, MY_STATUS_TYPES } from '@/utils/format'
 
 const route = useRoute()
@@ -194,9 +195,16 @@ const wordCount = computed(() => content.value.length)
 
         <!-- ==================== 评估报告页签 ==================== -->
         <el-tab-pane v-if="result?.evaluation" :label="`评估报告`" name="report">
-          <EvaluationReport :evaluation="result.evaluation" />
+          <EvaluationReport :evaluation="result.evaluation" :task-title="task.title" />
+          <FollowupDialog
+            v-if="result.evaluation"
+            :evaluation-id="result.evaluation.id"
+            :follow-ups="result.evaluation.followUps"
+            style="margin-top: 16px"
+          />
           <div class="card-sub" style="margin: 12px 0 24px">
-            提交于 {{ formatDateTime(result.updatedAt) }} · 重新提交会生成新的评估报告
+            提交于 {{ formatDateTime(result.updatedAt) }} · 重新提交会生成新的评估报告 ·
+            <router-link :to="`/bagu?category=${task.category}`">复习本类目的八股题 →</router-link>
           </div>
         </el-tab-pane>
       </el-tabs>

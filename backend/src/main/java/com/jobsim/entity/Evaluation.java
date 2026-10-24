@@ -61,6 +61,12 @@ public class Evaluation {
     /** 提示信息（如降级说明、免责提醒） */
     private String notice;
 
+    /** 评估提示词版本，用于追溯与迭代对比 */
+    private String promptVersion;
+
+    /** 原始返回：Remote 为模型原文（可追溯），Mock 为评分明细 JSON */
+    private String rawResponse;
+
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createdAt;
 }
