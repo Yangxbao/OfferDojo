@@ -17,6 +17,9 @@ const menus = computed(() => {
     { path: '/bagu', title: '八股复习', icon: 'Reading' },
     { path: '/resources', title: '资源中心', icon: 'Collection' },
     { path: '/tracks', title: '成长路线', icon: 'Guide' },
+    { path: '/github-top', title: 'GitHub 榜单', icon: 'Trophy' },
+    { path: '/projects', title: '项目广场', icon: 'FolderOpened' },
+    { path: '/community', title: '社区题库', icon: 'EditPen' },
     { path: '/records', title: '练习记录', icon: 'Clock' },
     { path: '/analysis', title: '能力分析', icon: 'TrendCharts' },
   ]

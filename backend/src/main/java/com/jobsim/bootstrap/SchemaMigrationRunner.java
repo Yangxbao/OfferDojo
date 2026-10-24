@@ -32,6 +32,19 @@ public class SchemaMigrationRunner implements ApplicationRunner {
         migrate("ALTER TABLE task_evaluation ADD COLUMN prompt_version VARCHAR(20) NULL");
         migrate("ALTER TABLE task_evaluation ADD COLUMN raw_response TEXT NULL");
         migrate("ALTER TABLE interview_question ADD COLUMN version_note VARCHAR(200) NULL");
+        // ===== 第二阶段：资源质量字段（旧 learning_resource 库平滑升级）=====
+        migrate("ALTER TABLE learning_resource ADD COLUMN category_tags VARCHAR(255) NULL");
+        migrate("ALTER TABLE learning_resource ADD COLUMN language VARCHAR(32) NULL");
+        migrate("ALTER TABLE learning_resource ADD COLUMN difficulty_level VARCHAR(16) NULL");
+        migrate("ALTER TABLE learning_resource ADD COLUMN stars_count BIGINT NULL");
+        migrate("ALTER TABLE learning_resource ADD COLUMN forks_count BIGINT NULL");
+        migrate("ALTER TABLE learning_resource ADD COLUMN github_created_at DATETIME NULL");
+        migrate("ALTER TABLE learning_resource ADD COLUMN github_updated_at DATETIME NULL");
+        migrate("ALTER TABLE learning_resource ADD COLUMN github_pushed_at DATETIME NULL");
+        migrate("ALTER TABLE learning_resource ADD COLUMN quality_score INT NULL");
+        migrate("ALTER TABLE learning_resource ADD COLUMN quality_level VARCHAR(20) NULL");
+        migrate("ALTER TABLE learning_resource ADD COLUMN featured TINYINT(1) NOT NULL DEFAULT 0");
+        migrate("ALTER TABLE learning_resource ADD COLUMN review_note VARCHAR(500) NULL");
     }
 
     private void migrate(String ddl) {

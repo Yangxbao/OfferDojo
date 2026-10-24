@@ -79,6 +79,38 @@ public class LearningResource {
 
     private String adminNote;
 
+    /** 多标签（逗号分隔），与主分类 track 并存 */
+    private String categoryTags;
+
+    /** 主要编程语言 */
+    private String language;
+
+    /** BEGINNER / INTERMEDIATE / ADVANCED */
+    private String difficultyLevel;
+
+    /** 最近一次真实获取的 Star 数（来自 GitHub API，非手工填写） */
+    private Long starsCount;
+
+    private Long forksCount;
+
+    private LocalDateTime githubCreatedAt;
+
+    private LocalDateTime githubUpdatedAt;
+
+    private LocalDateTime githubPushedAt;
+
+    /** 编辑审核质量分 0-100（有依据的评分，非 Star 自动推算） */
+    private Integer qualityScore;
+
+    /** FEATURED 精选 / RECOMMENDED 推荐 / NICHE 小众 */
+    private String qualityLevel;
+
+    /** 是否进入精选（低质量/失效/许可不清不得为 1） */
+    private Boolean featured;
+
+    /** 质量判断依据及问题说明 */
+    private String reviewNote;
+
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createdAt;
 
