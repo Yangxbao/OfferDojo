@@ -1,89 +1,84 @@
 # PROJECT_HANDOFF —— 项目进度交接文档
 
-> 本文档写给「接手这个项目的下一个会话/开发者」。读完这一份，即可无损接手。
-> 最后更新：2026-10-24。仓库：https://github.com/Yangxbao/OfferDojo （CI 常绿）
+> 写给「接手这个项目的下一个会话 / AI / 开发者」。读完这一份即可无损接手。
+> 最后更新：2026-10-24（第三版：含开源学习资源中心）。仓库：https://github.com/Yangxbao/OfferDojo（CI 常绿，HEAD=f7646f0）
 
 ## 一、项目是什么
 
-**OfferDojo**（曾用名 jobsim-ai，本地文件夹仍叫 `jobsim-ai`，不影响运行）：面向大学生的 Java 后端岗位实战模拟练习平台。
+**OfferDojo**（本地文件夹仍叫 `jobsim-ai`，勿改名）：面向大学生的 Java 后端岗位实战模拟练习平台。
 
-核心闭环：**选任务 → 写答案 → AI 结构化评估（分维度打分/亮点/问题/边界/建议/追问）→ 追问模拟面试 → 错题复盘 → 能力画像 → 简历素材**。
+核心闭环：**选任务 → 写答案 → AI 结构化评估 → 追问模拟面试 → 错题复盘 → 能力画像 → 简历素材**；外环：**三条方向学习路线 → 知识点 → 开源资源中心 → 实战任务 → 学习计划**。
 
-所有统计来自真实数据；无 AI API Key 时全平台可用（内置 MockAiProvider）；"AI 辅助开发"是对外口径（用户明确要求：项目名不含 AI、介绍写"由仓库所有者在 AI 辅助下完成"）。
+对外口径：个人全栈学习项目、AI 辅助开发（项目名不含 AI）。所有统计来自真实数据；无 AI Key 全平台可用（MockAiProvider）。
 
-## 二、技术栈（版本已核实，勿随意升降）
+## 二、技术栈（勿随意升降级）
 
-- Java 21（本机构建用 `C:\Users\MR\.jdks\jbr-21.0.11`，即 JetBrains Runtime 21，自带 javac；CI 用 Temurin 21）
-- Spring Boot 3.5.16 / MyBatis-Plus 3.5.17（+ mybatis-plus-jsqlparser）/ springdoc 2.8.17 / jjwt 0.12.6 / H2 2.3.232 / MySQL 8
-- Vue 3.5 + Vite 7 + TS 5.8 + Element Plus 2.14 + Pinia 3 + Vue Router 4 + ECharts 5.6 + Vitest 3
-- 后端端口 **8090**（8080 被用户机器其他进程占用）；前端 5173（被占自动 5174）
+Java 21（本机构建用 `C:\Users\MR\.jdks\jbr-21.0.11`，CI 用 Temurin 21）· Spring Boot 3.5.16 · MyBatis-Plus 3.5.17（+jsqlparser）· springdoc 2.8.17 · jjwt 0.12.6 · H2 2.3.232 / MySQL 8 · Vue 3.5 + Vite 7 + TS 5.8 + Element Plus 2.14 + Pinia 3 + ECharts 5.6 + Vitest 3。后端端口 **8090**，前端 5173（占用自动 5174）。
 
-## 三、本地路径与启动
+## 三、路径与启动
 
+项目根：`C:\Users\MR\.zcode\workspace\draft-b89b03c0-bcde-4060-bdbd-b66102ebe73b\jobsim-ai`
+
+```cmd
+start-backend.cmd      :: 自动探测 JDK 21，默认 demo 模式（H2 零依赖）
+start-frontend.cmd     :: 另开窗口
 ```
-项目根：C:\Users\MR\.zcode\workspace\draft-b89b03c0-bcde-4060-bdbd-b66102ebe73b\jobsim-ai
-```
 
-启动：项目根下 `start-backend.cmd`（自动探测 JDK 21、默认 demo 模式=H2 零依赖）+ `start-frontend.cmd`；`start-mysql.cmd` 可选（本机 3307 独立 MySQL，MYSQL_BIN 指向 D:\mysql-8.0.34-winx64\bin）。手动方式见 README。
-
-演示账号：admin/admin123（管理员）、student/student123。登录页有一键填入。
-
-验证命令：`cd backend && mvn test`（21/21，含 11 用例全流程集成测试）+ `cd frontend && npm test && npm run type-check && npm run build`（6/6）。
+演示账号：admin/admin123（管理员）、student/student123。验证基线：`cd backend && mvn test`（**29/29**）+ `cd frontend && npm test`（6/6）`npm run type-check` `npm run build`。
 
 ## 四、功能现状（全部已实现并验证）
 
-1. **任务中心**：220 道模拟任务（基础 43/进阶 116/挑战 52/企业实战 EXPERT 9），13 类目，题库为 `backend/src/main/resources/demo/demo-tasks*.json`（11 个文件），**按编码增量播种**（老库重启自动补新题）。
-2. **学习路线图**：10 阶段（从第 1 阶段开始！）`demo/roadmap.json`，每阶段=先学知识+按序任务+里程碑，引用 92 个任务编码（改动编码后须校验），进度按「已提交且完成评估」计。
-3. **八股复习区**：85 题在 `bagu/bagu-*.json`（3 个文件），增量播种；每题=一句话总结+大白话+要点+示例+追问+**版本适用性标注（version_note）**；前端有自测模式（遮答案自评，存 localStorage `jobsim.bagu.mastery`）。
-4. **AI 评估**：AiProvider 接口双实现（Mock=关键词覆盖率确定性评分+引用答案原句；Remote=OpenAI 兼容 /chat/completions，JDK HttpClient，失败自动降级 MOCK_FALLBACK 并留痕）。评估结果结构化入库。
-5. **追问模拟面试**：`followup_dialog` 表 + `/api/my/evaluations/{id}/dialog`（GET/POST），FollowupContext 携带任务标题+原答案摘要+历史对话；报告页与记录页有对话组件。
-6. **求职闭环**：`/api/my/resume-material`（基于真实练习生成简历草稿）、`/api/jd/match`（JD 文本按标签/关键词命中推荐任务+八股），UI 在能力分析页底部。
-7. **评估可追溯**：task_evaluation 有 prompt_version（当前 v1）+ raw_response（Mock=评分明细 JSON / Remote=模型原文）。
-8. **报告导出**：前端 `utils/exportReport.ts` 生成 Markdown 下载。
-9. **工作台/练习记录/能力分析（雷达+趋势+薄弱环节）/后台管理（任务 CRUD+统计+AI 日志）** 全部可用。
-10. 完成文档：README + docs/{ARCHITECTURE,DATABASE,API,TESTING,LEARNING_GUIDE,TROUBLESHOOTING,ROADMAP,INTERVIEW_OUTLINE}.md + 7 张真实截图。
+1. **任务中心**：220 题（基础43/进阶116/挑战52/企业实战9），13+1 类目（含新增 `ai-app`），题库 `demo/demo-tasks*.json`（8 个文件）按编码增量播种
+2. **学习路线图（旧）**：10 阶段（第 1~10 阶段）`demo/roadmap.json`，引用 98 个任务编码
+3. **八股复习区**：85 题 `bagu/bagu-*.json`（3 文件），每题带「版本适用性」标注（version_note 列）；自测模式（遮答案自评，localStorage）
+4. **AI 评估**：AiProvider 双实现（Mock 关键词覆盖率+引用原句 / Remote OpenAI 兼容+降级 MOCK_FALLBACK）；可追溯（prompt_version+raw_response）
+5. **追问模拟面试**：followup_dialog 表 + `/api/my/evaluations/{id}/dialog`，带任务上下文与历史对话
+6. **求职闭环**：简历素材生成 + JD 反向匹配（分析页底部卡片）
+7. **报告导出 Markdown**、工作台/练习记录/能力分析/后台管理（全部可用）
+8. **⭐ 开源学习资源中心（本轮新增）**：
+   - 资源目录：12 个真实核验来源（GitHub API 核验默认分支/最近更新/许可证 SPDX），5 维筛选+分页+详情抽屉
+   - 三条方向路线：Java 全栈/AI 全栈/Python Agent，26 节点（learning-nodes.json），节点关联资源与实战任务（显示真实提交状态，TaskBrief 含 id 可直达任务页）
+   - 个人学习计划：加入/状态流转/心得/移除，用户隔离
+   - 管理员：登记（初始 PENDING+权限默认禁止）/编辑/重新核验（GitHubMetadataService，无 Token 可用）/上下架
+   - 3 道「知识点转实战」示范任务（FW-033/AI-001/AI-002，标注"平台原创 AI 辅助生成并经人工审核"）
+   - 文档：docs/RESOURCES.md（核验记录+许可证规则）
 
 ## 五、关键代码位置
 
-- 统一响应/异常：`common/`（ApiResponse、GlobalExceptionHandler）
-- 认证：`security/`（JwtService、JwtAuthenticationFilter）+ `config/SecurityConfig`（/api/admin/** 需 ADMIN）
-- AI 适配层：`service/ai/`（AiProvider、MockAiProvider、RemoteAiProvider、EvaluationContext/Result、FollowupContext/Feedback）
-- 播种器：`bootstrap/`（DemoDataInitializer、BaguDataInitializer、**SchemaMigrationRunner**——三者 @Order 顺序是本项目最重要的坑，见下）
-- 路线图：`service/RoadmapService`（读 roadmap.json，按编码解析任务+用户进度）
-- 前端页面：`views/`（Dashboard/TaskList/TaskDetail/Bagu/Roadmap/Records/RecordDetail/Analysis/admin/*）
+- 分层：Controller 不写业务 / Service 持事务与归属校验 / Mapper 只查数；统一响应 `common/ApiResponse`
+- 认证：`security/` JWT；`/api/admin/**` 路径拦截 + `@PreAuthorize` 双重防护
+- AI：`service/ai/`（AiProvider/Mock/Remote/EvaluationContext/FollowupContext）
+- 播种器 `bootstrap/`：DemoData/BaguData/LearningData（均 `@Order(LOWEST)`）+ **SchemaMigrationRunner（`@Order(HIGHEST)` 必须最先跑）**
+- 资源中心：`entity/Learning{Resource,Node,Plan}` + `service/Learning{Resource,Track,Plan}Service` + `GitHubMetadataService` + `controller/Learning*Controller`
+- 前端：`views/LearningResourcesView.vue`（资源目录）、`views/LearningTracksView.vue`（三路线）、`api/learning.ts`、类型在 `api/types.ts`
 
 ## 六、真实踩过的坑（不要重蹈）
 
-1. **Runner 执行顺序**：ApplicationRunner 默认按类名字母序 → BaguDataInitializer(B) 先于 SchemaMigrationRunner(S) 执行，老库播种时新列未加而炸（用户真实报障）。已用 @Order(HIGHEST_PRECEDENCE/LOWEST_PRECEDENCE) 修复。**给老库加列必须放 SchemaMigrationRunner**。
-2. **SQL 脚本注释必须 `-- ` 且文件 UTF-8 + `spring.sql.init.encoding: UTF-8`**：`#` 注释会被 Spring 脚本解析合并进第一条语句，MySQL 静默跳过建表（sys_user 事故）；Windows 默认 GBK 会错位。
-3. **cmd 批处理**：保持纯 ASCII + CRLF（.gitattributes 强制 `*.cmd eol=crlf`）；`setlocal` 会连工作目录一起保存，`endlocal` 后要重新 `cd`。
-4. **H2 文件锁**：demo 库同一时刻一个进程；连接串已加 `AUTO_SERVER=TRUE`，脚本预检 8090 端口并提示 PID。
-5. **CORS**：用 origin pattern `http://localhost:*`（Vite 端口会自动漂移）。
-6. **推 GitHub**：用户网络对 github.com 间歇阻断（api.github.com 正常）。push 失败时用 `git -c http.proxy=http://127.0.0.1:7897 push origin main`（用户 Clash 类代理端口 7897，未开则等恢复重试）。代理 push 报错但对象可能已上去，先 `gh api repos/Yangxbao/OfferDojo/commits/main --jq .sha` 核对再重试。
-7. **不要留下运行中的实例**：验证完杀掉 8090 进程（用户会自己 start-backend.cmd，端口/H2 会冲突）。当前状态：**8090 空闲，无残留**。
+1. **Runner 顺序**：按类名字母序执行，迁移器必须在播种器前（@Order 已修）
+2. **SQL 脚本**：注释必须 `-- ` 前缀 + UTF-8 + `spring.sql.init.encoding: UTF-8`；**H2 表不用反引号**，schema 修改用脚本文件而非内联 heredoc（曾产生标识符丢失的坏表）
+3. **统一响应约定**：BusinessException 走 GlobalExceptionHandler 返回 **HTTP 200 + body.code=403/404**——测试断言 body.code 而非 HTTP 状态码
+4. **⭐ 页面可达性验证**：新增前端页面必须确认「路由已注册 + 菜单已挂 + 页面真实可访问」——本轮曾因 Edit 冲突失败未重试，页面写了但没挂进导航，用户看不到（已修，引以为戒）
+5. cmd 批处理纯 ASCII+CRLF；`setlocal` 连目录一起保存；H2 文件锁（AUTO_SERVER 已开）；CORS 用 origin pattern
+6. **push 网络**：github.com 间歇阻断，失败用 `git -c http.proxy=http://127.0.0.1:7897 push origin main`（用户 Clash 端口）；代理也可能没开，失败先 `gh api repos/Yangxbao/OfferDojo/commits/main --jq .sha` 核对是否实际已推上
+7. **不要留运行实例**：验证完杀掉 8090 进程（用户会自己启动）
 
-## 七、用户偏好（务必遵守）
+## 七、用户偏好
 
-- 诚实第一：不虚报功能、不造假数据、做不完的如实写进 docs/ROADMAP.md
-- 对外表述："个人全栈学习项目，AI 辅助开发"（不说"AI 写的"，项目名不含 AI）
-- 中文交流与文档；给用户的启动操作要"一键化"
-- 改动必须：真实运行验证 → 提交推送 → 确认 CI 绿 → 汇报时附真实验证结果
+诚实第一（不虚报/不造假/做不完写进 ROADMAP）；对外"AI 辅助开发"；中文交流；改动必须：真实运行验证 → 提交推送 → CI 绿 → 汇报附真实验证结果。
 
-## 八、未完成清单（用户已提出，详见 docs/ROADMAP.md）
+## 八、未完成清单（docs/ROADMAP.md + docs/RESOURCES.md）
 
-- **参考解法库 + 题解对比区**（用户很想要；内容工程量大，建议按高频题分批）
-- **错题本 SRS 间隔重复**（八股自评已做，1/3/7 天调度待做）
-- 任务↔八股题目级互链（类目级跳转已有）
-- 评估人工复核标记、追问对话的收敛策略与终面评语、SSE 流式、prompt 外置、Testcontainers、Flyway（替代 SchemaMigrationRunner）、refresh token
+- 参考解法库+题解对比区（内容工程量大，按高频题分批）
+- 错题本 SRS 间隔重复调度；任务↔八股题目级互链（类目级已有）
+- 评估人工复核标记、SSE 流式、prompt 外置、Testcontainers、Flyway、refresh token
+- 资源中心：自动定时重核验、官方讲义（Spring Guides/MySQL 文档）、NOASSERTION 条款人工审阅（Mnawar83）、平台原创讲义（可放开复制）
 
 ## 九、新会话快速上手
 
 ```bash
-# 读本文档后，先跑测试确认基线：
-cd backend && mvn test        # 期望 21/21
-cd frontend && npm test       # 期望 6/6
-# 启动体验：项目根 start-backend.cmd + start-frontend.cmd
+# 1. 读本文档 → 2. 跑基线：backend mvn test（期望 29/29）+ frontend npm test（6/6）
+# 3. 体验：start-backend.cmd + start-frontend.cmd（侧边栏应有：工作台/学习路线图/任务中心/八股复习/资源中心/成长路线/练习记录/能力分析）
+# 改题库：新增 demo-tasks-08-xxx.json 或 bagu-xxx.json → 重启即增量入库
+# 新表：两套 schema 都加（H2 不用反引号）+ 老库补列进 SchemaMigrationRunner + 播种器 @Order(LOWEST)
+# 新页面：路由 + 菜单 + 可达性三连验证（见坑 #4）
 ```
-
-改题库/加题：新增 JSON 文件（demo-tasks-07-xxx.json 或 bagu-xxx.json）→ 重启即增量入库；改完跑 `node` 校验 JSON + `mvn test`。
-改功能：遵循现有分层（Controller 不写业务/Service 持事务/Mapper 只查数），新表两份 schema 都要加，老库补列进 SchemaMigrationRunner。
