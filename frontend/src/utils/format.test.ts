@@ -25,7 +25,7 @@ describe('format 工具函数', () => {
   })
 
   it('类目与评估来源映射完整', () => {
-    expect(Object.keys(CATEGORY_LABELS)).toHaveLength(13);
+    expect(Object.keys(CATEGORY_LABELS)).toHaveLength(14);
     expect(CATEGORY_LABELS['api-design']).toBe('需求分析与 API 设计');
     expect(CATEGORY_LABELS['java-core']).toBe('Java 核心与并发');
     expect(CATEGORY_LABELS['system-design']).toBe('系统设计场景');

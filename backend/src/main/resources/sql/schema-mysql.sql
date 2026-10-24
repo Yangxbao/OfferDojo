@@ -133,3 +133,140 @@ CREATE TABLE IF NOT EXISTS `followup_dialog` (
     PRIMARY KEY (`id`),
     KEY `idx_fd_eval` (`evaluation_id`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT ='追问模拟面试对话表';
+
+
+CREATE TABLE IF NOT EXISTS  (
+                     BIGINT       NOT NULL AUTO_INCREMENT COMMENT '主键',
+                   VARCHAR(64)  NOT NULL COMMENT '资源编码，如 RES-JAVA-001',
+                  VARCHAR(32)  NOT NULL COMMENT '技术方向：java-fullstack / ai-fullstack / python-agent',
+                  VARCHAR(300) NOT NULL COMMENT '资源标题',
+            VARCHAR(1000) NOT NULL COMMENT '简介（事实性描述，不复制原文）',
+                    VARCHAR(500) NOT NULL COMMENT '原始链接',
+            VARCHAR(32)  NOT NULL COMMENT '类型：ROADMAP / NOTES / EXAMPLES / DOCS / COURSE',
+               VARCHAR(300) NULL COMMENT '适用人群',
+           TEXT         NULL COMMENT '前置知识，JSON 字符串数组',
+           VARCHAR(300) NULL COMMENT '依赖/版本提示（不适用时写 不适用）',
+           VARCHAR(64)  NULL COMMENT 'SPDX 标识；未知为 NULL',
+           VARCHAR(200) NULL COMMENT '许可证名称或文件说明',
+           VARCHAR(300) NULL COMMENT '许可证文件路径（仓库内）',
+         VARCHAR(20)  NOT NULL DEFAULT 'UNKNOWN' COMMENT 'UNKNOWN / VERIFIED / NOASSERTION',
+        VARCHAR(20)  NOT NULL DEFAULT 'PENDING' COMMENT '审核状态：PENDING / VERIFIED / PUBLISHED / OFFLINE',
+            DATETIME     NULL COMMENT '最后核验时间',
+     TEXT      NULL COMMENT '核验证据 JSON：默认分支/最近提交/核验项/未核实字段',
+             TINYINT(1)   NOT NULL DEFAULT 0 COMMENT '允许复制（未核验默认禁止）',
+     TINYINT(1)   NOT NULL DEFAULT 0 COMMENT '允许再分发（未核验默认禁止）',
+     TINYINT(1) NOT NULL DEFAULT 1 COMMENT '要求署名',
+            TINYINT(1)   NOT NULL DEFAULT 0 COMMENT '要求相同方式共享',
+           VARCHAR(500) NULL COMMENT '权限判定依据与证据链接',
+             VARCHAR(500) NULL COMMENT '管理员备注',
+             DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+             DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (),
+    UNIQUE KEY  (),
+    KEY  (),
+    KEY  ()
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT ='开源学习资源元数据';
+
+CREATE TABLE IF NOT EXISTS  (
+                BIGINT       NOT NULL AUTO_INCREMENT COMMENT '主键',
+              VARCHAR(64)  NOT NULL COMMENT '节点编码，如 NJ-J101',
+             VARCHAR(32)  NOT NULL COMMENT '技术方向（同上）',
+       INT          NOT NULL COMMENT '阶段序号（1 开始）',
+        INT          NOT NULL DEFAULT 0 COMMENT '阶段内节点序号',
+             VARCHAR(300) NOT NULL COMMENT '节点标题',
+              VARCHAR(1000) NOT NULL COMMENT '学习目标',
+         TEXT         NOT NULL COMMENT '知识点，JSON 字符串数组',
+     TEXT        NOT NULL COMMENT '关联资源编码，JSON 字符串数组',
+         TEXT         NOT NULL COMMENT '关联实战任务编码，JSON 字符串数组',
+       TEXT         NULL COMMENT '前置节点编码，JSON 字符串数组',
+          VARCHAR(500) NULL COMMENT '完成条件/里程碑',
+        DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (),
+    UNIQUE KEY  (),
+    KEY  (, )
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT ='学习路线节点';
+
+CREATE TABLE IF NOT EXISTS  (
+                BIGINT      NOT NULL AUTO_INCREMENT COMMENT '主键',
+           BIGINT      NOT NULL COMMENT '用户 id',
+         VARCHAR(16) NOT NULL COMMENT '条目类型：RESOURCE / NODE',
+         VARCHAR(64) NOT NULL COMMENT '资源或节点编码',
+            VARCHAR(20) NOT NULL DEFAULT 'TODO' COMMENT 'TODO / IN_PROGRESS / DONE',
+              VARCHAR(1000) NULL COMMENT '学习心得',
+        DATETIME    NULL COMMENT '开始时间',
+      DATETIME    NULL COMMENT '完成时间',
+        DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (),
+    UNIQUE KEY  (, , ),
+    KEY  ()
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT ='个人学习计划与记录';
+
+CREATE TABLE IF NOT EXISTS `learning_resource` (
+    `id`                 BIGINT       NOT NULL AUTO_INCREMENT COMMENT '主键',
+    `code`               VARCHAR(64)  NOT NULL COMMENT '资源编码，如 RES-JAVA-001',
+    `track`              VARCHAR(32)  NOT NULL COMMENT '技术方向：java-fullstack / ai-fullstack / python-agent',
+    `title`              VARCHAR(300) NOT NULL COMMENT '资源标题',
+    `description`        VARCHAR(1000) NOT NULL COMMENT '简介（事实性描述，不复制原文）',
+    `url`                VARCHAR(500) NOT NULL COMMENT '原始链接',
+    `source_type`        VARCHAR(32)  NOT NULL COMMENT '类型：ROADMAP / NOTES / EXAMPLES / DOCS / COURSE',
+    `audience`           VARCHAR(300) NULL COMMENT '适用人群',
+    `prerequisite`       TEXT         NULL COMMENT '前置知识，JSON 字符串数组',
+    `version_note`       VARCHAR(300) NULL COMMENT '依赖/版本提示（不适用时写：不适用）',
+    `license_spdx`       VARCHAR(64)  NULL COMMENT 'SPDX 标识；未知为 NULL',
+    `license_name`       VARCHAR(200) NULL COMMENT '许可证名称或文件说明',
+    `license_path`       VARCHAR(300) NULL COMMENT '许可证文件路径（仓库内）',
+    `license_status`     VARCHAR(20)  NOT NULL DEFAULT 'UNKNOWN' COMMENT 'UNKNOWN / VERIFIED / NOASSERTION',
+    `verified_status`    VARCHAR(20)  NOT NULL DEFAULT 'PENDING' COMMENT '审核状态：PENDING / VERIFIED / PUBLISHED / OFFLINE',
+    `verified_at`        DATETIME     NULL COMMENT '最后核验时间',
+    `verification_evidence` TEXT      NULL COMMENT '核验证据 JSON：默认分支/最近提交/核验项/未核实字段',
+    `allow_copy`         TINYINT(1)   NOT NULL DEFAULT 0 COMMENT '允许复制（未核验默认禁止）',
+    `allow_redistribute` TINYINT(1)   NOT NULL DEFAULT 0 COMMENT '允许再分发（未核验默认禁止）',
+    `attribution_required` TINYINT(1) NOT NULL DEFAULT 1 COMMENT '要求署名',
+    `share_alike`        TINYINT(1)   NOT NULL DEFAULT 0 COMMENT '要求相同方式共享',
+    `rights_basis`       VARCHAR(500) NULL COMMENT '权限判定依据与证据链接',
+    `admin_note`         VARCHAR(500) NULL COMMENT '管理员备注',
+    `created_at`         DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`         DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_lr_code` (`code`),
+    KEY `idx_lr_track` (`track`),
+    KEY `idx_lr_status` (`verified_status`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT ='开源学习资源元数据';
+
+CREATE TABLE IF NOT EXISTS `learning_node` (
+    `id`            BIGINT       NOT NULL AUTO_INCREMENT COMMENT '主键',
+    `code`          VARCHAR(64)  NOT NULL COMMENT '节点编码，如 NJ-J101',
+    `track`         VARCHAR(32)  NOT NULL COMMENT '技术方向（同上）',
+    `stage_order`   INT          NOT NULL COMMENT '阶段序号（1 开始）',
+    `node_order`    INT          NOT NULL DEFAULT 0 COMMENT '阶段内节点序号',
+    `title`         VARCHAR(300) NOT NULL COMMENT '节点标题',
+    `goal`          VARCHAR(1000) NOT NULL COMMENT '学习目标',
+    `knowledge`     TEXT         NOT NULL COMMENT '知识点，JSON 字符串数组',
+    `resource_codes` TEXT        NOT NULL COMMENT '关联资源编码，JSON 字符串数组',
+    `task_codes`     TEXT         NOT NULL COMMENT '关联实战任务编码，JSON 字符串数组',
+    `prereq_codes`   TEXT         NULL COMMENT '前置节点编码，JSON 字符串数组',
+    `milestone`      VARCHAR(500) NULL COMMENT '完成条件/里程碑',
+    `created_at`    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_ln_code` (`code`),
+    KEY `idx_ln_track` (`track`, `stage_order`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT ='学习路线节点';
+
+CREATE TABLE IF NOT EXISTS `learning_plan` (
+    `id`            BIGINT      NOT NULL AUTO_INCREMENT COMMENT '主键',
+    `user_id`       BIGINT      NOT NULL COMMENT '用户 id',
+    `item_type`     VARCHAR(16) NOT NULL COMMENT '条目类型：RESOURCE / NODE',
+    `item_code`     VARCHAR(64) NOT NULL COMMENT '资源或节点编码',
+    `status`        VARCHAR(20) NOT NULL DEFAULT 'TODO' COMMENT 'TODO / IN_PROGRESS / DONE',
+    `note`          VARCHAR(1000) NULL COMMENT '学习心得',
+    `started_at`    DATETIME    NULL COMMENT '开始时间',
+    `completed_at`  DATETIME    NULL COMMENT '完成时间',
+    `created_at`    DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`    DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_lp_user_item` (`user_id`, `item_type`, `item_code`),
+    KEY `idx_lp_user` (`user_id`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT ='个人学习计划与记录';

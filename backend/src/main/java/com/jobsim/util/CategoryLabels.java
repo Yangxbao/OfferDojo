@@ -21,7 +21,8 @@ public class CategoryLabels {
             Map.entry("mq", "消息队列与异步"),
             Map.entry("distributed", "分布式与微服务"),
             Map.entry("system-design", "系统设计场景"),
-            Map.entry("engineering", "工程素养与工具")
+            Map.entry("engineering", "工程素养与工具"),
+            Map.entry("ai-app", "AI 应用与 Agent")
     );
 
     private CategoryLabels() {

@@ -256,3 +256,95 @@ export interface FollowupDialogVO {
   notice: string | null
   createdAt: string
 }
+
+/** 开源学习资源元数据 */
+export interface LearningResourceVO {
+  id: number
+  code: string
+  track: string
+  trackLabel: string
+  title: string
+  description: string
+  url: string
+  sourceType: string
+  audience: string | null
+  prerequisite: string[]
+  versionNote: string | null
+  licenseSpdx: string | null
+  licenseName: string | null
+  licensePath: string | null
+  licenseStatus: string
+  verifiedStatus: string
+  verifiedAt: string | null
+  verificationEvidence: string | null
+  allowCopy: boolean
+  allowRedistribute: boolean
+  attributionRequired: boolean
+  shareAlike: boolean
+  rightsBasis: string | null
+  adminNote: string | null
+  inMyPlan: boolean
+}
+
+/** 学习路线节点关联的资要摘要 */
+export interface LearningResourceBrief {
+  code: string
+  title: string
+  url: string
+  licenseSpdx: string | null
+  verifiedStatus: string
+  sourceType: string
+}
+
+/** 学习路线节点关联的实战任务摘要 */
+export interface LearningTaskBrief {
+  code: string
+  title: string
+  difficulty: string
+  myStatus: string
+  myBestScore: number | null
+}
+
+/** 学习路线节点 */
+export interface LearningNodeVO {
+  id: number
+  code: string
+  nodeOrder: number
+  title: string
+  goal: string
+  knowledge: string[]
+  resources: LearningResourceBrief[]
+  tasks: LearningTaskBrief[]
+  prereqCodes: string[]
+  milestone: string | null
+  planStatus: string | null
+  planNote: string | null
+}
+
+/** 学习路线阶段 */
+export interface LearningStageVO {
+  stageOrder: number
+  stageTitle: string
+  nodes: LearningNodeVO[]
+}
+
+/** 学习路线（一个技术方向） */
+export interface LearningTrackVO {
+  track: string
+  trackLabel: string
+  description: string
+  stages: LearningStageVO[]
+}
+
+/** 个人学习计划条目 */
+export interface PlanItemVO {
+  id: number
+  itemType: string
+  itemCode: string
+  itemTitle: string
+  status: string
+  note: string | null
+  startedAt: string | null
+  completedAt: string | null
+  updatedAt: string
+}

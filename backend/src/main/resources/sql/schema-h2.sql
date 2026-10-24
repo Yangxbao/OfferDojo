@@ -131,3 +131,73 @@ CREATE TABLE IF NOT EXISTS followup_dialog (
     PRIMARY KEY (id)
 );
 CREATE INDEX IF NOT EXISTS idx_fd_eval ON followup_dialog (evaluation_id);
+
+
+CREATE TABLE IF NOT EXISTS learning_resource (
+    id                 BIGINT       NOT NULL AUTO_INCREMENT,
+    code               VARCHAR(64)  NOT NULL,
+    track              VARCHAR(32)  NOT NULL,
+    title              VARCHAR(300) NOT NULL,
+    description        VARCHAR(1000) NOT NULL,
+    url                VARCHAR(500) NOT NULL,
+    source_type        VARCHAR(32)  NOT NULL,
+    audience           VARCHAR(300),
+    prerequisite       TEXT,
+    version_note       VARCHAR(300),
+    license_spdx       VARCHAR(64),
+    license_name       VARCHAR(200),
+    license_path       VARCHAR(300),
+    license_status     VARCHAR(20)  NOT NULL DEFAULT 'UNKNOWN',
+    verified_status    VARCHAR(20)  NOT NULL DEFAULT 'PENDING',
+    verified_at        DATETIME,
+    verification_evidence TEXT,
+    allow_copy         BOOLEAN      NOT NULL DEFAULT FALSE,
+    allow_redistribute BOOLEAN      NOT NULL DEFAULT FALSE,
+    attribution_required BOOLEAN    NOT NULL DEFAULT TRUE,
+    share_alike        BOOLEAN      NOT NULL DEFAULT FALSE,
+    rights_basis       VARCHAR(500),
+    admin_note         VARCHAR(500),
+    created_at         DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at         DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    CONSTRAINT uk_lr_code UNIQUE (code)
+);
+CREATE INDEX IF NOT EXISTS idx_lr_track ON learning_resource (track);
+CREATE INDEX IF NOT EXISTS idx_lr_status ON learning_resource (verified_status);
+
+CREATE TABLE IF NOT EXISTS learning_node (
+    id            BIGINT       NOT NULL AUTO_INCREMENT,
+    code          VARCHAR(64)  NOT NULL,
+    track         VARCHAR(32)  NOT NULL,
+    stage_order   INT          NOT NULL,
+    node_order    INT          NOT NULL DEFAULT 0,
+    title         VARCHAR(300) NOT NULL,
+    goal          VARCHAR(1000) NOT NULL,
+    knowledge     TEXT         NOT NULL,
+    resource_codes TEXT        NOT NULL,
+    task_codes    TEXT         NOT NULL,
+    prereq_codes  TEXT,
+    milestone     VARCHAR(500),
+    created_at    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    CONSTRAINT uk_ln_code UNIQUE (code)
+);
+CREATE INDEX IF NOT EXISTS idx_ln_track ON learning_node (track, stage_order);
+
+CREATE TABLE IF NOT EXISTS learning_plan (
+    id            BIGINT      NOT NULL AUTO_INCREMENT,
+    user_id       BIGINT      NOT NULL,
+    item_type     VARCHAR(16) NOT NULL,
+    item_code     VARCHAR(64) NOT NULL,
+    status        VARCHAR(20) NOT NULL DEFAULT 'TODO',
+    note          VARCHAR(1000),
+    started_at    DATETIME,
+    completed_at  DATETIME,
+    created_at    DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at    DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    CONSTRAINT uk_lp_user_item UNIQUE (user_id, item_type, item_code),
+    CONSTRAINT uk_lp_user_item_code UNIQUE (user_id, item_code)
+);
+CREATE INDEX IF NOT EXISTS idx_lp_user ON learning_plan (user_id);

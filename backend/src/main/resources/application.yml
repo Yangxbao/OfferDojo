@@ -52,6 +52,10 @@ jobsim:
   seed:
     # 首次启动自动写入演示账号与 12 个内置任务（见 DemoDataInitializer）
     enabled: true
+  learning:
+    # 资源中心：GitHub Token 可选（提升 API 限额），从环境变量注入，不配置也可用
+    github-token: ${GITHUB_TOKEN:}
+    github-timeout-seconds: 15
   ai:
     # mock = 本地模拟评估（默认，无需任何 API Key）
     # remote = 调用 OpenAI 兼容接口（需要 AI_API_KEY，失败时自动降级为 mock）

@@ -52,6 +52,7 @@ export const CATEGORY_LABELS: Record<string, string> = {
   distributed: '分布式与微服务',
   'system-design': '系统设计场景',
   engineering: '工程素养与工具',
+  'ai-app': 'AI 应用与 Agent',
 }
 
 export const FREQUENCY_LABELS: Record<string, string> = {

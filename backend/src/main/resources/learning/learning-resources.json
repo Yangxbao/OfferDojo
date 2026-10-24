@@ -1,0 +1,266 @@
+{
+  "resources": [
+    {
+      "code": "RES-JAVA-001",
+      "track": "java-fullstack",
+      "title": "Java Developer Roadmap 2026（s4kibs4mi）",
+      "description": "GitHub 4.5k star 的 Java 开发者路线图仓库，覆盖从基础语法到框架、数据库、并发的完整学习路径，以路线图图片与分阶段资源清单为主。",
+      "url": "https://github.com/s4kibs4mi/java-developer-roadmap",
+      "sourceType": "ROADMAP",
+      "audience": "Java 后端入门者、需要系统性查漏补缺的学习者",
+      "prerequisite": ["基本编程概念"],
+      "versionNote": "路线图内容持续更新（2026-10 仍有提交）；具体技术点以官方文档为准",
+      "licenseSpdx": "MIT", "licenseName": "MIT License", "licensePath": "LICENSE", "licenseStatus": "VERIFIED",
+      "verifiedStatus": "PUBLISHED", "verifiedAt": "2026-10-24T12:00:00",
+      "verificationEvidence": {
+        "checkedAt": "2026-10-24", "via": "GitHub REST API repos/{repo} 与 repos/{repo}/license",
+        "defaultBranch": "main", "lastPushAt": "2026-10-06T22:17:27Z", "stars": 4553,
+        "licenseEvidence": "https://github.com/s4kibs4mi/java-developer-roadmap/blob/main/LICENSE (MIT)",
+        "unverifiedFields": ["README 内第三方资源的独立授权（仅链接引用，本平台不复制其内容）"]
+      },
+      "allowCopy": false, "allowRedistribute": false, "attributionRequired": true, "shareAlike": false,
+      "rightsBasis": "MIT 许可证允许再分发，但本平台仅展示元数据与来源链接，不复制其内容；署名要求保留",
+      "adminNote": "元数据核验通过；README 内容与 Java 后端方向匹配"
+    },
+    {
+      "code": "RES-JAVA-002",
+      "track": "java-fullstack",
+      "title": "Java Backend 学习资源集（Abanoub-Asaad）",
+      "description": "2k star 的 Java 后端学习资源与路线合集，按主题组织链接（Spring、数据库、微服务等），适合作为资源索引使用。",
+      "url": "https://github.com/Abanoub-Asaad/Java-Backend",
+      "sourceType": "ROADMAP",
+      "audience": "Java 后端学习者",
+      "prerequisite": ["Java 基础语法"],
+      "versionNote": "2026-04 仍有更新；链接列表时效性需逐条自行判断",
+      "licenseSpdx": "Apache-2.0", "licenseName": "Apache License 2.0", "licensePath": "LICENSE", "licenseStatus": "VERIFIED",
+      "verifiedStatus": "PUBLISHED", "verifiedAt": "2026-10-24T12:00:00",
+      "verificationEvidence": {
+        "checkedAt": "2026-10-24", "via": "GitHub REST API",
+        "defaultBranch": "main", "lastPushAt": "2026-04-15T22:12:13Z", "stars": 2034,
+        "licenseEvidence": "https://github.com/Abanoub-Asaad/Java-Backend/blob/main/LICENSE (Apache-2.0)",
+        "unverifiedFields": ["其收集的第三方链接各自版权未核验"]
+      },
+      "allowCopy": false, "allowRedistribute": false, "attributionRequired": true, "shareAlike": false,
+      "rightsBasis": "Apache-2.0 允许再分发需保留声明；本平台仅展示元数据与链接",
+      "adminNote": "元数据核验通过"
+    },
+    {
+      "code": "RES-JAVA-003",
+      "track": "java-fullstack",
+      "title": "Java FullStack Roadmap（aniketmishra-0）",
+      "description": "Java 全栈路线图仓库，含前端与后端路径；规模较小（star 少），作为补充视角使用。",
+      "url": "https://github.com/aniketmishra-0/Java-FullStack-Roadmap",
+      "sourceType": "ROADMAP",
+      "audience": "Java 全栈入门者",
+      "prerequisite": ["基本编程概念"],
+      "versionNote": "2026-03 最后更新",
+      "licenseSpdx": "MIT", "licenseName": "MIT License", "licensePath": "LICENSE", "licenseStatus": "VERIFIED",
+      "verifiedStatus": "VERIFIED", "verifiedAt": "2026-10-24T12:00:00",
+      "verificationEvidence": {
+        "checkedAt": "2026-10-24", "via": "GitHub REST API",
+        "defaultBranch": "main", "lastPushAt": "2026-03-11T17:02:13Z", "stars": 0,
+        "licenseEvidence": "https://github.com/aniketmishra-0/Java-FullStack-Roadmap/blob/main/LICENSE (MIT)",
+        "unverifiedFields": ["README 内容深度未逐项评估"]
+      },
+      "allowCopy": false, "allowRedistribute": false, "attributionRequired": true, "shareAlike": false,
+      "rightsBasis": "MIT 允许再分发；本平台仅展示元数据与链接",
+      "adminNote": "元数据核验通过；内容深度一般，作为补充视角"
+    },
+    {
+      "code": "RES-JAVA-004",
+      "track": "java-fullstack",
+      "title": "原创编程学习路线（中文，含 Java 与前端）",
+      "description": "中文原创编程学习路线仓库，含 Java 与前端知识点、面试题与学习建议；注意自 2022 年后未见更新。",
+      "url": "https://github.com/TreTre1over/code-roadmap",
+      "sourceType": "ROADMAP",
+      "audience": "中文学习者",
+      "prerequisite": ["基本编程概念"],
+      "versionNote": "最后提交 2022-03，内容可能滞后于当前主流版本，参考时需自行核对版本",
+      "licenseSpdx": null, "licenseName": "未发现 LICENSE 文件", "licensePath": null, "licenseStatus": "UNKNOWN",
+      "verifiedStatus": "PENDING", "verifiedAt": "2026-10-24T12:00:00",
+      "verificationEvidence": {
+        "checkedAt": "2026-10-24", "via": "GitHub REST API",
+        "defaultBranch": "main", "lastPushAt": "2022-03-01T16:42:30Z", "stars": 0,
+        "licenseEvidence": "repos/{repo}/license 返回 404（未找到许可证文件）",
+        "unverifiedFields": ["再分发授权（无许可证即默认保留所有权利）"]
+      },
+      "allowCopy": false, "allowRedistribute": false, "attributionRequired": true, "shareAlike": false,
+      "rightsBasis": "无许可证 = 默认版权保护，仅可展示元数据与来源链接，不得复制内容",
+      "adminNote": "可访问但因无许可证 + 长期未更新，保持待核验；仅作链接参考"
+    },
+    {
+      "code": "RES-AI-001",
+      "track": "ai-fullstack",
+      "title": "LLM Engineering Roadmap（tal7aouy）",
+      "description": "LLM 工程化路线图与开发者指南，覆盖 Prompt、RAG、Agent、评估等主题的组织框架。",
+      "url": "https://github.com/tal7aouy/LLM-Engineering",
+      "sourceType": "ROADMAP",
+      "audience": "希望进入 LLM 应用开发的工程师",
+      "prerequisite": ["一种编程语言基础", "HTTP 与 API 基本概念"],
+      "versionNote": "2026-09 仍有更新；LLM 生态变化快，具体工具以官方文档为准",
+      "licenseSpdx": "MIT", "licenseName": "MIT License", "licensePath": "LICENSE", "licenseStatus": "VERIFIED",
+      "verifiedStatus": "PUBLISHED", "verifiedAt": "2026-10-24T12:00:00",
+      "verificationEvidence": {
+        "checkedAt": "2026-10-24", "via": "GitHub REST API",
+        "defaultBranch": "main", "lastPushAt": "2026-09-05T19:58:18Z", "stars": 55,
+        "licenseEvidence": "https://github.com/tal7aouy/LLM-Engineering/blob/main/LICENSE (MIT)",
+        "unverifiedFields": ["README 内第三方工具的版本信息"]
+      },
+      "allowCopy": false, "allowRedistribute": false, "attributionRequired": true, "shareAlike": false,
+      "rightsBasis": "MIT 允许再分发；本平台仅展示元数据与链接",
+      "adminNote": "元数据核验通过；主题与本方向匹配"
+    },
+    {
+      "code": "RES-AI-002",
+      "track": "ai-fullstack",
+      "title": "Modern AI Engineering Path 2026（Mnawar83）",
+      "description": "面向生产的 LLM 应用路线：API、RAG、Agent、MCP、安全与部署，偏工程落地视角。",
+      "url": "https://github.com/Mnawar83/Modern-AI-Engineering-Path-2026",
+      "sourceType": "ROADMAP",
+      "audience": "有一定后端基础、转向 LLM 应用开发的工程师",
+      "prerequisite": ["后端开发基础", "API 调用经验"],
+      "versionNote": "2026-09 仍有更新",
+      "licenseSpdx": null, "licenseName": "存在 LICENSE 文件但 GitHub 无法识别 SPDX（NOASSERTION）", "licensePath": null, "licenseStatus": "NOASSERTION",
+      "verifiedStatus": "PENDING", "verifiedAt": "2026-10-24T12:00:00",
+      "verificationEvidence": {
+        "checkedAt": "2026-10-24", "via": "GitHub REST API",
+        "defaultBranch": "main", "lastPushAt": "2026-09-23T14:44:25Z", "stars": 4,
+        "licenseEvidence": "repos/{repo}/license 返回 spdx_id=NOASSERTION（自定义许可证文本，需人工阅读条款）",
+        "unverifiedFields": ["自定义许可证的具体条款（是否允许再分发）待人工核验"]
+      },
+      "allowCopy": false, "allowRedistribute": false, "attributionRequired": true, "shareAlike": false,
+      "rightsBasis": "自定义许可证条款未经人工审阅，权限默认禁止；仅展示元数据与链接",
+      "adminNote": "待人工阅读其 LICENSE 文本后再提升状态"
+    },
+    {
+      "code": "RES-AI-003",
+      "track": "ai-fullstack",
+      "title": "AI Engineering Learning Curriculum（karthikeyanp-dev）",
+      "description": "AI 工程学习课程：LLM、RAG、Agent、向量库、微调、MLOps 的结构化路线（master 分支）。",
+      "url": "https://github.com/karthikeyanp-dev/ai-engineering-learning",
+      "sourceType": "COURSE",
+      "audience": "AI 应用方向学习者",
+      "prerequisite": ["Python 或 Java 基础", "API 基本概念"],
+      "versionNote": "2026-06 最后更新",
+      "licenseSpdx": null, "licenseName": "未发现 LICENSE 文件", "licensePath": null, "licenseStatus": "UNKNOWN",
+      "verifiedStatus": "PENDING", "verifiedAt": "2026-10-24T12:00:00",
+      "verificationEvidence": {
+        "checkedAt": "2026-10-24", "via": "GitHub REST API",
+        "defaultBranch": "master", "lastPushAt": "2026-06-10T18:56:42Z", "stars": 1,
+        "licenseEvidence": "repos/{repo}/license 返回 404（未找到许可证文件）",
+        "unverifiedFields": ["再分发授权（无许可证）"]
+      },
+      "allowCopy": false, "allowRedistribute": false, "attributionRequired": true, "shareAlike": false,
+      "rightsBasis": "无许可证 = 默认版权保护，仅可展示元数据与来源链接",
+      "adminNote": "可访问但无许可证，保持待核验"
+    },
+    {
+      "code": "RES-AI-004",
+      "track": "ai-fullstack",
+      "title": "Spring AI Examples（partme-ai）",
+      "description": "Spring AI 官方风格的示例集合仓库（1.2k star），适合 Java 后端开发者对照学习 Spring AI 用法。",
+      "url": "https://github.com/partme-ai/spring-ai-examples",
+      "sourceType": "EXAMPLES",
+      "audience": "Java 后端开发者（Spring 生态）",
+      "prerequisite": ["Spring Boot 基础", "Maven"],
+      "versionNote": "Spring AI 版本演进快，运行示例前以仓库内 pom 为准；2026-08 最后更新",
+      "licenseSpdx": null, "licenseName": "未发现 LICENSE 文件", "licensePath": null, "licenseStatus": "UNKNOWN",
+      "verifiedStatus": "PENDING", "verifiedAt": "2026-10-24T12:00:00",
+      "verificationEvidence": {
+        "checkedAt": "2026-10-24", "via": "GitHub REST API",
+        "defaultBranch": "main", "lastPushAt": "2026-08-10T15:11:48Z", "stars": 125,
+        "licenseEvidence": "repos/{repo}/license 返回 404（未找到许可证文件；仓库根目录无 LICENSE 不代表全部内容不可参考，但再分发授权未确认）",
+        "unverifiedFields": ["代码再分发授权", "示例中第三方模型服务的密钥与费用"]
+      },
+      "allowCopy": false, "allowRedistribute": false, "attributionRequired": true, "shareAlike": false,
+      "rightsBasis": "无许可证，仅可展示元数据与来源链接；阅读与学习不受此限制",
+      "adminNote": "Java 学习者可参考；代码再分发授权待核验"
+    },
+    {
+      "code": "RES-AI-005",
+      "track": "ai-fullstack",
+      "title": "Spring AI Cookbook（taniy8）",
+      "description": "15 个由浅入深的 Spring AI 实战示例（Java + Spring Boot），从基础调用到进阶模式。",
+      "url": "https://github.com/taniy8/springai-cookbook",
+      "sourceType": "EXAMPLES",
+      "audience": "Java 后端开发者（Spring 生态）",
+      "prerequisite": ["Spring Boot 基础", "Maven"],
+      "versionNote": "以仓库内示例的依赖清单为准；Spring AI API 在 1.0 前后变化较大",
+      "licenseSpdx": "MIT", "licenseName": "MIT License", "licensePath": "LICENSE", "licenseStatus": "VERIFIED",
+      "verifiedStatus": "PUBLISHED", "verifiedAt": "2026-10-24T12:00:00",
+      "verificationEvidence": {
+        "checkedAt": "2026-10-24", "via": "GitHub REST API",
+        "defaultBranch": "main", "lastPushAt": "2026-03-09T16:15:53Z", "stars": 1,
+        "licenseEvidence": "https://github.com/taniy8/springai-cookbook/blob/main/LICENSE (MIT)",
+        "unverifiedFields": ["示例依赖的具体 Spring AI 版本号未逐个核验"]
+      },
+      "allowCopy": false, "allowRedistribute": false, "attributionRequired": true, "shareAlike": false,
+      "rightsBasis": "MIT 允许再分发需保留声明；本平台仅展示元数据与链接",
+      "adminNote": "元数据核验通过；Java 方向匹配度高"
+    },
+    {
+      "code": "RES-PY-001",
+      "track": "python-agent",
+      "title": "Agentic AI Roadmap with Notes and Projects（AdilShamim8）",
+      "description": "以 LangGraph 为核心的 Agent 系统学习路线，附笔记与项目练习清单。",
+      "url": "https://github.com/AdilShamim8/Agentic-AI-Roadmap-with-Notes-and-Projects",
+      "sourceType": "ROADMAP",
+      "audience": "Python 基础、想系统学习 Agent 的开发者",
+      "prerequisite": ["Python 基础", "LLM API 调用经验"],
+      "versionNote": "2026-10 仍有更新；LangGraph API 迭代快，以官方文档为准",
+      "licenseSpdx": "MIT", "licenseName": "MIT License", "licensePath": "LICENSE", "licenseStatus": "VERIFIED",
+      "verifiedStatus": "PUBLISHED", "verifiedAt": "2026-10-24T12:00:00",
+      "verificationEvidence": {
+        "checkedAt": "2026-10-24", "via": "GitHub REST API",
+        "defaultBranch": "main", "lastPushAt": "2026-10-19T05:59:24Z", "stars": 28,
+        "licenseEvidence": "https://github.com/AdilShamim8/Agentic-AI-Roadmap-with-Notes-and-Projects/blob/main/LICENSE (MIT)",
+        "unverifiedFields": ["笔记内容的正确性需学习者自行验证"]
+      },
+      "allowCopy": false, "allowRedistribute": false, "attributionRequired": true, "shareAlike": false,
+      "rightsBasis": "MIT 允许再分发；本平台仅展示元数据与链接",
+      "adminNote": "元数据核验通过；与本方向高度匹配"
+    },
+    {
+      "code": "RES-PY-002",
+      "track": "python-agent",
+      "title": "AI Engineer Roadmap 2026（atryx）",
+      "description": "2026 AI 工程师路线：LLM、RAG、Agent、微调、向量库、Prompt 工程与 MLOps。",
+      "url": "https://github.com/atryx/ai-engineer-roadmap-2026",
+      "sourceType": "ROADMAP",
+      "audience": "AI 工程方向学习者",
+      "prerequisite": ["Python 基础"],
+      "versionNote": "2026-04 最后更新",
+      "licenseSpdx": "MIT", "licenseName": "MIT License", "licensePath": "LICENSE", "licenseStatus": "VERIFIED",
+      "verifiedStatus": "PUBLISHED", "verifiedAt": "2026-10-24T12:00:00",
+      "verificationEvidence": {
+        "checkedAt": "2026-10-24", "via": "GitHub REST API",
+        "defaultBranch": "main", "lastPushAt": "2026-04-15T12:04:30Z", "stars": 16,
+        "licenseEvidence": "https://github.com/atryx/ai-engineer-roadmap-2026/blob/main/LICENSE (MIT)",
+        "unverifiedFields": ["README 内第三方资源授权"]
+      },
+      "allowCopy": false, "allowRedistribute": false, "attributionRequired": true, "shareAlike": false,
+      "rightsBasis": "MIT 允许再分发；本平台仅展示元数据与链接",
+      "adminNote": "元数据核验通过"
+    },
+    {
+      "code": "RES-PY-003",
+      "track": "python-agent",
+      "title": "LangGraph 官方文档（Python）",
+      "description": "LangGraph 官方文档 Python 版概览：Agent 编排的核心概念、图结构与官方教程入口。",
+      "url": "https://docs.langchain.com/oss/python/langgraph/overview",
+      "sourceType": "DOCS",
+      "audience": "Python Agent 开发者",
+      "prerequisite": ["Python 基础", "LLM API 基本概念"],
+      "versionNote": "官方文档随版本更新，API 以文档当前版本为准",
+      "licenseSpdx": null, "licenseName": "官方文档（使用条款以 langchain.com 条款页为准）", "licensePath": null, "licenseStatus": "UNKNOWN",
+      "verifiedStatus": "VERIFIED", "verifiedAt": "2026-10-24T12:00:00",
+      "verificationEvidence": {
+        "checkedAt": "2026-10-24", "via": "HTTP GET 页面状态码 200",
+        "unverifiedFields": ["文档站使用条款中关于复制/再分发的具体条款未逐条核验"]
+      },
+      "allowCopy": false, "allowRedistribute": false, "attributionRequired": true, "shareAlike": false,
+      "rightsBasis": "官方文档可访问（HTTP 200），但未核验其使用条款是否允许复制；仅展示链接与事实性描述",
+      "adminNote": "官方文档，链接可用；复制权限保持禁止直至条款核验"
+    }
+  ]
+}
