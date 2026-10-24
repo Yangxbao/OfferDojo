@@ -15,6 +15,8 @@ const menus = computed(() => {
     { path: '/roadmap', title: '学习路线图', icon: 'Guide' },
     { path: '/tasks', title: '任务中心', icon: 'Files' },
     { path: '/bagu', title: '八股复习', icon: 'Reading' },
+    { path: '/resources', title: '资源中心', icon: 'Collection' },
+    { path: '/tracks', title: '成长路线', icon: 'Guide' },
     { path: '/records', title: '练习记录', icon: 'Clock' },
     { path: '/analysis', title: '能力分析', icon: 'TrendCharts' },
   ]

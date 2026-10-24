@@ -298,6 +298,7 @@ export interface LearningResourceBrief {
 
 /** 学习路线节点关联的实战任务摘要 */
 export interface LearningTaskBrief {
+  id: number
   code: string
   title: string
   difficulty: string

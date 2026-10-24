@@ -114,7 +114,7 @@ onMounted(async () => {
           <div v-if="node.tasks.length" style="margin-bottom: 10px">
             <div class="section-label">实战任务（完成评估才算通过）</div>
             <div v-for="t in node.tasks" :key="t.code" style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px; flex-wrap: wrap">
-              <router-link :to="`/tasks/${t.code ? '' : ''}`" style="display: contents"><span style="font-size: 12.5px">{{ t.title }}</span></router-link>
+              <router-link :to="`/tasks/${t.id}`" style="font-size: 12.5px">{{ t.title }}</router-link>
               <el-tag size="small" :type="MY_STATUS_TYPES[t.myStatus]" effect="light">{{ MY_STATUS_LABELS[t.myStatus] }}</el-tag>
               <el-tag v-if="t.myBestScore != null" size="small" type="success" effect="plain">{{ t.myBestScore.toFixed(1) }} 分</el-tag>
             </div>

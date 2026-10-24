@@ -35,7 +35,7 @@ public record LearningTrackVO(
     }
 
     /** 关联实战任务的真实验收状态（来自任务题库与评估记录，不由用户点击声明） */
-    public record TaskBrief(String code, String title, String difficulty,
+    public record TaskBrief(Long id, String code, String title, String difficulty,
                             String myStatus, Double myBestScore) {
     }
 }

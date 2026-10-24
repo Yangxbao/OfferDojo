@@ -127,7 +127,7 @@ public class LearningTrackService {
                                 Task t = taskMap.get(code);
                                 if (t == null) return null;
                                 TaskVO vo = taskVOById.get(t.getId());
-                                return new LearningTrackVO.TaskBrief(t.getCode(), t.getTitle(), t.getDifficulty(),
+                                return new LearningTrackVO.TaskBrief(t.getId(), t.getCode(), t.getTitle(), t.getDifficulty(),
                                         vo == null ? "NOT_STARTED" : vo.myStatus(),
                                         vo == null || vo.myBestScore() == null ? null : vo.myBestScore());
                             })
