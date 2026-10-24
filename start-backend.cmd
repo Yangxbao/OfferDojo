@@ -34,6 +34,16 @@ if not exist pom.xml (
     exit /b 1
 )
 
+rem Pre-check: port 8090 already listening means another backend instance is running.
+netstat -ano | findstr /C:":8090 " | findstr /C:"LISTENING" >nul
+if not errorlevel 1 (
+    echo [ERROR] Port 8090 is already in use. Another backend instance is probably running.
+    echo         Close that window first, then start again.
+    echo         ^(tip: the demo H2 database file can only be held by one process.^)
+    pause
+    exit /b 1
+)
+
 set "PROFILE=%~1"
 if "%PROFILE%"=="" set "PROFILE=demo"
 

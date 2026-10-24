@@ -37,6 +37,12 @@ start-mysql.cmd        :: 可选：启动本机独立 MySQL（3307）并以 MySQ
    本机实测（Maven 3.9.4）：该文件存在时 `mvn spring-boot:run` 的插件前缀解析会失败，
    删除即恢复。因此本仓库没有内置 Maven Wrapper，直接使用系统 Maven。
 
+## 0.2b H2 报 `Database may be already in use` / `The file is locked`
+
+**现象**：启动报 `JdbcSQLNonTransientConnectionException: Database may be already in use ... The file is locked: ...jobsim-demo.mv.db`。
+**原因**：demo 模式的 H2 是文件数据库，同一时刻只允许一个进程打开。上一个后端实例还在运行（窗口没关或后台残留）时再启动就会撞锁。
+**解决**：关掉旧的后端窗口（或 `netstat -ano | findstr :8090` 找到 PID 后 `taskkill /F /PID <PID>`），再重新启动。仓库已做两层防护：demo 连接串启用了 `AUTO_SERVER=TRUE`（误开双实例时自动共享而不是报错），启动脚本也会预检 8090 端口并给出明确提示。
+
 ## 0.3 先做三个检查
 
 ```bash

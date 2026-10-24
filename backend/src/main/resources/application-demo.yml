@@ -4,7 +4,8 @@
 spring:
   datasource:
     # MODE=MySQL：尽量兼容 MySQL 语法，保证同一套代码两种数据库都能跑
-    url: jdbc:h2:file:./data/jobsim-demo;MODE=MySQL;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE
+    # AUTO_SERVER=TRUE：误开两个后端实例时自动以服务器模式共享数据，而不是报"文件被锁"
+    url: jdbc:h2:file:./data/jobsim-demo;MODE=MySQL;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE;AUTO_SERVER=TRUE
     username: sa
     password: ""
     driver-class-name: org.h2.Driver
