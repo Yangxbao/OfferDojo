@@ -18,6 +18,8 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -32,10 +34,13 @@ import java.util.Set;
  * - 演示账号：仅在用户表为空时写入（admin/admin123 管理员、student/student123 学生，BCrypt 哈希存储）；
  * - 内置任务：加载 classpath:demo/demo-tasks*.json 的全部题库文件，
  *   按「任务编码已存在则跳过」的方式增量写入——题库扩充后，老库重启即可自动补齐新题。
+ *
+ * @Order(LOWEST_PRECEDENCE)：保证在 SchemaMigrationRunner（老库补列）之后执行。
  * 生产环境应设置 jobsim.seed.enabled=false 并自行管理数据。
  */
 @Slf4j
 @Component
+@Order(Ordered.LOWEST_PRECEDENCE)
 @RequiredArgsConstructor
 public class DemoDataInitializer implements ApplicationRunner {
 

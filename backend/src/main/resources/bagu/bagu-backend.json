@@ -811,7 +811,8 @@
       "followUps": [
         "TIME_WAIT 过多怎么治理？",
         "SYN 洪泛攻击是什么、怎么防（syn cookie）？"
-      ]
+      ],
+      "versionNote": "协议行为长期稳定（RFC 793/9293）；TIME_WAIT 的 2MSL 为 RFC 标准数值"
     },
     {
       "code": "BG-NET-002",
@@ -832,7 +833,8 @@
       "followUps": [
         "中间人攻击的前提是什么？",
         "TLS 1.3 比 1.2 快在哪？"
-      ]
+      ],
+      "versionNote": "TLS 1.2/1.3 通用；证书链机制长期稳定"
     },
     {
       "code": "BG-NET-003",
@@ -853,7 +855,8 @@
       "followUps": [
         "浏览器缓存策略（强缓存/协商缓存）？",
         "负载均衡有哪些算法？"
-      ]
+      ],
+      "versionNote": "链路框架长期稳定；各版本特性以 RFC 7230+/7540/HTTP3(QUIC) 为准"
     }
   ]
 }

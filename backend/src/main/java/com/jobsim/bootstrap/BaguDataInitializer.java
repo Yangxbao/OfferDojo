@@ -13,6 +13,8 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.io.InputStream;
@@ -23,9 +25,12 @@ import java.util.Set;
  * 八股题库播种（幂等 + 增量）：加载 classpath:bagu/bagu-*.json，
  * 按「题目编码已存在则跳过」的方式写入 interview_question 表。
  * 题库文件扩充后，老库重启即自动补齐。
+ *
+ * @Order(LOWEST_PRECEDENCE)：保证在 SchemaMigrationRunner（老库补列）之后执行。
  */
 @Slf4j
 @Component
+@Order(Ordered.LOWEST_PRECEDENCE)
 @RequiredArgsConstructor
 public class BaguDataInitializer implements ApplicationRunner {
 

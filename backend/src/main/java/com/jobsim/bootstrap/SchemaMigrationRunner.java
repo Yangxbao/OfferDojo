@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
@@ -11,10 +13,15 @@ import org.springframework.stereotype.Component;
 /**
  * 轻量 schema 迁移：为"已经初始化过的老库"补齐新增列。
  * 新库由 schema-*.sql 直接建出完整结构；老库走这里的 ALTER（列已存在时静默跳过）。
+ *
+ * 注意 @Order(HIGHEST_PRECEDENCE)：迁移必须先于所有数据播种 Runner 执行，
+ * 否则播种 INSERT 会命中"老库缺新列"的错误（真实踩坑：按类名字母序 B 在 S 前，
+ * BaguDataInitializer 先于本类执行导致 Column not found）。
  * 这是学习项目务实的迁移方式，正式项目应使用 Flyway/Liquibase（见 ROADMAP）。
  */
 @Slf4j
 @Component
+@Order(Ordered.HIGHEST_PRECEDENCE)
 @RequiredArgsConstructor
 public class SchemaMigrationRunner implements ApplicationRunner {
 
