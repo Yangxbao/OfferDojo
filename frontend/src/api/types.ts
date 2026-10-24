@@ -223,6 +223,7 @@ export interface BaguVO {
   points: string[]
   example: string | null
   followUps: string[]
+  versionNote: string | null
 }
 
 /** 学习路线图阶段 */

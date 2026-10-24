@@ -72,6 +72,7 @@ public class BaguService {
                 q.getPlain(),
                 JsonUtils.readList(q.getPoints(), String.class),
                 q.getExample(),
-                JsonUtils.readList(q.getFollowUps(), String.class));
+                JsonUtils.readList(q.getFollowUps(), String.class),
+                q.getVersionNote());
     }
 }

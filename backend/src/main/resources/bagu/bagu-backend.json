@@ -1,238 +1,859 @@
 {
   "questions": [
-    { "code": "BG-FW-001", "category": "framework", "title": "什么是 IoC 和 DI？", "frequency": "HIGH", "difficulty": "EASY", "tags": "IoC,Spring,面试高频",
+    {
+      "code": "BG-FW-001",
+      "category": "framework",
+      "title": "什么是 IoC 和 DI？",
+      "frequency": "HIGH",
+      "difficulty": "EASY",
+      "tags": "IoC,Spring,面试高频",
       "oneLiner": "对象的创建与依赖组装权从代码里反转给容器；DI（依赖注入）是实现手段。",
       "plain": "以前要用什么对象自己 new，类与类硬耦合。IoC 把「造对象、找依赖」这件事交给 Spring 容器：你只声明「我需要 XXX」，容器造好塞给你——这就是依赖注入。好处：换实现只改配置/注解、便于单测（可以注入假实现）、生命周期统一管理。控制的是「对象的控制权」，反转的是「从主动创建到被动接收」。",
-      "points": ["控制反转是思想，依赖注入是实现", "容器负责创建、组装、生命周期", "好处：解耦、可测、统一管理", "BeanFactory 是底层容器，ApplicationContext 是高级门面"],
+      "points": [
+        "控制反转是思想，依赖注入是实现",
+        "容器负责创建、组装、生命周期",
+        "好处：解耦、可测、统一管理",
+        "BeanFactory 是底层容器，ApplicationContext 是高级门面"
+      ],
       "example": "@Service class OrderService { private final PayService pay; // 构造器注入 }",
-      "followUps": ["BeanFactory 和 ApplicationContext 的区别？", "Spring 怎么解决循环依赖？"] },
-    { "code": "BG-FW-002", "category": "framework", "title": "Spring Bean 的生命周期？", "frequency": "HIGH", "difficulty": "MEDIUM", "tags": "Bean,生命周期,面试高频",
+      "followUps": [
+        "BeanFactory 和 ApplicationContext 的区别？",
+        "Spring 怎么解决循环依赖？"
+      ],
+      "versionNote": "以 Spring Boot 3.5 / Spring Framework 6.2 为准；旧版 spring.factories 注册方式已废弃"
+    },
+    {
+      "code": "BG-FW-002",
+      "category": "framework",
+      "title": "Spring Bean 的生命周期？",
+      "frequency": "HIGH",
+      "difficulty": "MEDIUM",
+      "tags": "Bean,生命周期,面试高频",
       "oneLiner": "实例化 → 属性填充 → Aware → BPP 前置 → 初始化 → BPP 后置（AOP 代理）→ 使用 → 销毁。",
       "plain": "一个 Bean 的一生：容器 new 出来（实例化）→ 把依赖塞进去（属性填充）→ 回调各种 Aware（想感知容器就实现）→ BeanPostProcessor 前置处理 → 初始化（@PostConstruct → afterPropertiesSet → init-method，按这个顺序）→ BeanPostProcessor 后置处理（AOP 代理就是在这生成的）→ 正常服务 → 容器关闭时销毁（@PreDestroy）。面试常追问：AOP 代理为什么在后置处理器生成——因为要保证代理包住完整的目标方法。",
-      "points": ["初始化三连：PostConstruct → afterPropertiesSet → init-method", "AOP 代理在 BPP 后置阶段生成", "Aware 回调在属性填充之后", "销毁顺序与初始化相反"],
+      "points": [
+        "初始化三连：PostConstruct → afterPropertiesSet → init-method",
+        "AOP 代理在 BPP 后置阶段生成",
+        "Aware 回调在属性填充之后",
+        "销毁顺序与初始化相反"
+      ],
       "example": "@PostConstruct void init() { ... }",
-      "followUps": ["BeanFactoryPostProcessor 和 BeanPostProcessor 的区别？", "初始化的三种方式谁先执行？"] },
-    { "code": "BG-FW-003", "category": "framework", "title": "Spring 怎么解决循环依赖？为什么需要三级缓存？", "frequency": "HIGH", "difficulty": "HARD", "tags": "循环依赖,三级缓存,面试高频",
+      "followUps": [
+        "BeanFactoryPostProcessor 和 BeanPostProcessor 的区别？",
+        "初始化的三种方式谁先执行？"
+      ],
+      "versionNote": "以 Spring Boot 3.5 / Spring Framework 6.2 为准；旧版 spring.factories 注册方式已废弃"
+    },
+    {
+      "code": "BG-FW-003",
+      "category": "framework",
+      "title": "Spring 怎么解决循环依赖？为什么需要三级缓存？",
+      "frequency": "HIGH",
+      "difficulty": "HARD",
+      "tags": "循环依赖,三级缓存,面试高频",
       "oneLiner": "提前曝光半成品 + ObjectFactory 保证代理只创建一次；构造器注入的循环依赖无解。",
       "plain": "A 依赖 B、B 依赖 A。Spring 的办法：A 实例化后（还没填充属性）把自己「提前曝光」到缓存里，B 创建时能拿到 A 的半成品先救急。为什么要三级缓存而不是两级？第二级放「工厂」，需要 AOP 代理时由工厂决定生成代理还是原对象，保证代理只创建一次、且不破坏正常生命周期。注意边界：构造器注入的循环依赖无解（实例都出不来），prototype 也无解，@Async 场景也救不了。Spring Boot 2.6 起默认禁止循环依赖——鼓励你重构而不是开开关。",
-      "points": ["一级成品、二级半成品、三级 ObjectFactory", "三级保证 AOP 代理只生成一次", "构造器注入 / prototype / @Async 无解", "2.6+ 默认禁止，优先重构"],
+      "points": [
+        "一级成品、二级半成品、三级 ObjectFactory",
+        "三级保证 AOP 代理只生成一次",
+        "构造器注入 / prototype / @Async 无解",
+        "2.6+ 默认禁止，优先重构"
+      ],
       "example": "singletonFactories.put(beanName, () -> getEarlyBeanReference(beanName, mbd, bean));",
-      "followUps": ["@Async 为什么会导致循环依赖失败？", "只有两级缓存行不行？"] },
-    { "code": "BG-FW-004", "category": "framework", "title": "Spring AOP 的原理？JDK 动态代理和 CGLIB 的区别？", "frequency": "HIGH", "difficulty": "MEDIUM", "tags": "AOP,动态代理,面试高频",
+      "followUps": [
+        "@Async 为什么会导致循环依赖失败？",
+        "只有两级缓存行不行？"
+      ],
+      "versionNote": "以 Spring Boot 3.5 / Spring Framework 6.2 为准；旧版 spring.factories 注册方式已废弃"
+    },
+    {
+      "code": "BG-FW-004",
+      "category": "framework",
+      "title": "Spring AOP 的原理？JDK 动态代理和 CGLIB 的区别？",
+      "frequency": "HIGH",
+      "difficulty": "MEDIUM",
+      "tags": "AOP,动态代理,面试高频",
       "oneLiner": "运行时生成代理对象织入切面：有接口默认 JDK 动态代理，无接口用 CGLIB 子类代理（Boot 2.x 起默认 CGLIB）。",
       "plain": "AOP 的本质是「不改动业务代码，在方法前后插逻辑」——事务、日志、限流都靠它。实现靠运行时生成代理类：JDK 动态代理要求目标实现接口（基于接口生成代理）；CGLIB 直接生成目标类的子类（覆盖方法），没有接口也能代理。Spring Boot 2.x 起默认全用 CGLIB（proxyTargetClass=true），避免「有没有接口行为不一致」。最大的坑：对象内部 this 调用不走代理，事务/AOP 就失效。",
-      "points": ["JDK 代理：基于接口，Proxy + InvocationHandler", "CGLIB：生成子类，不能代理 final 方法", "Boot 默认 CGLIB", "自调用不走代理是高频事故源"],
+      "points": [
+        "JDK 代理：基于接口，Proxy + InvocationHandler",
+        "CGLIB：生成子类，不能代理 final 方法",
+        "Boot 默认 CGLIB",
+        "自调用不走代理是高频事故源"
+      ],
       "example": "@Around(\"@annotation(rateLimit)\") Object around(ProceedingJoinPoint pjp) { ... }",
-      "followUps": ["为什么事务失效与自调用有关？", "CGLIB 为什么不能代理 final 方法？"] },
-    { "code": "BG-FW-005", "category": "framework", "title": "Spring 事务在什么情况下会失效？", "frequency": "HIGH", "difficulty": "MEDIUM", "tags": "事务失效,面试高频",
+      "followUps": [
+        "为什么事务失效与自调用有关？",
+        "CGLIB 为什么不能代理 final 方法？"
+      ],
+      "versionNote": "以 Spring Boot 3.5 / Spring Framework 6.2 为准；旧版 spring.factories 注册方式已废弃"
+    },
+    {
+      "code": "BG-FW-005",
+      "category": "framework",
+      "title": "Spring 事务在什么情况下会失效？",
+      "frequency": "HIGH",
+      "difficulty": "MEDIUM",
+      "tags": "事务失效,面试高频",
       "oneLiner": "自调用、非 public、异常被吞、抛受检异常、多线程、传播误配等都会失效。",
       "plain": "事务基于 AOP 代理，所以「绕过代理」都失效：同类自调用（this 方法）、非 public 方法。异常层面：catch 住不抛（代理看不到异常）不回滚；抛受检异常默认不回滚（要 rollbackFor）。结构层面：多线程（事务绑定线程）、存储引擎不支持。还有传播行为配错（NOT_SUPPORTED 挂起事务）。排查口诀：先看调用链有没有绕过代理，再看异常有没有真正抛出去。",
-      "points": ["自调用 this 绕过代理（最高频）", "非 public / final 方法", "异常被 catch 或抛受检异常", "多线程与传播行为误配"],
+      "points": [
+        "自调用 this 绕过代理（最高频）",
+        "非 public / final 方法",
+        "异常被 catch 或抛受检异常",
+        "多线程与传播行为误配"
+      ],
       "example": "// this.save(order); ← 不走代理，事务失效；注入自身代理或拆类解决",
-      "followUps": ["rollbackFor = Exception.class 该不该无脑加？", "怎么用集成测试防事务失效？"] },
-    { "code": "BG-FW-006", "category": "framework", "title": "事务传播行为 REQUIRED 和 REQUIRES_NEW 的区别？", "frequency": "HIGH", "difficulty": "MEDIUM", "tags": "传播行为,事务",
+      "followUps": [
+        "rollbackFor = Exception.class 该不该无脑加？",
+        "怎么用集成测试防事务失效？"
+      ],
+      "versionNote": "以 Spring Boot 3.5 / Spring Framework 6.2 为准；旧版 spring.factories 注册方式已废弃"
+    },
+    {
+      "code": "BG-FW-006",
+      "category": "framework",
+      "title": "事务传播行为 REQUIRED 和 REQUIRES_NEW 的区别？",
+      "frequency": "HIGH",
+      "difficulty": "MEDIUM",
+      "tags": "传播行为,事务",
       "oneLiner": "REQUIRED 加入当前事务（一起回滚），REQUIRES_NEW 挂起当前事务新开一个（互不影响）。",
       "plain": "REQUIRED：有事务就加入，没有就新建——默认值，适合「一荣俱荣一损俱损」的主流程。REQUIRES_NEW：把外层事务挂起，自己开新事务，提交回滚都独立——适合「操作日志」这种不能被主流程回滚牵连的旁路。经典坑：内层 REQUIRES_NEW 提交了，外层最后回滚，内层的数据不会跟着回——这正是它的用途也是它的风险。另有 rollback-only 问题：内层 REQUIRED 抛异常被外层 catch，事务已被标记回滚，外层提交时报 UnexpectedRollbackException。",
-      "points": ["REQUIRED：加入或新建", "REQUIRES_NEW：挂起外层，独立提交回滚", "连接占用：REQUIRES_NEW 需要第二个连接", "rollback-only 导致外层提交失败"],
+      "points": [
+        "REQUIRED：加入或新建",
+        "REQUIRES_NEW：挂起外层，独立提交回滚",
+        "连接占用：REQUIRES_NEW 需要第二个连接",
+        "rollback-only 导致外层提交失败"
+      ],
       "example": "@Transactional(propagation = Propagation.REQUIRES_NEW) public void log(...) {}",
-      "followUps": ["NESTED 和 REQUIRES_NEW 的区别（保存点）？", "事务里发 MQ 应该放在哪个时机？"] },
-    { "code": "BG-FW-007", "category": "framework", "title": "Spring Boot 自动装配的原理？", "frequency": "HIGH", "difficulty": "MEDIUM", "tags": "自动装配,SpringBoot,面试高频",
+      "followUps": [
+        "NESTED 和 REQUIRES_NEW 的区别（保存点）？",
+        "事务里发 MQ 应该放在哪个时机？"
+      ],
+      "versionNote": "以 Spring Boot 3.5 / Spring Framework 6.2 为准；旧版 spring.factories 注册方式已废弃"
+    },
+    {
+      "code": "BG-FW-007",
+      "category": "framework",
+      "title": "Spring Boot 自动装配的原理？",
+      "frequency": "HIGH",
+      "difficulty": "MEDIUM",
+      "tags": "自动装配,SpringBoot,面试高频",
       "oneLiner": "@EnableAutoConfiguration 通过 ImportSelector 读取 AutoConfiguration.imports 清单，按条件注解筛选后注册 Bean。",
       "plain": "@SpringBootApplication 三合一，其中 @EnableAutoConfiguration 是关键：它导入一个选择器，去读 META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports 文件（2.7 之前是 spring.factories）拿到一堆候选配置类，再用 @ConditionalOnClass / @ConditionalOnMissingBean 等条件过滤——类路径有这个类、用户没自己配，才自动帮你配好。这就是「约定优于配置」的实现。写自定义 Starter 就是：写配置类 + 条件注解 + 注册到 imports 文件。",
-      "points": ["imports 清单文件（2.7 前后差异）", "条件注解过滤：OnClass/OnMissingBean", "OnMissingBean 让用户配置优先", "Starter = autoconfigure 模块 + starter 聚合模块"],
+      "points": [
+        "imports 清单文件（2.7 前后差异）",
+        "条件注解过滤：OnClass/OnMissingBean",
+        "OnMissingBean 让用户配置优先",
+        "Starter = autoconfigure 模块 + starter 聚合模块"
+      ],
       "example": "META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports",
-      "followUps": ["怎么排查某个自动配置没生效（条件评估报告）？", "自定义 Starter 的结构？"] },
-    { "code": "BG-FW-008", "category": "framework", "title": "一次请求在 Spring MVC 中的处理流程？", "frequency": "HIGH", "difficulty": "MEDIUM", "tags": "SpringMVC,请求流程,面试高频",
+      "followUps": [
+        "怎么排查某个自动配置没生效（条件评估报告）？",
+        "自定义 Starter 的结构？"
+      ],
+      "versionNote": "以 Spring Boot 3.5 / Spring Framework 6.2 为准；旧版 spring.factories 注册方式已废弃"
+    },
+    {
+      "code": "BG-FW-008",
+      "category": "framework",
+      "title": "一次请求在 Spring MVC 中的处理流程？",
+      "frequency": "HIGH",
+      "difficulty": "MEDIUM",
+      "tags": "SpringMVC,请求流程,面试高频",
       "oneLiner": "DispatcherServlet → HandlerMapping → 拦截器 preHandle → HandlerAdapter（参数解析、执行）→ 返回值处理 → 视图/JSON → afterCompletion。",
       "plain": "所有请求先进 DispatcherServlet（前端控制器）。它问 HandlerMapping：这个 URL 谁处理？找到 Controller 方法后依次过拦截器的 preHandle，然后 HandlerAdapter 负责把请求参数绑定到方法参数（各种 ArgumentResolver 在这里工作，@RequestBody 用消息转换器、自定义注解用自定义解析器），执行方法，返回值交给处理器渲染成 JSON（@ResponseBody 走 Jackson）或视图，最后拦截器的 afterCompletion。异常会被 @RestControllerAdvice 统一接住。",
-      "points": ["DispatcherServlet 是唯一入口", "拦截器 preHandle → 业务 → afterCompletion", "参数解析：ArgumentResolver 家族", "异常统一：@ControllerAdvice"],
+      "points": [
+        "DispatcherServlet 是唯一入口",
+        "拦截器 preHandle → 业务 → afterCompletion",
+        "参数解析：ArgumentResolver 家族",
+        "异常统一：@ControllerAdvice"
+      ],
       "example": "GET /api/tasks → HandlerMapping(TasksController#page) → 拦截器 → 执行 → JSON",
-      "followUps": ["过滤器和拦截器的区别？", "自定义参数解析器怎么写？"] },
-    { "code": "BG-FW-009", "category": "framework", "title": "@Autowired 和 @Resource 的区别？", "frequency": "MID", "difficulty": "EASY", "tags": "注入,注解",
+      "followUps": [
+        "过滤器和拦截器的区别？",
+        "自定义参数解析器怎么写？"
+      ],
+      "versionNote": "以 Spring Boot 3.5 / Spring Framework 6.2 为准；旧版 spring.factories 注册方式已废弃"
+    },
+    {
+      "code": "BG-FW-009",
+      "category": "framework",
+      "title": "@Autowired 和 @Resource 的区别？",
+      "frequency": "MID",
+      "difficulty": "EASY",
+      "tags": "注入,注解",
       "oneLiner": "@Autowired 是 Spring 的按类型注入；@Resource 是 JSR-250 标准先按名称再按类型。",
       "plain": "@Autowired 找 Bean 先按类型，同类型多个就找 @Primary 或按字段名匹配，还不行就报错（用 @Qualifier 指定）。@Resource 是 Java 标准注解，先按名称找，找不到再按类型。团队规范推荐构造器注入：字段可以是 final、依赖一目了然、不启动容器也能单测、循环依赖启动即报错（早暴露）。字段注入省事但藏问题。",
-      "points": ["@Autowired：Spring、byType 优先", "@Resource：JSR-250、byName 优先", "多实现：@Primary / @Qualifier", "推荐构造器注入"],
+      "points": [
+        "@Autowired：Spring、byType 优先",
+        "@Resource：JSR-250、byName 优先",
+        "多实现：@Primary / @Qualifier",
+        "推荐构造器注入"
+      ],
       "example": "private final PayService payService; // 构造器注入 + final",
-      "followUps": ["同一接口多个实现怎么注入？", "字段注入有什么坏处？"] },
-    { "code": "BG-FW-010", "category": "framework", "title": "Spring 事件机制是什么？什么时候用？", "frequency": "MID", "difficulty": "MEDIUM", "tags": "事件,解耦",
+      "followUps": [
+        "同一接口多个实现怎么注入？",
+        "字段注入有什么坏处？"
+      ],
+      "versionNote": "以 Spring Boot 3.5 / Spring Framework 6.2 为准；旧版 spring.factories 注册方式已废弃"
+    },
+    {
+      "code": "BG-FW-010",
+      "category": "framework",
+      "title": "Spring 事件机制是什么？什么时候用？",
+      "frequency": "MID",
+      "difficulty": "MEDIUM",
+      "tags": "事件,解耦",
       "oneLiner": "发布-订阅的进程内解耦：ApplicationEventPublisher 发布，@EventListener 监听，可绑定事务提交后执行。",
       "plain": "注册成功后要发欢迎邮件、记积分——直接调用会让注册流程塞满旁路逻辑。用事件：注册完成发布 UserRegisteredEvent，监听器各自处理，注册代码不再认识邮件和积分。进阶用 @TransactionalEventListener(AFTER_COMMIT)：保证数据库提交成功后才做事（避免回滚了邮件却发出去了）。边界：事件是进程内的，跨服务用 MQ。",
-      "points": ["事件 = 解耦的进程内发布订阅", "@EventListener / @Async 异步监听", "@TransactionalEventListener(AFTER_COMMIT) 与事务绑定", "跨服务解耦用 MQ 而非事件"],
+      "points": [
+        "事件 = 解耦的进程内发布订阅",
+        "@EventListener / @Async 异步监听",
+        "@TransactionalEventListener(AFTER_COMMIT) 与事务绑定",
+        "跨服务解耦用 MQ 而非事件"
+      ],
       "example": "@TransactionalEventListener(phase = AFTER_COMMIT) public void on(UserRegisteredEvent e) { ... }",
-      "followUps": ["事件监听器抛异常影响主流程吗？", "事件和 MQ 怎么选？"] },
-    { "code": "BG-FW-011", "category": "framework", "title": "MyBatis 中 #{} 和 ${} 的区别？", "frequency": "HIGH", "difficulty": "EASY", "tags": "MyBatis,SQL注入",
+      "followUps": [
+        "事件监听器抛异常影响主流程吗？",
+        "事件和 MQ 怎么选？"
+      ],
+      "versionNote": "以 Spring Boot 3.5 / Spring Framework 6.2 为准；旧版 spring.factories 注册方式已废弃"
+    },
+    {
+      "code": "BG-FW-011",
+      "category": "framework",
+      "title": "MyBatis 中 #{} 和 ${} 的区别？",
+      "frequency": "HIGH",
+      "difficulty": "EASY",
+      "tags": "MyBatis,SQL注入",
       "oneLiner": "#{} 预编译占位符防注入；${} 原样拼接有注入风险，仅用于白名单控制的表名/排序字段。",
       "plain": "#{} 会被编译成 PreparedStatement 的 ? 占位符，参数作为值传入，引号转义都自动处理——安全。${} 是字符串直接替换进 SQL，用户输入什么就拼什么——传个 1; DROP TABLE 就出事了。正确姿势：值一律 #{}；动态排序字段这类「不能加引号」的场景用白名单映射（把前端传的 sort=price 映射到固定列名）。",
-      "points": ["#{} → PreparedStatement 占位符", "${} → 字符串拼接", "注入演示：sort=price;-- ", "修复：排序字段白名单映射"],
+      "points": [
+        "#{} → PreparedStatement 占位符",
+        "${} → 字符串拼接",
+        "注入演示：sort=price;-- ",
+        "修复：排序字段白名单映射"
+      ],
       "example": "ORDER BY ${column} ← 危险；改为 orderByMap.get(param) 白名单",
-      "followUps": ["like 模糊查询怎么安全写？", "MyBatis-Plus 怎么防注入？"] },
-    { "code": "BG-FW-012", "category": "framework", "title": "MyBatis 的一级缓存和二级缓存？", "frequency": "MID", "difficulty": "MEDIUM", "tags": "MyBatis,缓存",
+      "followUps": [
+        "like 模糊查询怎么安全写？",
+        "MyBatis-Plus 怎么防注入？"
+      ],
+      "versionNote": "以 Spring Boot 3.5 / Spring Framework 6.2 为准；旧版 spring.factories 注册方式已废弃"
+    },
+    {
+      "code": "BG-FW-012",
+      "category": "framework",
+      "title": "MyBatis 的一级缓存和二级缓存？",
+      "frequency": "MID",
+      "difficulty": "MEDIUM",
+      "tags": "MyBatis,缓存",
       "oneLiner": "一级缓存 SqlSession 级默认开启；二级缓存 namespace 级有脏数据风险，生产建议关闭。",
       "plain": "一级缓存是同一个 SqlSession 内的查询缓存——Spring 集成下每次请求新开 SqlSession，所以同一事务内的重复查询才命中。二级缓存跨 SqlSession、按 namespace 共享，看似美好，但多表更新时 A 表的缓存不会因 B 表的更新而失效，会读到脏数据。生产建议：关掉二级缓存，需要缓存显式用 Redis 设计（可控失效），不依赖 ORM 的隐式缓存。",
-      "points": ["一级：SqlSession 级、默认开", "二级：namespace 级、跨会话、有序列化要求", "多表更新 → 二级缓存脏数据", "生产用显式缓存替代"],
+      "points": [
+        "一级：SqlSession 级、默认开",
+        "二级：namespace 级、跨会话、有序列化要求",
+        "多表更新 → 二级缓存脏数据",
+        "生产用显式缓存替代"
+      ],
       "example": "<cache eviction=\"LRU\" flushInterval=\"60000\"/> ← 慎用",
-      "followUps": ["一级缓存什么情况下会失效（清空）？", "为什么说 ORM 缓存不如应用层缓存可控？"] },
-    { "code": "BG-DB-001", "category": "db-design", "title": "为什么 MySQL 用 B+ 树做索引？", "frequency": "HIGH", "difficulty": "MEDIUM", "tags": "索引,B+树,面试高频",
+      "followUps": [
+        "一级缓存什么情况下会失效（清空）？",
+        "为什么说 ORM 缓存不如应用层缓存可控？"
+      ],
+      "versionNote": "以 Spring Boot 3.5 / Spring Framework 6.2 为准；旧版 spring.factories 注册方式已废弃"
+    },
+    {
+      "code": "BG-DB-001",
+      "category": "db-design",
+      "title": "为什么 MySQL 用 B+ 树做索引？",
+      "frequency": "HIGH",
+      "difficulty": "MEDIUM",
+      "tags": "索引,B+树,面试高频",
       "oneLiner": "矮胖的 B+ 树让千万级数据只需 3 次左右磁盘 IO；叶子节点链表相连支持范围查询。",
       "plain": "选索引结构的核心矛盾是「磁盘 IO 太贵」。二叉树太瘦高（千万数据 20+ 层）；哈希不支持范围查询；B 树数据放在所有节点导致每页放的键少、树更高。B+ 树的非叶子节点只存键（一页 16KB 能放上千个键），数据全在叶子层且叶子间有链表——3~4 层就能装下千万行，等值查询 3 次左右 IO，范围查询顺着叶子链表扫就行。这就是 InnoDB 的选择。",
-      "points": ["一页 16KB，非叶子只存键", "3~4 层支撑千万级", "叶子链表支持范围扫描", "哈希无序、B 树浪费、红黑树太高"],
+      "points": [
+        "一页 16KB，非叶子只存键",
+        "3~4 层支撑千万级",
+        "叶子链表支持范围扫描",
+        "哈希无序、B 树浪费、红黑树太高"
+      ],
       "example": "// 主键 id 查询 ≈ 从根到叶子 3 次 IO",
-      "followUps": ["聚簇索引和二级索引的区别？", "什么是最左前缀原则？"] },
-    { "code": "BG-DB-002", "category": "db-design", "title": "什么是回表？什么是覆盖索引？", "frequency": "HIGH", "difficulty": "MEDIUM", "tags": "回表,覆盖索引",
+      "followUps": [
+        "聚簇索引和二级索引的区别？",
+        "什么是最左前缀原则？"
+      ],
+      "versionNote": "以 MySQL 8.0 + InnoDB 为准；5.7 及更早的部分行为不适用"
+    },
+    {
+      "code": "BG-DB-002",
+      "category": "db-design",
+      "title": "什么是回表？什么是覆盖索引？",
+      "frequency": "HIGH",
+      "difficulty": "MEDIUM",
+      "tags": "回表,覆盖索引",
       "oneLiner": "二级索引先查到主键再回聚簇索引取整行叫回表；查询列全在索引里就是覆盖索引，免回表。",
       "plain": "二级索引（非主键索引）的叶子上存的只有「索引列 + 主键值」。你查 SELECT * WHERE name='x'，先在 name 索引找到主键 id，还要拿 id 去聚簇索引把整行取出来——这一趟就是回表。如果查询的列全部包含在索引里（比如只查 name 和 id），直接在索引上就取完了，EXPLAIN 的 Extra 会显示 Using index——这就是覆盖索引，是列表页优化的利器。所以规范说：列表页别写 SELECT *。",
-      "points": ["二级索引叶子存主键", "回表 = 二次查找聚簇索引", "覆盖索引 → Using index", "联合索引设计覆盖高频查询列"],
+      "points": [
+        "二级索引叶子存主键",
+        "回表 = 二次查找聚簇索引",
+        "覆盖索引 → Using index",
+        "联合索引设计覆盖高频查询列"
+      ],
       "example": "SELECT id, name FROM user WHERE name = 'x'; -- 若有 (name) 或 (name,id) 索引则覆盖",
-      "followUps": ["联合索引 (a,b,c) 能覆盖哪些查询？", "什么时候不该建覆盖索引（写放大）？"] },
-    { "code": "BG-DB-003", "category": "db-design", "title": "索引失效的常见场景有哪些？", "frequency": "HIGH", "difficulty": "MEDIUM", "tags": "索引失效,SQL优化",
+      "followUps": [
+        "联合索引 (a,b,c) 能覆盖哪些查询？",
+        "什么时候不该建覆盖索引（写放大）？"
+      ],
+      "versionNote": "以 MySQL 8.0 + InnoDB 为准；5.7 及更早的部分行为不适用"
+    },
+    {
+      "code": "BG-DB-003",
+      "category": "db-design",
+      "title": "索引失效的常见场景有哪些？",
+      "frequency": "HIGH",
+      "difficulty": "MEDIUM",
+      "tags": "索引失效,SQL优化",
       "oneLiner": "对索引列做函数/运算、隐式类型转换、前导模糊 like '%x'、or 连接非索引列、违反最左前缀。",
       "plain": "索引建立在「列的原始值」上，所以一动手脚就失效：WHERE DATE(create_time)=… 对列套了函数；phone 是 varchar 却传数字（隐式转换成函数）；LIKE '%手机' 前导通配符没法走树的有序性；WHERE a=1 OR c=2 而 c 没索引；联合索引 (a,b) 只用 b 查询违反最左前缀。排查方法永远是用 EXPLAIN 看 type 和 key，不要靠猜。",
-      "points": ["列上做函数/运算 → 失效", "隐式类型转换 → 失效", "前导 % 模糊 → 失效", "EXPLAIN 验证而非猜测"],
+      "points": [
+        "列上做函数/运算 → 失效",
+        "隐式类型转换 → 失效",
+        "前导 % 模糊 → 失效",
+        "EXPLAIN 验证而非猜测"
+      ],
       "example": "WHERE phone = 13800138000 -- phone 是 varchar，隐式转换失效",
-      "followUps": ["覆盖索引能救 LIKE '%x%' 吗（索引条件下推）？", "怎么改造让函数查询走索引（函数索引/冗余列）？"] },
-    { "code": "BG-DB-004", "category": "db-design", "title": "事务的隔离级别与读现象？", "frequency": "HIGH", "difficulty": "MEDIUM", "tags": "事务,隔离级别,面试高频",
+      "followUps": [
+        "覆盖索引能救 LIKE '%x%' 吗（索引条件下推）？",
+        "怎么改造让函数查询走索引（函数索引/冗余列）？"
+      ],
+      "versionNote": "以 MySQL 8.0 + InnoDB 为准；5.7 及更早的部分行为不适用"
+    },
+    {
+      "code": "BG-DB-004",
+      "category": "db-design",
+      "title": "事务的隔离级别与读现象？",
+      "frequency": "HIGH",
+      "difficulty": "MEDIUM",
+      "tags": "事务,隔离级别,面试高频",
       "oneLiner": "读未提交/读已提交/可重复读/串行化，分别解决脏读、不可重复读、（部分）幻读；MySQL 默认 RR。",
       "plain": "并发事务会出三种「读毛病」：脏读（读到别人没提交的数据）、不可重复读（同一事务两次读结果不同——别人改了）、幻读（两次读行数变了——别人插了）。四个隔离级别逐级加强：读未提交啥都防不了；读已提交（RC）防脏读；可重复读（RR）再防不可重复读；串行化全防但并发最差。InnoDB 的 RR 靠 MVCC 解决快照读的幻读，当前读用临键锁兜住大部分幻读。很多公司线上用 RC，因为 RR 的间隙锁在并发写入时更容易死锁。",
-      "points": ["三现象：脏读/不可重复读/幻读", "RR 是 MySQL 默认（复现历史 bug 友好）", "RC 减少间隙锁、并发更好", "快照读靠 MVCC，当前读靠锁"],
+      "points": [
+        "三现象：脏读/不可重复读/幻读",
+        "RR 是 MySQL 默认（复现历史 bug 友好）",
+        "RC 减少间隙锁、并发更好",
+        "快照读靠 MVCC，当前读靠锁"
+      ],
       "example": "SELECT @@transaction_isolation; -- 查看当前级别",
-      "followUps": ["MVCC 怎么实现可重复读？", "RR 和 RC 线上怎么选？"] },
-    { "code": "BG-DB-005", "category": "db-design", "title": "MVCC 的实现原理？", "frequency": "HIGH", "difficulty": "HARD", "tags": "MVCC,InnoDB,面试高频",
+      "followUps": [
+        "MVCC 怎么实现可重复读？",
+        "RR 和 RC 线上怎么选？"
+      ],
+      "versionNote": "以 MySQL 8.0 + InnoDB 为准；5.7 及更早的部分行为不适用"
+    },
+    {
+      "code": "BG-DB-005",
+      "category": "db-design",
+      "title": "MVCC 的实现原理？",
+      "frequency": "HIGH",
+      "difficulty": "HARD",
+      "tags": "MVCC,InnoDB,面试高频",
       "oneLiner": "每行带事务 id 与回滚指针构成版本链，读取时用 ReadView 判断哪个版本对自己可见。",
       "plain": "InnoDB 每行记录藏了两个隐藏列：最后修改它的事务 id（DB_TRX_ID）和指向上一个版本的指针（DB_ROLL_PTR），所有历史版本串成 undo log 版本链。读取时生成一个 ReadView（记录当时活跃的事务 id 列表），沿版本链从新到旧找「对我可见」的版本：改动我的那个事务当时还没提交 → 跳到上一版。RC 和 RR 的区别只在 ReadView 的生成时机：RC 每次读都新生成（所以能看到别人刚提交的），RR 只在第一次读生成并一直用（所以可重复读）。",
-      "points": ["隐藏列：DB_TRX_ID / DB_ROLL_PTR", "undo log 版本链", "ReadView：活跃事务列表 + 可见性判断", "RC 每次读生成 ReadView，RR 复用第一个"],
+      "points": [
+        "隐藏列：DB_TRX_ID / DB_ROLL_PTR",
+        "undo log 版本链",
+        "ReadView：活跃事务列表 + 可见性判断",
+        "RC 每次读生成 ReadView，RR 复用第一个"
+      ],
       "example": "-- RR 下：事务 A 两次读之间 B 提交了修改，A 仍读旧值（ReadView 未变）",
-      "followUps": ["删除操作在版本链上怎么表现？", "长事务对 MVCC 有什么危害（undo 膨胀）？"] },
-    { "code": "BG-DB-006", "category": "db-design", "title": "InnoDB 有哪些锁？", "frequency": "HIGH", "difficulty": "HARD", "tags": "锁,InnoDB,面试高频",
+      "followUps": [
+        "删除操作在版本链上怎么表现？",
+        "长事务对 MVCC 有什么危害（undo 膨胀）？"
+      ],
+      "versionNote": "以 MySQL 8.0 + InnoDB 为准；5.7 及更早的部分行为不适用"
+    },
+    {
+      "code": "BG-DB-006",
+      "category": "db-design",
+      "title": "InnoDB 有哪些锁？",
+      "frequency": "HIGH",
+      "difficulty": "HARD",
+      "tags": "锁,InnoDB,面试高频",
       "oneLiner": "行级：记录锁/间隙锁/临键锁/插入意向锁；表级：意向锁/MDL/自增锁；行锁锁的是索引记录。",
       "plain": "行锁不是锁「行」而是锁「索引记录」。记录锁锁单条索引；间隙锁锁两条记录之间的空隙（防止插入，RR 防幻读用）；临键锁 = 记录锁 + 前面的间隙（RR 当前读的默认单位）；插入意向锁是插入前的意向标记。表级有 MDL（元数据锁，查询和 DDL 的冲突来源）和意向锁。最大坑：WHERE 条件没走索引时，行锁会升级为扫全表锁全表——RR 下几乎锁死整张表。",
-      "points": ["记录锁 / 间隙锁 / 临键锁 / 插入意向锁", "MDL：DML 与 DDL 的互斥来源", "无索引更新 → 锁全表", "RR 当前读默认用临键锁防幻读"],
+      "points": [
+        "记录锁 / 间隙锁 / 临键锁 / 插入意向锁",
+        "MDL：DML 与 DDL 的互斥来源",
+        "无索引更新 → 锁全表",
+        "RR 当前读默认用临键锁防幻读"
+      ],
       "example": "UPDATE orders SET ... WHERE note = 'x'; -- note 无索引 → 锁全部扫描过的记录",
-      "followUps": ["间隙锁引发的死锁怎么排查？", "RC 为什么死锁更少？"] },
-    { "code": "BG-DB-007", "category": "db-design", "title": "一条 SQL 很慢，你的优化流程是什么？", "frequency": "HIGH", "difficulty": "MEDIUM", "tags": "SQL优化,流程",
+      "followUps": [
+        "间隙锁引发的死锁怎么排查？",
+        "RC 为什么死锁更少？"
+      ],
+      "versionNote": "以 MySQL 8.0 + InnoDB 为准；5.7 及更早的部分行为不适用"
+    },
+    {
+      "code": "BG-DB-007",
+      "category": "db-design",
+      "title": "一条 SQL 很慢，你的优化流程是什么？",
+      "frequency": "HIGH",
+      "difficulty": "MEDIUM",
+      "tags": "SQL优化,流程",
       "oneLiner": "慢日志定位 → EXPLAIN 分析 → 索引/SQL 写法/表结构三层优化 → 前后对比验证。",
       "plain": "先回答「慢在哪」：开慢查询日志或监控平台找 TOP SQL。再用 EXPLAIN 看：type 是不是 ALL 全表扫、rows 估算多大、Extra 有没有 filesort/temporary。然后分层优化：第一层加/改索引（覆盖索引、联合索引顺序）；第二层改写 SQL（分页优化、join 改写、避免函数失效）；第三层才动架构（读写分离、缓存、归档）。最后必须对比优化前后的执行时间和 EXPLAIN，并持续监控防止退化。",
-      "points": ["定位：慢日志 / 监控 TOP SQL", "EXPLAIN：type/rows/Extra 三看", "三层优化：索引 → 写法 → 架构", "验证：前后对比 + 持续监控"],
+      "points": [
+        "定位：慢日志 / 监控 TOP SQL",
+        "EXPLAIN：type/rows/Extra 三看",
+        "三层优化：索引 → 写法 → 架构",
+        "验证：前后对比 + 持续监控"
+      ],
       "example": "EXPLAIN SELECT ...; -- type=ALL, rows=800万 → 加索引后 ref, rows=120",
-      "followUps": ["filesort 怎么优化？", "什么时候应该上缓存而不是继续调 SQL？"] },
-    { "code": "BG-DB-008", "category": "db-design", "title": "LIMIT 1000000,10 为什么慢？怎么优化？", "frequency": "HIGH", "difficulty": "MEDIUM", "tags": "深分页,优化",
+      "followUps": [
+        "filesort 怎么优化？",
+        "什么时候应该上缓存而不是继续调 SQL？"
+      ],
+      "versionNote": "以 MySQL 8.0 + InnoDB 为准；5.7 及更早的部分行为不适用"
+    },
+    {
+      "code": "BG-DB-008",
+      "category": "db-design",
+      "title": "LIMIT 1000000,10 为什么慢？怎么优化？",
+      "frequency": "HIGH",
+      "difficulty": "MEDIUM",
+      "tags": "深分页,优化",
       "oneLiner": "offset 越大扫描丢弃越多还伴随回表；用游标分页或延迟关联解决。",
       "plain": "LIMIT 100 万,20 的意思是：把前 100 万零 20 行都查出来，扔掉前 100 万——每次翻页都白干，而且普通二级索引每行还要回表。优化一：游标分页，记住上一页最大 id，下一页 WHERE id > lastId LIMIT 20，永远只查 20 行，代价是不能跳页。优化二：延迟关联，先在索引里把目标行的 id 拿到（覆盖索引不回表），再用 id 回表取 20 行完整数据。产品上还可以直接限制最大跳页。",
-      "points": ["根因：扫描丢弃 + 回表", "游标分页：WHERE id > lastId，不可跳页", "延迟关联：子查询只取 id 再关联", "产品决策：限制跳页 / ES 承接复杂搜索"],
+      "points": [
+        "根因：扫描丢弃 + 回表",
+        "游标分页：WHERE id > lastId，不可跳页",
+        "延迟关联：子查询只取 id 再关联",
+        "产品决策：限制跳页 / ES 承接复杂搜索"
+      ],
       "example": "SELECT * FROM t JOIN (SELECT id FROM t WHERE ... LIMIT 1000000, 20) tmp ON t.id = tmp.id;",
-      "followUps": ["排序键不唯一时游标分页会丢数据吗？", "count 总数也很慢怎么办？"] },
-    { "code": "BG-DB-009", "category": "db-design", "title": "CHAR 和 VARCHAR 的区别？金额为什么用 DECIMAL？", "frequency": "MID", "difficulty": "EASY", "tags": "数据类型,规范",
+      "followUps": [
+        "排序键不唯一时游标分页会丢数据吗？",
+        "count 总数也很慢怎么办？"
+      ],
+      "versionNote": "以 MySQL 8.0 + InnoDB 为准；5.7 及更早的部分行为不适用"
+    },
+    {
+      "code": "BG-DB-009",
+      "category": "db-design",
+      "title": "CHAR 和 VARCHAR 的区别？金额为什么用 DECIMAL？",
+      "frequency": "MID",
+      "difficulty": "EASY",
+      "tags": "数据类型,规范",
       "oneLiner": "CHAR 定长适合短且固定；VARCHAR 变长；金额必须 DECIMAL 避免浮点误差。",
       "plain": "CHAR(11) 固定占 11 个字符空间，适合手机号这种定长短串；VARCHAR 按实际长度存，适合标题内容。金额绝不能用 FLOAT/DOUBLE——二进制浮点有精度误差（0.1+0.2≠0.3），金额用 DECIMAL(10,2)，代码里对应 BigDecimal。字符串列注意字符集用 utf8mb4（MySQL 的 utf8 是三字节的残缺实现，存不了 emoji）。时间用 DATETIME（范围大、无时区转换）或 TIMESTAMP（自动时区转换但只到 2038）。",
-      "points": ["CHAR 定长 vs VARCHAR 变长", "金额 DECIMAL + BigDecimal", "utf8mb4 才是真 UTF-8", "TIMESTAMP 范围到 2038 年"],
+      "points": [
+        "CHAR 定长 vs VARCHAR 变长",
+        "金额 DECIMAL + BigDecimal",
+        "utf8mb4 才是真 UTF-8",
+        "TIMESTAMP 范围到 2038 年"
+      ],
       "example": "price DECIMAL(10,2) NOT NULL COMMENT '价格(元)'",
-      "followUps": ["TEXT 类型有什么代价（可能行溢出）？", "为什么推荐 utf8mb4？"] },
-    { "code": "BG-DB-010", "category": "db-design", "title": "数据库连接池的原理？连接数是不是越大越好？", "frequency": "MID", "difficulty": "MEDIUM", "tags": "连接池,HikariCP",
+      "followUps": [
+        "TEXT 类型有什么代价（可能行溢出）？",
+        "为什么推荐 utf8mb4？"
+      ],
+      "versionNote": "以 MySQL 8.0 + InnoDB 为准；5.7 及更早的部分行为不适用"
+    },
+    {
+      "code": "BG-DB-010",
+      "category": "db-design",
+      "title": "数据库连接池的原理？连接数是不是越大越好？",
+      "frequency": "MID",
+      "difficulty": "MEDIUM",
+      "tags": "连接池,HikariCP",
       "oneLiner": "池化复用昂贵的 TCP+认证连接；连接数要匹配数据库处理能力，不是越大越好。",
       "plain": "建一个 MySQL 连接要 TCP 三次握手加认证，几十毫秒就没了，所以池化复用。拿连接像借车：借还都有记录，maxLifetime 到期回收防止僵尸连接。误区是「并发高就把连接数调到 500」——数据库同一时刻能真正并行执行的查询大约等于 CPU 核数，连接再多只是排队，还会加剧上下文切换和锁竞争。HikariCP 官方建议连接数 ≈ 核数×2 量级，具体靠压测。事故模式：一条慢 SQL 占住所有连接，全站接口跟着雪崩。",
-      "points": ["池化避免建连开销", "maximumPoolSize / maxLifetime / connectionTimeout", "连接数 ≈ 核数×2 量级再压测", "慢 SQL 占满连接 → 全站级联"],
+      "points": [
+        "池化避免建连开销",
+        "maximumPoolSize / maxLifetime / connectionTimeout",
+        "连接数 ≈ 核数×2 量级再压测",
+        "慢 SQL 占满连接 → 全站级联"
+      ],
       "example": "spring.datasource.hikari.maximum-pool-size=20",
-      "followUps": ["连接池打满怎么排查？", "maxLifetime 为什么要小于 MySQL 的 wait_timeout？"] },
-    { "code": "BG-DB-011", "category": "db-design", "title": "主从复制的原理？延迟怎么办？", "category": "db-design", "frequency": "MID", "difficulty": "MEDIUM", "tags": "主从复制,读写分离",
+      "followUps": [
+        "连接池打满怎么排查？",
+        "maxLifetime 为什么要小于 MySQL 的 wait_timeout？"
+      ],
+      "versionNote": "以 MySQL 8.0 + InnoDB 为准；5.7 及更早的部分行为不适用"
+    },
+    {
+      "code": "BG-DB-011",
+      "category": "db-design",
+      "title": "主从复制的原理？延迟怎么办？",
+      "frequency": "MID",
+      "difficulty": "MEDIUM",
+      "tags": "主从复制,读写分离",
       "oneLiner": "主库写 binlog，从库拉取回放；延迟来自大事务与单线程回放，业务侧用强制读主与会话粘性缓解。",
       "plain": "主库把变更写进 binlog，从库的 IO 线程拉过来存成 relay log，SQL 线程再回放——所以从库回放是单线程串行的，主库一个大事务从库可能要回放很久，这就是延迟的来源。读写分离架构下「刚写完就读不到」就是延迟造成的。业务缓解：关键查询（支付结果）强制走主库；同一用户写后读做会话内粘性；监控 Seconds_Behind_Master 告警。binlog 格式用 ROW（记录行变更，可审计、更安全）。",
-      "points": ["binlog → IO 线程 → relay log → SQL 线程", "延迟成因：大事务、单线程回放", "写后读：强制主库 / 会话粘性", "binlog 用 ROW 格式"],
+      "points": [
+        "binlog → IO 线程 → relay log → SQL 线程",
+        "延迟成因：大事务、单线程回放",
+        "写后读：强制主库 / 会话粘性",
+        "binlog 用 ROW 格式"
+      ],
       "example": "Seconds_Behind_Master: 0 -- 复制延迟监控",
-      "followUps": ["半同步复制解决什么问题？", "GTID 是什么？"] },
-    { "code": "BG-DB-012", "category": "db-design", "title": "千万级大表加字段，直接 ALTER 有什么风险？", "frequency": "MID", "difficulty": "HARD", "tags": "DDL,大表,企业实战",
+      "followUps": [
+        "半同步复制解决什么问题？",
+        "GTID 是什么？"
+      ],
+      "versionNote": "以 MySQL 8.0 + InnoDB 为准；5.7 及更早的部分行为不适用"
+    },
+    {
+      "code": "BG-DB-012",
+      "category": "db-design",
+      "title": "千万级大表加字段，直接 ALTER 有什么风险？",
+      "frequency": "MID",
+      "difficulty": "HARD",
+      "tags": "DDL,大表,企业实战",
       "oneLiner": "MDL 锁可能阻塞全表读写；用 Online DDL（INSTANT/INPLACE）或 gh-ost 类工具在线变更。",
       "plain": "DDL 会拿元数据锁（MDL）：只要有长事务没提交，DDL 就排不上队，而排在 DDL 后面的所有读写也全被堵住——一张表拖垮整个库。MySQL 8 对「加列」支持 INSTANT 算法（秒级完成，只改元数据），能用就用；改类型、加索引等用 INPLACE。更大规模用 gh-ost/pt-osc：建影子表、同步数据、追 binlog、原子改名。执行纪律：低峰期、评估磁盘空间、设中止条件、准备好回退。",
-      "points": ["MDL：长事务会堵死 DDL 及后续读写", "加列 → INSTANT（8.0.12+）秒级", "gh-ost：影子表 + binlog 追平 + 原子改名", "低峰 + 空间评估 + 中止条件"],
+      "points": [
+        "MDL：长事务会堵死 DDL 及后续读写",
+        "加列 → INSTANT（8.0.12+）秒级",
+        "gh-ost：影子表 + binlog 追平 + 原子改名",
+        "低峰 + 空间评估 + 中止条件"
+      ],
       "example": "ALTER TABLE orders ADD COLUMN remark VARCHAR(255), ALGORITHM=INSTANT;",
-      "followUps": ["怎么找到阻塞 MDL 的长事务？", "gh-ost 变更期间怎么保证数据一致？"] },
-    { "code": "BG-RD-001", "category": "cache", "title": "Redis 为什么快？", "frequency": "HIGH", "difficulty": "MEDIUM", "tags": "Redis,线程模型,面试高频",
+      "followUps": [
+        "怎么找到阻塞 MDL 的长事务？",
+        "gh-ost 变更期间怎么保证数据一致？"
+      ],
+      "versionNote": "以 MySQL 8.0 + InnoDB 为准；5.7 及更早的部分行为不适用"
+    },
+    {
+      "code": "BG-RD-001",
+      "category": "cache",
+      "title": "Redis 为什么快？",
+      "frequency": "HIGH",
+      "difficulty": "MEDIUM",
+      "tags": "Redis,线程模型,面试高频",
       "oneLiner": "纯内存操作 + IO 多路复用 + 单线程无锁竞争；6.0 起网络 IO 多线程但命令执行仍单线程。",
       "plain": "三个原因：① 数据全在内存，读写是纳秒/微秒级；② 用 epoll 做 IO 多路复用，单线程同时监听成千上万个连接（Nginx 同款思路）；③ 命令执行单线程，没有锁竞争和上下文切换。单线程的短板是慢命令会阻塞所有人（KEYS 全量遍历、删大 key），所以生产禁 KEYS 用 SCAN、删大 key 用 UNLINK。Redis 6.0 引入多线程只并行处理网络读写，命令执行依然单线程——保住原子性语义。",
-      "points": ["内存操作、epoll、单线程无锁", "6.0 多线程仅网络 IO", "慢命令阻塞：KEYS/大 key → SCAN/UNLINK", "单线程保证单命令原子性"],
+      "points": [
+        "内存操作、epoll、单线程无锁",
+        "6.0 多线程仅网络 IO",
+        "慢命令阻塞：KEYS/大 key → SCAN/UNLINK",
+        "单线程保证单命令原子性"
+      ],
       "example": "redis-cli --bigkeys # 找大 key；删除用 UNLINK",
-      "followUps": ["epoll 和 select 的区别？", "哪些命令属于危险命令？"] },
-    { "code": "BG-RD-002", "category": "cache", "title": "缓存穿透、击穿、雪崩的区别与对策？", "frequency": "HIGH", "difficulty": "MEDIUM", "tags": "缓存,穿透,击穿,雪崩,面试高频",
+      "followUps": [
+        "epoll 和 select 的区别？",
+        "哪些命令属于危险命令？"
+      ],
+      "versionNote": "以 Redis 7.x 为准"
+    },
+    {
+      "code": "BG-RD-002",
+      "category": "cache",
+      "title": "缓存穿透、击穿、雪崩的区别与对策？",
+      "frequency": "HIGH",
+      "difficulty": "MEDIUM",
+      "tags": "缓存,穿透,击穿,雪崩,面试高频",
       "oneLiner": "穿透=查不存在的数据（空值缓存/布隆）；击穿=热点 key 过期瞬间（互斥/逻辑过期）；雪崩=大面积同时失效（随机 TTL/多级）。",
       "plain": "穿透：请求的数据在缓存和数据库都不存在（恶意传不存在的 id），每次都打到 DB——对策是「空值也缓存一小段时间」或布隆过滤器前置拦截。击穿：某个热点 key 恰好过期，瞬间大量请求同时去重建缓存——对策是互斥锁（只放一个请求去查 DB）或逻辑过期（缓存永不物理过期，值里带过期时间，过期后返回旧值并异步刷新）。雪崩：大量 key 同一时刻过期或 Redis 整体挂掉——对策是过期时间加随机抖动、多级缓存、限流降级。",
-      "points": ["穿透：不存在 → 空值缓存 / 布隆过滤器", "击穿：热点过期 → 互斥锁 / 逻辑过期", "雪崩：批量失效 → TTL 随机 / 多级 / 降级", "布隆过滤器：误判存在、绝不漏判不存在"],
+      "points": [
+        "穿透：不存在 → 空值缓存 / 布隆过滤器",
+        "击穿：热点过期 → 互斥锁 / 逻辑过期",
+        "雪崩：批量失效 → TTL 随机 / 多级 / 降级",
+        "布隆过滤器：误判存在、绝不漏判不存在"
+      ],
       "example": "// 互斥锁：setnx 抢到锁的查库重建，其他线程等待重试",
-      "followUps": ["布隆过滤器为什么有误判？", "逻辑过期和互斥锁怎么选？"] },
-    { "code": "BG-RD-003", "category": "cache", "title": "缓存和数据库的一致性怎么保证？先更新库还是先删缓存？", "frequency": "HIGH", "difficulty": "HARD", "tags": "缓存一致性,面试高频",
+      "followUps": [
+        "布隆过滤器为什么有误判？",
+        "逻辑过期和互斥锁怎么选？"
+      ],
+      "versionNote": "以 Redis 7.x 为准"
+    },
+    {
+      "code": "BG-RD-003",
+      "category": "cache",
+      "title": "缓存和数据库的一致性怎么保证？先更新库还是先删缓存？",
+      "frequency": "HIGH",
+      "difficulty": "HARD",
+      "tags": "缓存一致性,面试高频",
       "oneLiner": "主流是 Cache-Aside：先更新数据库再删除缓存；删失败靠重试补偿，接受短暂不一致。",
       "plain": "先把结论钉死：没有绝对一致的方案，工程上追求「不一致窗口尽量小 + 有兜底」。为什么不「更新缓存」而是「删缓存」？因为并发写时更新缓存的最后一步可能被旧值覆盖。为什么先更新库再删缓存？两种时序推演下来它的不一致窗口最小（要求「写库成功 + 删缓存」同时失败的叠加概率才出问题）。删失败怎么办：进队列重试或订阅 binlog（Canal）异步删除。再兜底：给缓存设过期时间作为最终一致的最后防线，关键数据加对账。",
-      "points": ["删缓存优于更新缓存（并发写覆盖问题）", "先更库后删缓存窗口最小", "删失败：重试队列 / binlog 订阅删除", "过期时间 = 最终一致的兜底"],
+      "points": [
+        "删缓存优于更新缓存（并发写覆盖问题）",
+        "先更库后删缓存窗口最小",
+        "删失败：重试队列 / binlog 订阅删除",
+        "过期时间 = 最终一致的兜底"
+      ],
       "example": "updateDB(); delCacheAsync(key); // 失败进重试队列",
-      "followUps": ["延迟双删是什么、解决什么场景？", "强一致场景为什么不建议上缓存？"] },
-    { "code": "BG-RD-004", "category": "cache", "title": "Redis 分布式锁怎么实现才正确？", "frequency": "HIGH", "difficulty": "HARD", "tags": "分布式锁,Redis,面试高频",
+      "followUps": [
+        "延迟双删是什么、解决什么场景？",
+        "强一致场景为什么不建议上缓存？"
+      ],
+      "versionNote": "以 Redis 7.x 为准"
+    },
+    {
+      "code": "BG-RD-004",
+      "category": "cache",
+      "title": "Redis 分布式锁怎么实现才正确？",
+      "frequency": "HIGH",
+      "difficulty": "HARD",
+      "tags": "分布式锁,Redis,面试高频",
       "oneLiner": "SET key uuid NX PX ttl 加锁 + Lua 脚本比对 uuid 再释放；续期用看门狗；锁只做效率优化。",
       "plain": "演进三步：① SETNX 加锁——但没有过期时间，进程挂了锁永不释放（死锁）；② 加过期时间——但「加锁 + 设过期」两条命令之间可能断开，仍可能死锁，必须用一条原子命令 SET key value NX PX 30000；③ 释放锁——不能直接 DEL，可能删掉别人的锁（你的锁过期后别人拿到了），必须 Lua 脚本「先比对 value 是自己的才删」。还有个问题：业务没执行完锁先过期了——Redisson 的看门狗自动续期。最后记住定位：分布式锁保护的是效率不是正确性，正确性靠幂等和唯一约束兜底。",
-      "points": ["SET NX PX 一条命令原子加锁", "value 用 UUID 标识持有者", "Lua 比对再删，防止误删", "看门狗续期；正确性靠幂等兜底"],
+      "points": [
+        "SET NX PX 一条命令原子加锁",
+        "value 用 UUID 标识持有者",
+        "Lua 比对再删，防止误删",
+        "看门狗续期；正确性靠幂等兜底"
+      ],
       "example": "if redis.call('get',KEYS[1])==ARGV[1] then return redis.call('del',KEYS[1]) else return 0 end",
-      "followUps": ["Redisson 看门狗的续期机制？", "主从切换锁丢失怎么办（RedLock 争议）？"] },
-    { "code": "BG-RD-005", "category": "cache", "title": "Redis 的持久化：RDB 和 AOF 怎么选？", "frequency": "MID", "difficulty": "MEDIUM", "tags": "持久化,RDB,AOF",
+      "followUps": [
+        "Redisson 看门狗的续期机制？",
+        "主从切换锁丢失怎么办（RedLock 争议）？"
+      ],
+      "versionNote": "以 Redis 7.x 为准"
+    },
+    {
+      "code": "BG-RD-005",
+      "category": "cache",
+      "title": "Redis 的持久化：RDB 和 AOF 怎么选？",
+      "frequency": "MID",
+      "difficulty": "MEDIUM",
+      "tags": "持久化,RDB,AOF",
       "oneLiner": "RDB 快照恢复快但丢窗口大；AOF everysec 最多丢约 1 秒；4.0+ 混合持久化兼得。",
       "plain": "RDB 是定时快照：fork 子进程把内存全量写盘（写时复制），恢复快，但两次快照之间的数据会丢。AOF 是追加每条写命令：fsync 策略 always（最安全最慢）/ everysec（最多丢约 1 秒，主流）/ no（交给 OS）。AOF 文件会越来越大，通过重写压缩。Redis 4.0 的混合持久化：重写时先写 RDB 格式快照再追加增量 AOF，恢复快 + 丢得少。选型：纯缓存可以关持久化；当数据库用开 everysec + 混合；配合主从更要紧的是高可用而不是持久化。",
-      "points": ["RDB：fork + 写时复制，恢复快丢得多", "AOF everysec ≈ 最多丢 1 秒", "重写压缩 AOF 体积", "混合持久化 = RDB 头 + AOF 增量"],
+      "points": [
+        "RDB：fork + 写时复制，恢复快丢得多",
+        "AOF everysec ≈ 最多丢 1 秒",
+        "重写压缩 AOF 体积",
+        "混合持久化 = RDB 头 + AOF 增量"
+      ],
       "example": "aof-use-rdb-preamble yes",
-      "followUps": ["fork 为什么会卡主进程（页表复制）？", "AOF 重写期间的新写入去哪？"] },
-    { "code": "BG-RD-006", "category": "cache", "title": "Redis 有哪些数据结构？分别什么场景？", "frequency": "HIGH", "difficulty": "EASY", "tags": "数据结构,Redis",
+      "followUps": [
+        "fork 为什么会卡主进程（页表复制）？",
+        "AOF 重写期间的新写入去哪？"
+      ],
+      "versionNote": "以 Redis 7.x 为准"
+    },
+    {
+      "code": "BG-RD-006",
+      "category": "cache",
+      "title": "Redis 有哪些数据结构？分别什么场景？",
+      "frequency": "HIGH",
+      "difficulty": "EASY",
+      "tags": "数据结构,Redis",
       "oneLiner": "string 计数/缓存、hash 对象、list 队列、set 去重、zset 排行榜；另有 bitmap/hyperloglog/geo。",
       "plain": "五大件对业务：string 做缓存和计数器（incr 天然原子）；hash 存对象（购物车：userId 作 key、商品 id 作 field、数量作 value，改单个商品不用整条覆盖）；list 做简单队列和最新列表；set 做去重和共同好友（sinter 交集）；zset 做排行榜（score 排序）。进阶三件套：bitmap 做签到（一个用户一个月 31 位），hyperloglog 做亿级去重计数（误差 0.8% 但只要 12KB），geo 做附近的人。",
-      "points": ["string：缓存/计数（incr 原子）", "hash：对象部分更新（购物车）", "set：去重/交集", "zset：排行榜；bitmap：签到；hyperloglog：基数统计"],
+      "points": [
+        "string：缓存/计数（incr 原子）",
+        "hash：对象部分更新（购物车）",
+        "set：去重/交集",
+        "zset：排行榜；bitmap：签到；hyperloglog：基数统计"
+      ],
       "example": "ZINCRBY rank:1024 10 user:88  // 排行榜加分",
-      "followUps": ["排行榜分数相同时怎么排序？", "hyperloglog 的误差和内存为什么这么小？"] },
-    { "code": "BG-RD-007", "category": "cache", "title": "Redis 内存满了怎么办？淘汰策略有哪些？", "frequency": "MID", "difficulty": "MEDIUM", "tags": "淘汰策略,内存",
+      "followUps": [
+        "排行榜分数相同时怎么排序？",
+        "hyperloglog 的误差和内存为什么这么小？"
+      ],
+      "versionNote": "以 Redis 7.x 为准"
+    },
+    {
+      "code": "BG-RD-007",
+      "category": "cache",
+      "title": "Redis 内存满了怎么办？淘汰策略有哪些？",
+      "frequency": "MID",
+      "difficulty": "MEDIUM",
+      "tags": "淘汰策略,内存",
       "oneLiner": "八种淘汰策略；缓存场景常用 allkeys-lru 或 allkeys-lfu，noeviction 是默认。",
       "plain": "内存到 maxmemory 上限后按策略淘汰：noeviction（默认）拒绝写入——当持久库用必须配它，当缓存用会写不进；allkeys-lru 全部键里淘汰最久未用（缓存首选）；volatile-lru 只在设了过期时间的键里淘汰；lfu 版本按访问频率淘汰（更抗偶发批量访问）；random 随机；volatile-ttl 优先删快过期的。Redis 的 LRU 是采样近似（省内存不维护全局链表）。还要配套治理：大 key 清理、过期时间打散。",
-      "points": ["noeviction 默认拒绝写", "allkeys-lru 缓存首选", "lfu 抗偶发热点", "近似 LRU：采样而非精确"],
+      "points": [
+        "noeviction 默认拒绝写",
+        "allkeys-lru 缓存首选",
+        "lfu 抗偶发热点",
+        "近似 LRU：采样而非精确"
+      ],
       "example": "maxmemory-policy allkeys-lru",
-      "followUps": ["LRU 和 LFU 的适用差异？", "怎么找到大 key？"] },
-    { "code": "BG-RD-008", "category": "cache", "title": "Redis 集群和哨兵的区别？", "frequency": "MID", "difficulty": "HARD", "tags": "集群,哨兵,高可用",
+      "followUps": [
+        "LRU 和 LFU 的适用差异？",
+        "怎么找到大 key？"
+      ],
+      "versionNote": "以 Redis 7.x 为准"
+    },
+    {
+      "code": "BG-RD-008",
+      "category": "cache",
+      "title": "Redis 集群和哨兵的区别？",
+      "frequency": "MID",
+      "difficulty": "HARD",
+      "tags": "集群,哨兵,高可用",
       "oneLiner": "哨兵解决高可用（主挂自动切主）；Cluster 额外解决容量水平扩展（16384 哈希槽分片）。",
       "plain": "主从复制解决「读扩展和数据冗余」，但主挂了要人工切换。哨兵（Sentinel）加一层监控：主观下线（单个哨兵觉得挂了）→ 客观下线（多数哨兵同意）→ 选举新主 → 通知客户端。数据还是全量在一个主上，容量到顶就上 Cluster：数据按 key 的哈希值对 16384 取模分到不同槽，槽分布在多个主节点，容量和写入能力都能水平扩。代价：多 key 操作、事务、lua 跨槽会报错（用 hash tag {user1} 让相关 key 落同槽）。",
-      "points": ["哨兵：高可用（监控/选主/通知）", "客观下线需要多数哨兵同意", "Cluster：哈希槽分片扩容量", "跨槽限制与 hash tag 解决"],
+      "points": [
+        "哨兵：高可用（监控/选主/通知）",
+        "客观下线需要多数哨兵同意",
+        "Cluster：哈希槽分片扩容量",
+        "跨槽限制与 hash tag 解决"
+      ],
       "example": "SET user:{1000}:name x  SET user:{1000}:age 18 -- {1000} 保证同槽",
-      "followUps": ["脑裂是什么、怎么缓解（min-replicas）？", "MOVED 和 ASK 重定向的区别？"] },
-    { "code": "BG-MQ-001", "category": "mq", "title": "为什么要用消息队列？", "frequency": "HIGH", "difficulty": "EASY", "tags": "MQ,异步,解耦,削峰",
+      "followUps": [
+        "脑裂是什么、怎么缓解（min-replicas）？",
+        "MOVED 和 ASK 重定向的区别？"
+      ],
+      "versionNote": "以 Redis 7.x 为准"
+    },
+    {
+      "code": "BG-MQ-001",
+      "category": "mq",
+      "title": "为什么要用消息队列？",
+      "frequency": "HIGH",
+      "difficulty": "EASY",
+      "tags": "MQ,异步,解耦,削峰",
       "oneLiner": "三大价值：异步提速、系统解耦、削峰填谷；代价是一致性与复杂度。",
       "plain": "异步：注册要发短信发邮件，同步做要 2 秒，丢进 MQ 立刻返回，用户体验翻倍。解耦：订单完成后库存、积分、推荐都要感知，直接调用就是订单服务依赖一堆人；发一条「订单完成」事件，谁关心谁订阅，加消费者不动订单代码。削峰：秒杀 1 万请求直接打 DB 会死，先进 MQ 排队，消费端按数据库能力匀速消费。代价也要说：消息可能丢/重/乱序，系统复杂度上升，所以「不是所有系统都需要 MQ」。",
-      "points": ["异步：主流程不等旁路", "解耦：生产者不感知消费者", "削峰：排队 + 匀速消费", "代价：一致性、复杂度、运维"],
+      "points": [
+        "异步：主流程不等旁路",
+        "解耦：生产者不感知消费者",
+        "削峰：排队 + 匀速消费",
+        "代价：一致性、复杂度、运维"
+      ],
       "example": "下单 → MQ → 库存服务/积分服务各自消费",
-      "followUps": ["消息丢了怎么办？", "哪些场景不适合 MQ？"] },
-    { "code": "BG-MQ-002", "category": "mq", "title": "如何保证消息不丢失？", "frequency": "HIGH", "difficulty": "MEDIUM", "tags": "消息丢失,MQ,面试高频",
+      "followUps": [
+        "消息丢了怎么办？",
+        "哪些场景不适合 MQ？"
+      ],
+      "versionNote": "以 Kafka 3.x / RabbitMQ 3.12 通用行为为准"
+    },
+    {
+      "code": "BG-MQ-002",
+      "category": "mq",
+      "title": "如何保证消息不丢失？",
+      "frequency": "HIGH",
+      "difficulty": "MEDIUM",
+      "tags": "消息丢失,MQ,面试高频",
       "oneLiner": "三个环节分别加固：生产者确认、Broker 持久化、消费者手动 ACK。",
       "plain": "消息会在三个地方丢：① 生产者发出去但没到 MQ——开 confirm 机制，Broker 收到后回执，失败重发；② MQ 自己挂了——交换机、队列、消息都设持久化（durable + deliveryMode=2），刷盘策略取舍；③ 消费者拿到还没处理完就挂了——关闭自动 ACK，处理成功后手动 ack，失败 nack 重回队列。注意「至少一次」投递必然带来重复，所以消费端必须幂等（唯一约束/状态机），这两件事是一对。",
-      "points": ["生产者：confirm 回执 + 失败重发", "Broker：交换机/队列/消息三重持久化", "消费者：手动 ACK，成功才确认", "至少一次 → 消费端幂等"],
+      "points": [
+        "生产者：confirm 回执 + 失败重发",
+        "Broker：交换机/队列/消息三重持久化",
+        "消费者：手动 ACK，成功才确认",
+        "至少一次 → 消费端幂等"
+      ],
       "example": "channel.basicAck(deliveryTag, false); // 处理成功后确认",
-      "followUps": ["confirm 和事务发送的区别？", "消费端幂等怎么做？"] },
-    { "code": "BG-MQ-003", "category": "mq", "title": "消息重复消费怎么处理？", "frequency": "HIGH", "difficulty": "MEDIUM", "tags": "重复消费,幂等",
+      "followUps": [
+        "confirm 和事务发送的区别？",
+        "消费端幂等怎么做？"
+      ],
+      "versionNote": "以 Kafka 3.x / RabbitMQ 3.12 通用行为为准"
+    },
+    {
+      "code": "BG-MQ-003",
+      "category": "mq",
+      "title": "消息重复消费怎么处理？",
+      "frequency": "HIGH",
+      "difficulty": "MEDIUM",
+      "tags": "重复消费,幂等",
       "oneLiner": "MQ 只能保证至少一次，重复不可避免，消费端必须幂等：唯一约束 / 状态机 / 去重表。",
       "plain": "先接受现实：网络重试决定了「至少一次」投递，重复消息一定会出现（哪怕是「恰好一次」的宣称也靠幂等实现）。所以防线在消费端：① 唯一索引——消息带业务唯一键（订单号），重复插入直接冲突跳过；② 状态机——UPDATE ... WHERE status=预期，已处理的影响行数为 0；③ 去重表——处理前插入消息 id，冲突说明处理过。原则：把「恰好一次」的幻想改成「至少一次 + 幂等」的工程现实。",
-      "points": ["至少一次 → 重复不可避免", "唯一索引兜底", "状态机条件更新", "去重表记录已处理消息 id"],
+      "points": [
+        "至少一次 → 重复不可避免",
+        "唯一索引兜底",
+        "状态机条件更新",
+        "去重表记录已处理消息 id"
+      ],
       "example": "UPDATE order SET status=PAID WHERE id=? AND status=UNPAID; -- 0 行=已处理",
-      "followUps": ["幂等键由谁生成？", "去重表的记录要保留多久？"] },
-    { "code": "BG-MQ-004", "category": "mq", "title": "消息积压了怎么办？", "frequency": "HIGH", "difficulty": "MEDIUM", "tags": "积压,应急,MQ",
+      "followUps": [
+        "幂等键由谁生成？",
+        "去重表的记录要保留多久？"
+      ],
+      "versionNote": "以 Kafka 3.x / RabbitMQ 3.12 通用行为为准"
+    },
+    {
+      "code": "BG-MQ-004",
+      "category": "mq",
+      "title": "消息积压了怎么办？",
+      "frequency": "HIGH",
+      "difficulty": "MEDIUM",
+      "tags": "积压,应急,MQ",
       "oneLiner": "先定位根因（消费报错/下游慢/流量激增），止血靠扩容与批量，根治靠修复与容量规划。",
       "plain": "积压应急三步：① 定位——看消费端错误率：全是报错说明消费代码或下游坏了；无报错但慢说明下游性能问题；都没有说明流量暴涨。② 止血——修消费 bug / 修复下游；扩消费者（注意 Kafka 分区数决定并行上限）；批量拉取批量处理提升吞吐；极端时把消息搬运到临时队列慢慢消化。③ 复盘——容量规划、消费超时告警、降级预案。红线：跳过消息必须有对账补偿，否则就是数据事故。",
-      "points": ["定位：错误率 / 下游耗时 / 流量", "扩消费者受分区数上限约束", "批量消费提升吞吐", "跳过消息必须配对账"],
+      "points": [
+        "定位：错误率 / 下游耗时 / 流量",
+        "扩消费者受分区数上限约束",
+        "批量消费提升吞吐",
+        "跳过消息必须配对账"
+      ],
       "example": "// 堆积 100 万 → 扩到分区数上限的消费者 + 批量入库",
-      "followUps": ["Kafka 扩消费者为什么受分区数限制？", "怎么设计堆积告警阈值？"] },
-    { "code": "BG-NET-001", "category": "network-os", "title": "TCP 为什么要三次握手，四次挥手？", "frequency": "HIGH", "difficulty": "MEDIUM", "tags": "TCP,握手,面试高频",
+      "followUps": [
+        "Kafka 扩消费者为什么受分区数限制？",
+        "怎么设计堆积告警阈值？"
+      ],
+      "versionNote": "以 Kafka 3.x / RabbitMQ 3.12 通用行为为准"
+    },
+    {
+      "code": "BG-NET-001",
+      "category": "network-os",
+      "title": "TCP 为什么要三次握手，四次挥手？",
+      "frequency": "HIGH",
+      "difficulty": "MEDIUM",
+      "tags": "TCP,握手,面试高频",
       "oneLiner": "三次确认双方收发能力并防历史连接；四次因半关闭——收到 FIN 的一方可能还要发数据。",
       "plain": "三次握手：客户端 SYN → 服务端 SYN+ACK → 客户端 ACK。为什么不能两次？如果只有两次，一个迟到多年的旧 SYN 到达服务端，服务端回复后就当连接建立了，白白占用资源等一个永远不来的数据——第三次握手让客户端有机会说「这不是我要的连接」并拒绝。四次挥手：主动方 FIN → 被动方 ACK（这时候它可能还有数据要发，所以 ACK 和自己的 FIN 分开）→ 被动方 FIN → 主动方 ACK。主动方最后进入 TIME_WAIT 等 2MSL：确保最后的 ACK 能重发、让旧报文在网络中消亡。",
-      "points": ["SYN → SYN+ACK → ACK", "两次握手防不了历史连接", "半关闭导致 ACK 与 FIN 分开", "TIME_WAIT = 2MSL，在主动关闭方"],
+      "points": [
+        "SYN → SYN+ACK → ACK",
+        "两次握手防不了历史连接",
+        "半关闭导致 ACK 与 FIN 分开",
+        "TIME_WAIT = 2MSL，在主动关闭方"
+      ],
       "example": "netstat -an | findstr TIME_WAIT",
-      "followUps": ["TIME_WAIT 过多怎么治理？", "SYN 洪泛攻击是什么、怎么防（syn cookie）？"] },
-    { "code": "BG-NET-002", "category": "network-os", "title": "HTTPS 的加密过程？", "frequency": "HIGH", "difficulty": "MEDIUM", "tags": "HTTPS,TLS,面试高频",
+      "followUps": [
+        "TIME_WAIT 过多怎么治理？",
+        "SYN 洪泛攻击是什么、怎么防（syn cookie）？"
+      ]
+    },
+    {
+      "code": "BG-NET-002",
+      "category": "network-os",
+      "title": "HTTPS 的加密过程？",
+      "frequency": "HIGH",
+      "difficulty": "MEDIUM",
+      "tags": "HTTPS,TLS,面试高频",
       "oneLiner": "非对称加密交换会话密钥 + 证书验证身份，之后用对称加密传输数据。",
       "plain": "纯用非对称加密太慢，纯用对称加密密钥没法安全送达——所以混合：握手阶段用非对称加密（RSA 或 ECDHE）把「会话用的对称密钥」安全地协商出来，同时用 CA 证书证明「对方真的是目标网站」（证书链能追到受信根 CA，防中间人伪造），之后的数据传输全用对称加密（AES，快）。中间人攻击失效的原因：他伪造的证书没有 CA 私钥签名，浏览器验证证书链不通过。",
-      "points": ["非对称换密钥、对称传数据", "证书链验证身份（防中间人）", "随机数参与防重放", "TLS 1.3 握手更快（1-RTT）"],
+      "points": [
+        "非对称换密钥、对称传数据",
+        "证书链验证身份（防中间人）",
+        "随机数参与防重放",
+        "TLS 1.3 握手更快（1-RTT）"
+      ],
       "example": "浏览器小锁图标 → 证书详情可看签发链",
-      "followUps": ["中间人攻击的前提是什么？", "TLS 1.3 比 1.2 快在哪？"] },
-    { "code": "BG-NET-003", "category": "network-os", "title": "从输入 URL 到页面展示，发生了什么？", "frequency": "HIGH", "difficulty": "MEDIUM", "tags": "综合,网络,面试高频",
+      "followUps": [
+        "中间人攻击的前提是什么？",
+        "TLS 1.3 比 1.2 快在哪？"
+      ]
+    },
+    {
+      "code": "BG-NET-003",
+      "category": "network-os",
+      "title": "从输入 URL 到页面展示，发生了什么？",
+      "frequency": "HIGH",
+      "difficulty": "MEDIUM",
+      "tags": "综合,网络,面试高频",
       "oneLiner": "URL 解析 → DNS → TCP 握手 → TLS → HTTP 请求 → 服务端处理 → 响应 → 浏览器渲染。",
       "plain": "串链题考的是知识面。完整走一遍：① 浏览器解析 URL；② DNS 解析域名（缓存逐级 → 本地 DNS → 根/顶级/权威）；③ 与服务器 TCP 三次握手，HTTPS 再加 TLS 握手；④ 发送 HTTP 请求，可能经过 CDN/负载均衡/网关到应用，应用查缓存和数据库后返回；⑤ 浏览器拿到 HTML 开始解析，构建 DOM/CSSOM，加载 JS/CSS/图片（可能触发更多请求），渲染页面。面试加分点：每个环节都能展开（DNS 缓存、长连接、缓存策略、CDN、负载均衡算法）。",
-      "points": ["DNS：缓存层级 + 递归迭代", "TCP/TLS 握手", "服务端：LB → 网关 → 应用 → 缓存/DB", "渲染：DOM/CSSOM → 渲染树"],
+      "points": [
+        "DNS：缓存层级 + 递归迭代",
+        "TCP/TLS 握手",
+        "服务端：LB → 网关 → 应用 → 缓存/DB",
+        "渲染：DOM/CSSOM → 渲染树"
+      ],
       "example": "curl -v https://example.com # 观察每一步",
-      "followUps": ["浏览器缓存策略（强缓存/协商缓存）？", "负载均衡有哪些算法？"] }
+      "followUps": [
+        "浏览器缓存策略（强缓存/协商缓存）？",
+        "负载均衡有哪些算法？"
+      ]
+    }
   ]
 }

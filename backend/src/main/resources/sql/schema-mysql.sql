@@ -110,6 +110,7 @@ CREATE TABLE IF NOT EXISTS `interview_question` (
     `points`     TEXT         NOT NULL COMMENT '背诵要点，JSON 字符串数组',
     `example`    TEXT         NULL COMMENT '示例（代码或场景）',
     `follow_ups` TEXT         NULL COMMENT '常见追问，JSON 字符串数组',
+    `version_note` VARCHAR(200) NULL COMMENT '考察版本/适用性说明（差异化：防版本滞后）',
     `created_at` DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_bagu_code` (`code`),

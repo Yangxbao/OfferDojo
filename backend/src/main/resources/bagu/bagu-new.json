@@ -1,0 +1,226 @@
+{
+  "questions": [
+    {
+      "code": "BG-JC-037",
+      "category": "java-core",
+      "title": "虚拟线程和平台线程有什么区别？什么时候用？",
+      "frequency": "HIGH",
+      "difficulty": "MEDIUM",
+      "tags": "虚拟线程,JDK21,并发,新特性",
+      "versionNote": "以 JDK 21（JEP 444 正式发布）为准；JDK 19/20 为预览版",
+      "oneLiner": "虚拟线程由 JVM 调度、成本极低（可百万级），阻塞时自动让出载体线程；适合 IO 密集，不适合 CPU 密集。",
+      "plain": "平台线程就是 1:1 映射到操作系统线程的\"传统线程\"，创建成本高（约 1MB 栈内存），几千个就到顶。虚拟线程是 JVM 管理的轻量线程：执行到阻塞操作（等数据库、等 HTTP）时自动\"下车\"，把载体线程让给别人，恢复时再\"上车\"——所以它能支撑百万级并发阻塞。注意两个定位：它解决的是\"阻塞等待浪费线程\"的问题，不是让计算变快；而且它不是替代线程池，而是替代\"线程池里那些干等 IO 的任务\"。坑：在虚拟线程里用 synchronized 长代码块会把它\"钉\"在载体线程上（pinning），JDK 21 的已知限制，热点路径换 ReentrantLock。",
+      "points": [
+        "平台线程 1:1 内核线程；虚拟线程由 JVM 调度、按需挂载",
+        "阻塞时 unmount 让出载体线程 → 支撑百万级",
+        "适用 IO 密集（调用下游/DB）；CPU 密集无收益",
+        "禁忌：synchronized 长块导致 pinning、ThreadLocal 滥用"
+      ],
+      "example": "try (var exec = Executors.newVirtualThreadPerTaskExecutor()) {\n    exec.submit(() -> httpClient.get(url)); // 每任务一个虚拟线程\n}",
+      "followUps": [
+        "pinning 是什么、怎么排查（JFR 事件）？",
+        "虚拟线程还需要线程池吗？",
+        "和 Go 的 goroutine 有什么异同？"
+      ]
+    },
+    {
+      "code": "BG-JC-038",
+      "category": "java-core",
+      "title": "Record 类是什么？解决了什么问题？",
+      "frequency": "MID",
+      "difficulty": "EASY",
+      "tags": "Record,JDK16,新特性",
+      "versionNote": "JDK 16 正式发布（14/15 预览）；本项目 DTO 已全面使用",
+      "oneLiner": "Record 是不可变数据载体的语法糖：自动生成构造器、访问器、equals/hashCode/toString。",
+      "plain": "以前写一个纯数据类要手写一堆构造器、getter、equals、hashCode、toString——全是样板代码。Record 一行搞定：record Point(int x, int y) {}。它的字段是 final 的（不可变），没有 setter——这是特性不是缺陷：数据传输对象本来就不该被随意改。框架生态已全面适配：Jackson 能序列化 Record，Spring 的 DTO/MyBatis 的查询结果映射都支持。注意边界：Record 不能继承别的类（已隐式继承 Record）、字段不能改，需要可变状态或有复杂继承时还是用普通类。",
+      "points": [
+        "record 自动生成：构造器/访问器/equals/hashCode/toString",
+        "组件是 final，不可变",
+        "不能继承其他类，可实现接口",
+        "Jackson/Spring/MyBatis 均已支持"
+      ],
+      "example": "record UserVO(Long id, String nickname, String role) {}",
+      "followUps": [
+        "Record 和 Lombok @Data 的取舍？",
+        "Record 能做 JPA 实体吗（为什么不适合）？"
+      ]
+    },
+    {
+      "code": "BG-JC-039",
+      "category": "java-core",
+      "title": "Sequenced Collections（JDK 21）解决什么问题？",
+      "frequency": "LOW",
+      "difficulty": "MEDIUM",
+      "tags": "SequencedCollections,JDK21,新特性",
+      "versionNote": "JDK 21 新增接口；此前各集合的首尾访问 API 各不相同",
+      "oneLiner": "新增 SequencedCollection 接口统一「有首尾顺序集合」的首尾访问与反转，getFirst/getLast/reversed 不再各写一套。",
+      "plain": "JDK 21 之前很尴尬：取第一个元素，List 是 get(0)，Deque 是 getFirst()，LinkedHashSet 没有直接方法——同一个概念三套 API。JDK 21 引入 SequencedCollection 接口，统一提供 getFirst/getLast/addFirst/addLast/removeFirst/reversed()。List、Deque、LinkedHashSet/Map 都实现了它。reversed() 返回逆序视图（不是拷贝），LinkedHashMap 的逆序遍历也终于不用绕路了。面试多为认知题：知道它统一了什么、举出 reversed() 的用法即可。",
+      "points": [
+        "统一首尾访问：getFirst/getLast/addFirst/addLast",
+        "reversed() 返回逆序视图（改视图会影响原集合）",
+        "List 从此可以用 getFirst() 替代 get(0)",
+        "LinkedHashSet/LinkedHashMap 同样受益"
+      ],
+      "example": "List<String> l = new ArrayList<>();\nl.addFirst(\"x\"); // JDK 21 前 ArrayList 没有这个方法\nl.reversed(); // 逆序视图",
+      "followUps": [
+        "reversed() 修改元素会反映到原集合吗？",
+        "为什么 ArrayList 现在也实现了它（底层仍是数组）？"
+      ]
+    },
+    {
+      "code": "BG-JC-040",
+      "category": "java-core",
+      "title": "Java 8 / 11 / 17 / 21 各版本的关键变化？",
+      "frequency": "HIGH",
+      "difficulty": "MEDIUM",
+      "tags": "版本演进,JDK,新特性",
+      "versionNote": "版本事实题：8（LTS）→ 11（LTS）→ 17（LTS）→ 21（LTS，当前主流目标）",
+      "oneLiner": "8=Lambda与Stream；11=HttpClient与ZGC实验；17=密封类与移除CMS、默认G1；21=虚拟线程、Record转正、Sequenced Collections。",
+      "plain": "这题考的是「你是否跟进了 JDK 演进」。8：Lambda、Stream、Optional、新时间 API——函数式编程的入口。11：标准 HTTP Client、ZGC 实验性、单文件运行。17：密封类（sealed）、模式匹配第一波、移除 CMS、G1 成为默认、强封装 JDK 内部 API（很多老框架在这翻车）。21：虚拟线程正式、Record/模式匹配已转正、Sequenced Collections、分代 ZGC。另一个必提的点：8→17 的性能与 GC 默认值变化巨大，「新 JDK 更快」不是玩笑；还有许可证变化（Oracle JDK 商用授权 vs OpenJDK）。",
+      "points": [
+        "8：Lambda/Stream/新时间 API",
+        "11：HTTP Client、ZGC 实验性",
+        "17：sealed、移除 CMS、强封装内部 API",
+        "21：虚拟线程、Sequenced Collections",
+        "LTS 版本与升级收益：8→17 免费性能提升"
+      ],
+      "example": "// 同一服务 8→17：吞吐提升、GC 停顿下降，代码几乎不改",
+      "followUps": [
+        "公司服务还停在 JDK 8，你的升级论证是什么？",
+        "升级的主要兼容风险有哪些（内部 API、移除的模块）？"
+      ]
+    },
+    {
+      "code": "BG-FW-013",
+      "category": "framework",
+      "title": "扫码登录的完整流程是怎么实现的？",
+      "frequency": "HIGH",
+      "difficulty": "MEDIUM",
+      "tags": "扫码登录,场景,OAuth",
+      "versionNote": "流程层面长期稳定；实现细节随前端技术演进",
+      "oneLiner": "PC 生成带唯一 qrcodeId 的二维码 → 手机 App 扫码确认 → PC 长轮询/WebSocket 拿到 token 完成登录。",
+      "plain": "把「三端协作」讲清楚就赢了：① PC 网页请求生成二维码，服务端创建 qrcodeId（状态：待扫描）返回；② 用户用已登录的手机 App 扫码，App 把 qrcodeId + 自己的 token 发给服务端，服务端绑定用户并把状态改为已扫描；③ PC 端全程轮询（或 WebSocket）qrcodeId 状态，变为已确认后拿到服务端签发的登录 token。关键细节：二维码要有过期时间与一次性；「已扫描待确认」这个中间状态是防钓鱼的关键（PC 显示头像让用户二次确认）；轮询间隔与幂等要设计。",
+      "points": [
+        "三端：PC（等）、手机（确认）、服务端（绑定）",
+        "qrcodeId 一次性 + 过期时间",
+        "已扫描 → 已确认 两段状态，PC 二次确认防钓鱼",
+        "PC 侧轮询或 WebSocket 感知状态变化"
+      ],
+      "example": "GET /api/qrcode/create → {qrcodeId}\nGET /api/qrcode/poll?qrcodeId=.. → WAITING/SCANNED/CONFIRMED(token)",
+      "followUps": [
+        "轮询和 WebSocket 怎么选？",
+        "二维码被别人截图劫持怎么办？"
+      ]
+    },
+    {
+      "code": "BG-FW-014",
+      "category": "framework",
+      "title": "短信验证码登录怎么设计？如何防刷？",
+      "frequency": "MID",
+      "difficulty": "MEDIUM",
+      "tags": "验证码,登录,防刷,场景",
+      "versionNote": "方案层面稳定；频控维度需结合业务与风控演进",
+      "oneLiner": "验证码 Redis 存 5 分钟 + 发送频控（手机号/ IP / 设备多维）+ 登录用一次性比对后即删。",
+      "plain": "核心三件事：① 发送控制——验证码存 Redis（key=手机号，TTL 5 分钟），同一手机号 60 秒内只能发一次、每天上限 N 条，IP 维度再限一层，这是防「短信轰炸」的关键（别人拿你的接口轰炸受害者手机）；② 校验——一次性消费：比对成功后立即 del，失败次数超限作废；③ 登录态——验证通过后走正常 JWT 签发。再加一层行为验证码（滑块）在前置位挡机器。容易漏的点：验证码只存后四位日志脱敏、发送接口本身要幂等、错误提示不区分「未注册」和「验证码错误」（防账号枚举）。",
+      "points": [
+        "Redis 存码 + TTL 5 分钟，比对后立即删除",
+        "频控三维：手机号（60s/次、日限额）+ IP + 设备",
+        "行为验证码前置挡机器",
+        "防短信轰炸是核心安全目标"
+      ],
+      "example": "SET sms:code:13800000000 824516 EX 300 NX PX? → 用 SET ... EX 300；比对后 DEL",
+      "followUps": [
+        "验证码接口被用来轰炸别人手机，怎么在网关层拦？",
+        "验证码登录和密码登录的账号体系怎么合并？"
+      ]
+    },
+    {
+      "code": "BG-DB-013",
+      "category": "db-design",
+      "title": "一个接口突然变慢 10 倍，怎么一步步排查？",
+      "frequency": "HIGH",
+      "difficulty": "MEDIUM",
+      "tags": "慢SQL,场景,排查",
+      "versionNote": "方法论长期适用；工具以 MySQL 8 + 本项目技术栈为准",
+      "oneLiner": "先分层定位（网关/应用/DB/外部）→ DB 层看执行计划与锁等待 → 常见根因：执行计划劣化、锁等待、数据量过阈值。",
+      "plain": "场景化排查题，考的是「顺序感」。第一步分层：只有这个接口慢还是全站慢？只有这个环境慢吗？——把范围切窄。第二步如果是 DB 层：看慢日志里这条 SQL 的当前形态，EXPLAIN 对比「变慢前」的执行计划——最常见的根因是执行计划劣化（数据量过了阈值、统计信息过期导致走错索引）。第三看锁等待：performance_schema 的 data_locks 表有没有长事务持锁（引 DB-008）。第四是环境变化：昨晚是不是上了新索引/改了数据/归档任务在跑。修复后必须用 EXPLAIN 和耗时对比验证，并补监控防复发。",
+      "points": [
+        "分层：单接口 vs 全站、单环境 vs 多环境",
+        "执行计划劣化是头号根因（数据量/统计信息）",
+        "锁等待：长事务持锁（performance_schema）",
+        "环境变更对照：昨晚改了什么"
+      ],
+      "example": "SELECT * FROM performance_schema.data_lock_waits; -- 锁等待视图",
+      "followUps": [
+        "统计信息过期怎么更新（ANALYZE TABLE）？",
+        "「以前快现在慢」和「从来都慢」的排查差异？"
+      ]
+    },
+    {
+      "code": "BG-RD-009",
+      "category": "cache",
+      "title": "某个 Redis 节点被热 key 打满了，怎么办？",
+      "frequency": "MID",
+      "difficulty": "MEDIUM",
+      "tags": "热key,场景,Redis",
+      "versionNote": "以 Redis Cluster 7.x 为准；单机主从同样适用",
+      "oneLiner": "应急：本地缓存挡读 + 读副本分摊；根治：key 加随机后缀打散 + 客户端缓存；预防：热 key 监控。",
+      "plain": "场景题：监控显示 Cluster 里一个节点 CPU/带宽打满，其他节点正常——典型的热 key。应急三招：① 应用侧加本地缓存（Caffeine 短 TTL），把读挡在进程内；② 开读写分离把读流量分到副本；③ 紧急扩容节点（Cluster 可迁移槽，但远水不解近渴）。根治：热 key 加随机后缀复制成 N 份（如 hotkey:1~10，读时随机选一个），写时同步更新 N 份；或者干脆上多级缓存。预防：接入热 key 监控（客户端统计/proxy 采样），大促前预热演练。",
+      "points": [
+        "识别：单节点打满而集群其他节点正常",
+        "应急：本地缓存 + 读写分离",
+        "根治：随机后缀打散 / 多级缓存",
+        "预防：热 key 监控 + 大促演练"
+      ],
+      "example": "String realKey = \"hot:\" + (ThreadLocalRandom.current().nextInt(10)); // 读 10 个副本之一",
+      "followUps": [
+        "随机后缀方案的写一致性怎么处理？",
+        "本地缓存的失效广播怎么做（呼应 RD-012）？"
+      ]
+    },
+    {
+      "code": "BG-MQ-005",
+      "category": "mq",
+      "title": "下单后的短信总是延迟或丢失，怎么设计补偿？",
+      "frequency": "MID",
+      "difficulty": "MEDIUM",
+      "tags": "消息,补偿,场景",
+      "versionNote": "方案层面稳定；以「至少一次 + 幂等 + 对账」为通用框架",
+      "oneLiner": "本地消息表保证不丢 + 消费失败重试与退避 + 定时对账补发，短信服务侧幂等去重。",
+      "plain": "场景拆解：短信发送是旁路弱依赖，丢一条影响体验但不能拖垮下单。方案：① 下单事务里写本地消息表（状态待发送），事务提交后由后台任务扫表投递到短信服务——保证「库成了消息一定在」；② 投递失败指数退避重试，超过 5 次进人工队列；③ 短信服务侧用「订单号+模板」做幂等去重，防止重试导致重复发送；④ 定时对账：比对消息表与短信服务回执，漏发的补偿。原则：非关键链路用「最终一致 + 对账」，别为了短信把下单拖成强一致。",
+      "points": [
+        "本地消息表：事务内落库，后台扫描投递",
+        "重试退避 + 最大次数 + 人工兜底",
+        "短信侧幂等：业务键去重",
+        "对账补发是最后防线"
+      ],
+      "example": "-- 消息表扫描：SELECT * FROM outbox WHERE status=0 AND retry<5 ORDER BY id LIMIT 100",
+      "followUps": [
+        "为什么不用「下单接口里直接调短信 API + 重试」？",
+        "对账的比对周期怎么定？"
+      ]
+    },
+    {
+      "code": "BG-NET-004",
+      "category": "network-os",
+      "title": "接口幂等：网关超时重试导致重复下单怎么办？",
+      "frequency": "MID",
+      "difficulty": "MEDIUM",
+      "tags": "幂等,重试,场景",
+      "versionNote": "通用分布式问题；与具体 MQ/网关产品无关",
+      "oneLiner": "重试不可避免，把幂等键交给服务端：客户端生成请求 ID，服务端唯一约束 + 条件更新兜底。",
+      "plain": "场景：网关对超时请求自动重试，用户也可能连点——服务端收到两个一模一样的下单请求。思路是承认重试必然发生，在服务端做幂等：① 客户端为每个业务动作生成唯一 request ID（进入页面时或点击时生成）随请求携带；② 服务端用「request ID 唯一约束」或 Redis SETNX 记录已处理；③ 更强的是状态机条件更新（WHERE status=预期）。注意区分「防重」和「幂等返回」：第二次请求最好返回第一次的结果而不是报错——把首次处理结果缓存到幂等键上。",
+      "points": [
+        "承认重试必然：网关/客户端/用户三来源",
+        "幂等键：客户端 request ID + 服务端唯一约束",
+        "条件更新状态机兜底",
+        "重复请求返回首次结果而非报错（体验）"
+      ],
+      "example": "INSERT INTO idempotent(req_id, result) ... 唯一键冲突 → 返回已存 result",
+      "followUps": [
+        "request ID 应该在什么时候生成（防连点）？",
+        "幂等记录的保留期与存储选型？"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,116 @@
+{
+  "tasks": [
+    {
+      "code": "JC-045", "title": "JDK 21 新特性实战：Record / Sequenced Collections / 虚拟线程", "category": "java-core", "difficulty": "MEDIUM",
+      "tags": "JDK21,Record,虚拟线程,新特性", "summary": "把 JDK 21 的三个高频新特性落到实际代码：改造一个课程查询模块。", "estimatedMinutes": 30,
+      "background": "团队有个老模块：DTO 全是 Lombok @Data、列表分页手动组装、课程详情要并行调三个下游接口（用平台线程池）。导师让你用 JDK 21 的新特性改造它，并说清每处改造的收益与风险。",
+      "requirements": [
+        "用 Record 重写 3 个纯数据 DTO，说明哪些类适合转、哪些不适合（有可变状态/继承需求的）",
+        "用 Sequenced Collections 简化首尾访问逻辑（替代 get(0)/get(size-1)）",
+        "用虚拟线程改造三个下游调用的并行编排，说明与原线程池方案的对比（成本/适用性/pinning 风险）",
+        "给出「哪些模块不该急着改」的克制结论"
+      ],
+      "constraints": ["以 JDK 21 为准", "改造前后行为必须完全一致"],
+      "deliverables": ["改造前后代码对照", "收益与风险清单", "不建议改造的场景说明"],
+      "acceptance": ["Record 的选择标准明确（不可变数据载体）", "虚拟线程方案指出 synchronized pinning 风险", "结论克制：不强推新技术到所有场景"],
+      "rubric": [
+        { "dimension": "正确性", "weight": 45, "guidance": "三个特性的机制与适用边界准确。" },
+        { "dimension": "方案设计", "weight": 35, "guidance": "改造有收益论证、有风险意识。" },
+        { "dimension": "工程规范", "weight": 20, "guidance": "改造后代码更简洁且行为不变。" }
+      ]
+    },
+    {
+      "code": "FW-032", "title": "Java 版本升级评估：服务从 JDK 8 升到 21", "category": "framework", "difficulty": "HARD",
+      "tags": "JDK升级,评估,企业实战", "summary": "为老服务制定 JDK 8 → 21 升级方案：兼容风险、依赖评估、收益论证与灰度计划。", "estimatedMinutes": 45,
+      "background": "团队一个 5 年老服务（Spring Boot 2.1 + JDK 8）故障率高、性能差。CTO 问你：升到 JDK 21 值不值？怎么升？你输出完整评估：升级收益、兼容风险清单、分步计划与回滚预案。",
+      "requirements": [
+        "收益论证：GC 性能（G1/ZGC）、虚拟线程、语言特性、长期支持与安全补丁",
+        "兼容风险清单：javax→jakarta 命名空间、内部 API 强封装、移除的模块（JAXB/CORBA）、依赖兼容（老版本 Spring/MyBatis 对 JDK 21 的支持）",
+        "分步计划：先升 Boot/依赖 → 再升 JDK（或先 JDK 后 Boot 的取舍）、灰度与性能对比",
+        "回滚预案与「什么时候应该放弃升级」的诚实结论"
+      ],
+      "constraints": ["明确这是两个大动作（Boot 2→3 与 JDK 8→21）的组合，评估其叠加复杂度"],
+      "deliverables": ["收益论证", "风险清单", "分步计划与回滚预案"],
+      "acceptance": ["javax→jakarta 是 Boot 3 升级最大工作量之一讲到", "强封装内部 API（--add-opens）的临时方案与长期方案", "结论分场景：高故障率服务值得升，稳定服务可延后"],
+      "rubric": [
+        { "dimension": "方案设计", "weight": 45, "guidance": "计划分步、风险全面、有回滚。" },
+        { "dimension": "正确性", "weight": 35, "guidance": "版本事实与兼容问题准确。" },
+        { "dimension": "沟通表达", "weight": 20, "guidance": "像一份给 CTO 的评估报告。" }
+      ]
+    },
+    {
+      "code": "SD-021", "title": "扫码登录系统设计", "category": "system-design", "difficulty": "MEDIUM",
+      "tags": "扫码登录,系统设计,场景",
+      "summary": "设计 PC 扫码登录全流程：二维码生命周期、三端协作、防钓鱼与安全细节。", "estimatedMinutes": 35,
+      "background": "网页版要支持「手机 App 扫码登录」。你设计全流程：二维码生成与状态机、三端交互、过期与安全（防劫持/防钓鱼）、轮询与推送的选型。",
+      "requirements": [
+        "状态机：待扫描 → 已扫描（待确认）→ 已确认 / 已过期 / 已取消，每个状态的触发与失效条件",
+        "三端交互：PC（生成+轮询）、手机（扫码+确认）、服务端（绑定+签发）",
+        "安全设计：qrcodeId 一次性与过期、「已扫描待确认」中间态的防钓鱼价值（PC 端二次确认）、二维码被截图劫持的应对",
+        "PC 端感知方案：轮询 vs WebSocket 的选型与权衡"
+      ],
+      "constraints": ["假设手机 App 已有自己的登录态"], "deliverables": ["状态机设计", "时序说明", "安全清单"],
+      "acceptance": ["两段式确认（扫描 ≠ 登录成功）讲清", "qrcodeId 一次性 + TTL 的实现", "轮询间隔与 WebSocket 的取舍有结论"],
+      "rubric": [
+        { "dimension": "方案设计", "weight": 50, "guidance": "状态机与三端流程完整自洽。" },
+        { "dimension": "正确性", "weight": 30, "guidance": "安全机制（防劫持/防钓鱼）正确。" },
+        { "dimension": "沟通表达", "weight": 20, "guidance": "时序清晰。" }
+      ]
+    },
+    {
+      "code": "SD-022", "title": "短信验证码登录：发送、校验与防刷设计", "category": "system-design", "difficulty": "MEDIUM",
+      "tags": "验证码,登录,防刷,场景",
+      "summary": "设计验证码登录：Redis 存取、多维频控防短信轰炸、校验安全与登录态衔接。", "estimatedMinutes": 30,
+      "background": "登录页要加「手机验证码登录」。你设计全流程，重点是防「短信轰炸」（攻击者用你的接口给任意手机号狂发短信）与防账号枚举。",
+      "requirements": [
+        "发送：Redis 存码（TTL 5 分钟）、发送前接入行为验证码（滑块）、发送接口幂等",
+        "频控：手机号维度（60s/次、日限额）+ IP 维度 + 设备维度三层",
+        "校验：一次性消费（成功即删）、失败次数上限后作废、错误提示不区分账号是否存在",
+        "登录态衔接：验证通过后签发 JWT（复用本项目认证体系），未注册手机号的策略（自动注册 vs 拒绝）"
+      ],
+      "constraints": ["结合本项目 Redis 与 JWT 现状"], "deliverables": ["全流程设计", "频控矩阵", "安全清单"],
+      "acceptance": ["「防短信轰炸」作为第一安全目标明确", "三层频控的 key 设计给出", "账号枚举防护（统一错误提示）讲到"],
+      "rubric": [
+        { "dimension": "方案设计", "weight": 50, "guidance": "流程与频控体系完整。" },
+        { "dimension": "正确性", "weight": 50, "guidance": "存储、校验、安全细节正确。" }
+      ]
+    },
+    {
+      "code": "SD-023", "title": "选课系统设计：高并发抢课的容量与公平",
+      "category": "system-design", "difficulty": "HARD",
+      "tags": "选课,高并发,场景",
+      "summary": "设计 5000 人抢 200 个选课名额：容量评估、扣减方案、排队与公平性。", "estimatedMinutes": 40,
+      "background": "热门选修课开放选课瞬间 5000 人同时抢 200 个名额——比秒杀更复杂的是「先到先得还是抽签」的产品决策与「选课+退课+候补」的完整生命周期。你给出完整设计。",
+      "requirements": [
+        "容量估算：峰值 5000 并发 → 各层流量推算（网关/应用/Redis/DB）",
+        "名额扣减：Redis 原子预扣 + MQ 异步落库 + DB 唯一约束（一人一课），复用秒杀结论但指出差异（无支付环节）",
+        "产品决策：先到先得 vs 抽签的公平性讨论，以及「候补队列」的设计",
+        "完整生命周期：选课成功 → 退课（名额回池）→ 候补递补的联动"
+      ],
+      "constraints": ["校园场景：用户有学号、无支付"], "deliverables": ["容量估算", "扣减与候补设计", "公平性讨论"],
+      "acceptance": ["退课回池与候补递补的联动逻辑完整", "「一人一课」唯一约束兜底", "先到先得 vs 抽签给出产品视角的取舍分析"],
+      "rubric": [
+        { "dimension": "方案设计", "weight": 50, "guidance": "链路完整、候补联动正确。" },
+        { "dimension": "正确性", "weight": 30, "guidance": "扣减与唯一约束机制正确。" },
+        { "dimension": "沟通表达", "weight": 20, "guidance": "公平性讨论有产品思维。" }
+      ]
+    },
+    {
+      "code": "TS-016", "title": "线上 Redis 热 key 应急处置", "category": "troubleshooting", "difficulty": "HARD",
+      "tags": "热key,应急,排查", "summary": "复盘一次「某课程详情缓存击穿节点」的应急处置：识别、止血、根治。", "estimatedMinutes": 35,
+      "background": "一门爆款课程被推送后，Redis Cluster 某节点 CPU 与带宽打满，该课程详情接口超时——热 key 事故的标准形态。你按真实应急节奏复盘：怎么发现、怎么止血、怎么根治、怎么预防。",
+      "requirements": [
+        "识别：单节点打满而集群其他节点正常的判别，热 key 的定位手段（客户端统计/redis-cli --hotkeys/监控）",
+        "止血：应用本地缓存（Caffeine 短 TTL）快速上线、读写分离分摊读流量",
+        "根治：热 key 随机后缀打散（写时同步 N 份）或多级缓存（复用 RD-012）",
+        "预防：热 key 监控告警、大促/推送前的容量演练与预热（复用 RD-011）"
+      ],
+      "constraints": ["以 Redis Cluster 为背景"], "deliverables": ["应急时间线", "止血与根治方案", "预防清单"],
+      "acceptance": ["「单节点打满 = 热key」的判别逻辑讲清", "本地缓存应急的上线速度优势（不用改 Redis 架构）", "随机后缀方案的写一致性说明"],
+      "rubric": [
+        { "dimension": "问题定位", "weight": 50, "guidance": "识别与应急节奏准确。" },
+        { "dimension": "方案设计", "weight": 50, "guidance": "止血根治预防三层完整。" }
+      ]
+    }
+  ]
+}

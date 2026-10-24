@@ -54,6 +54,9 @@ public class InterviewQuestion {
     /** JSON 字符串数组：常见追问 */
     private String followUps;
 
+    /** 考察版本/适用性说明（防版本滞后的差异化标注） */
+    private String versionNote;
+
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createdAt;
 }

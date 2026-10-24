@@ -19,6 +19,7 @@ public record BaguVO(
         String plain,
         List<String> points,
         String example,
-        List<String> followUps
+        List<String> followUps,
+        String versionNote
 ) {
 }

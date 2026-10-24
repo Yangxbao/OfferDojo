@@ -75,6 +75,7 @@ public class BaguDataInitializer implements ApplicationRunner {
                         q.setExample(node.hasNonNull("example") ? node.get("example").asText() : null);
                         q.setFollowUps(node.hasNonNull("followUps")
                                 ? JsonUtils.toJson(convertList(node.get("followUps"))) : null);
+                        q.setVersionNote(node.hasNonNull("versionNote") ? node.get("versionNote").asText() : null);
                         questionMapper.insert(q);
                         existing.add(code);
                         added++;

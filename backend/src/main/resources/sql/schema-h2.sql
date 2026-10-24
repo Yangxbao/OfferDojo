@@ -108,6 +108,7 @@ CREATE TABLE IF NOT EXISTS interview_question (
     points     TEXT         NOT NULL,
     example    TEXT,
     follow_ups TEXT,
+    version_note VARCHAR(200),
     created_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
     CONSTRAINT uk_bagu_code UNIQUE (code)

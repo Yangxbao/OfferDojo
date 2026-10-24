@@ -205,12 +205,17 @@ onMounted(async () => {
               <pre class="example">{{ item.example }}</pre>
             </div>
 
-            <div class="block" v-if="item.followUps.length">
-              <div class="block-label"><el-icon><QuestionFilled /></el-icon> 常见追问</div>
-              <ul class="points">
-                <li v-for="p in item.followUps" :key="p">{{ p }}</li>
-              </ul>
-            </div>
+          <div class="block" v-if="item.followUps.length">
+            <div class="block-label"><el-icon><QuestionFilled /></el-icon> 常见追问</div>
+            <ul class="points">
+              <li v-for="p in item.followUps" :key="p">{{ p }}</li>
+            </ul>
+          </div>
+
+          <div class="block" v-if="item.versionNote">
+            <div class="block-label"><el-icon><CollectionTag /></el-icon> 版本适用性</div>
+            <p class="plain version-note">{{ item.versionNote }}</p>
+          </div>
 
             <!-- 自测模式：自评按钮 -->
             <div v-if="selfTest" class="self-grade">
@@ -303,6 +308,13 @@ onMounted(async () => {
   margin: 0;
   line-height: 1.9;
   font-size: 13.5px;
+}
+
+.version-note {
+  background: var(--jobsim-bg);
+  border-radius: 8px;
+  padding: 8px 10px;
+  color: var(--jobsim-text-secondary);
 }
 
 .points {

@@ -24,6 +24,7 @@ public class SchemaMigrationRunner implements ApplicationRunner {
     public void run(ApplicationArguments args) {
         migrate("ALTER TABLE task_evaluation ADD COLUMN prompt_version VARCHAR(20) NULL");
         migrate("ALTER TABLE task_evaluation ADD COLUMN raw_response TEXT NULL");
+        migrate("ALTER TABLE interview_question ADD COLUMN version_note VARCHAR(200) NULL");
     }
 
     private void migrate(String ddl) {
