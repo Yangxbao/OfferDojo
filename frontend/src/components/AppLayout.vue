@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useAuthStore } from '@/stores/auth'
 import { CATEGORY_LABELS } from '@/utils/format'
+import { isStaticDemo } from '@/static/demoApi'
 
 const auth = useAuthStore()
 const route = useRoute()
@@ -49,6 +50,9 @@ const currentGroupTitle = computed(() => CATEGORY_LABELS[route.params.category a
 
 <template>
   <div class="layout">
+    <el-alert v-if="isStaticDemo()" type="warning" :closable="false" style="border-radius:0"
+      title="静态演示模式：数据仅保存在当前浏览器（localStorage），未连接正式后端"
+      description="可浏览全部任务 / 八股 / 路线 / 资源并保存作答进度；登录、AI 评估、社区投稿等功能需部署后端后使用。清除浏览器数据会丢失本地进度。" show-icon />
     <aside class="layout-sidebar">
       <div class="brand">
         <div class="brand-logo">J</div>
